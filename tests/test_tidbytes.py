@@ -42,11 +42,10 @@ def repr_byte(byte: list[int], bit_order: Order, byte_order: Order):
 
     if byte_order == Order.RightToLeft:
         # TODO(pbz): I don't know why this works but I don't have time to fix it
-        actual_index = range(0, len(byte), 8)
-        for (byte_index, bit_index), actual in zip(enumerate(range(0, len(byte), 8)), actual_index):
-            index = len(byte) - 1 - bit_index
+        for byte_index, bit_index in enumerate(reversed(range(0, len(byte), 8))):
+            index = bit_index
             if index < len(third_line_slots):
-                third_line_slots[actual] = str(len(byte) // 8 - 1 - byte_index).ljust(3)
+                third_line_slots[index] = str(byte_index).ljust(3)
     else:
         for byte_index, bit_index in enumerate(range(0, len(byte), 8)):
             index = bit_index
@@ -133,7 +132,7 @@ def test_repr_byte():
 
     (BYTE1 * 2 + HALF, 8, [1], L2R, L2R, 'First bit of second byte with half'),
     (BYTE1 * 2 + HALF, 8, [0], R2L, L2R, 'First bit of second byte with half'),
-    # TODO(pbz): (BYTE1 * 2 + HALF, 8, [1], L2R, R2L, 'First bit of second byte with half'),
+    (BYTE1 * 2 + HALF, 8, [1], L2R, R2L, 'First bit of second byte with half'),
     # (BYTE1 * 2 + HALF, 8, [0], R2L, R2L, 'First bit of second byte with half'),
 
     # (BYTE2 * 2 + HALF, 9, [1], L2R, L2R, 'Second bit of second byte with half'),
