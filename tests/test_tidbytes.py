@@ -10,7 +10,7 @@ L2R = Order.LeftToRight
 R2L = Order.RightToLeft
 
 HALF = [1, 0, 1, 0]
-BYTE1 = [1, 0, 0, 0, 0, 0, 0, 0]
+BYTE1 = [1, 0, 0, 0, 0, 0, 0, 0]# , [1, 0, 0, 0, 0, 0, 0, 0], [1, 0, 1, 0]
 BYTE2 = [0, 1, 0, 0, 0, 0, 0, 0]
 BYTE3 = [1, 1, 0, 0, 0, 0, 0, 0]
 BYTE4 = [0, 0, 1, 0, 0, 0, 0, 0]
@@ -41,16 +41,6 @@ def repr_byte(byte: list[int], bit_order: Order, byte_order: Order):
     third_line_slots = ['   ' for i in range(len(byte))]
 
     if byte_order == Order.RightToLeft:
-        # TODO(pbz): I don't know why this works but I don't have time to fix it
-        # for byte_index, bit_index in enumerate(reversed(range(0, len(byte), 8))):
-        #     index = bit_index
-        #     if index < len(third_line_slots):
-        #         third_line_slots[index] = str(byte_index).ljust(3)
-        # for byte_index, bit_index in enumerate(range(0, len(byte), 8)):
-        #     index = bit_index
-        #     if index < len(third_line_slots):
-        #         third_line_slots[index] = str(byte_index).ljust(3)
-        # third_line_slots.reverse()
         for byte_index, bit_index in enumerate(range(0, len(byte), 8)):
             index = len(byte) - 1 - bit_index
             if index < len(third_line_slots):
@@ -62,6 +52,14 @@ def repr_byte(byte: list[int], bit_order: Order, byte_order: Order):
                 third_line_slots[index] = str(byte_index).ljust(3)
 
     third_line = ''.join(third_line_slots)
+
+    raise Exception('^^^ UGH this is still wrong! It needs to reorder the bits according to the byte order! ^^^')
+
+    # ! Essentially, I thought this was a visualization of where the bit and
+    # ! byte indices would start and the direction they grow in. It's not.
+    # ! It needs to off of the BYTES not the BITS.
+    # ! This means the bytes need to be reordered to fit the byte order and each
+    # ! individual group of bits needs to be reordered to match the byte order.
 
     return f' Bit Val: {first_line}\n Bit Idx: {second_line}\nByte Idx: {third_line}'
 
