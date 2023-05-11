@@ -42,8 +42,17 @@ def repr_byte(byte: list[int], bit_order: Order, byte_order: Order):
 
     if byte_order == Order.RightToLeft:
         # TODO(pbz): I don't know why this works but I don't have time to fix it
-        for byte_index, bit_index in enumerate(reversed(range(0, len(byte), 8))):
-            index = bit_index
+        # for byte_index, bit_index in enumerate(reversed(range(0, len(byte), 8))):
+        #     index = bit_index
+        #     if index < len(third_line_slots):
+        #         third_line_slots[index] = str(byte_index).ljust(3)
+        # for byte_index, bit_index in enumerate(range(0, len(byte), 8)):
+        #     index = bit_index
+        #     if index < len(third_line_slots):
+        #         third_line_slots[index] = str(byte_index).ljust(3)
+        # third_line_slots.reverse()
+        for byte_index, bit_index in enumerate(range(0, len(byte), 8)):
+            index = len(byte) - 1 - bit_index
             if index < len(third_line_slots):
                 third_line_slots[index] = str(byte_index).ljust(3)
     else:
@@ -78,13 +87,31 @@ def test_repr_byte():
     assert repr_byte(a + b + c, L2R, R2L) == (
         ' Bit Val: 0  0  0  0  0  0  0  1  0  0  0  0  0  0  1  1  0  0  0  0  0  1  1  1  \n'
         ' Bit Idx: 0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 16 17 18 19 20 21 22 23 \n'
-        'Byte Idx: 2                       1                       0                       '
+        'Byte Idx:                      2                       1                       0  '
     )
 
     assert repr_byte(a + b + c, R2L, R2L) == (
         ' Bit Val: 0  0  0  0  0  0  0  1  0  0  0  0  0  0  1  1  0  0  0  0  0  1  1  1  \n'
         ' Bit Idx: 23 22 21 20 19 18 17 16 15 14 13 12 11 10 9  8  7  6  5  4  3  2  1  0  \n'
-        'Byte Idx: 2                       1                       0                       '
+        'Byte Idx:                      2                       1                       0  '
+    )
+
+    assert repr_byte([0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], L2R, L2R) == (
+        ' Bit Val: 0  0  0  0  0  0  0  1  0  0  0  0  0  \n'
+        ' Bit Idx: 0  1  2  3  4  5  6  7  8  9  10 11 12 \n'
+        'Byte Idx: 0                       1              '
+    )
+
+    assert repr_byte([0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], R2L, L2R) == (
+        ' Bit Val: 0  0  0  0  0  0  0  1  0  0  0  0  0  \n'
+        ' Bit Idx: 12 11 10 9  8  7  6  5  4  3  2  1  0  \n'
+        'Byte Idx: 0                       1              '
+    )
+
+    assert repr_byte([0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0], L2R, R2L) == (
+        ' Bit Val: 0  0  0  0  0  0  0  1  0  0  0  0  0  \n'
+        ' Bit Idx: 0  1  2  3  4  5  6  7  8  9  10 11 12 \n'
+        'Byte Idx:             1                       0  '
     )
 
 
@@ -132,6 +159,7 @@ def test_repr_byte():
 
     (BYTE1 * 2 + HALF, 8, [1], L2R, L2R, 'First bit of second byte with half'),
     (BYTE1 * 2 + HALF, 8, [0], R2L, L2R, 'First bit of second byte with half'),
+    # TODO(pbz): This is the failing test:
     (BYTE1 * 2 + HALF, 8, [1], L2R, R2L, 'First bit of second byte with half'),
     # (BYTE1 * 2 + HALF, 8, [0], R2L, R2L, 'First bit of second byte with half'),
 
@@ -141,7 +169,6 @@ def test_repr_byte():
     # (BYTE2 * 2 + HALF, 9, [0], R2L, R2L, 'Second bit of second byte with half'),
 ])
 def test_get_bit(init, index, sliced, bit_order, byte_order, msg):
-    [1, 0, 0, 0, 0, 0, 0, 0], [1, 0, 0, 0, 0, 0, 0, 0], [1, 0, 1, 0]
     mem = memory(init)
     mem_slice = op_get_bit(mem, index, bit_order, byte_order)
     expected = f'{msg}:\n{repr_byte(init, bit_order, byte_order)}'
