@@ -1,0 +1,2 @@
+# tidbytes
+Bit manipulation library
