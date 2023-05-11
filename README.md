@@ -1,2 +1,3 @@
 # tidbytes
-Bit manipulation library
+
+> Bit & byte manipulation library
