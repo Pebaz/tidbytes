@@ -1,3 +1,13 @@
+"""
+Trying to keep a running total of the considerations that I've run into:
+
+- Bytes are the only portable type
+- Byte order
+- Bit order
+- Memory transformations between universes
+- Partial bytes
+"""
+
 import pytest
 from typing import *
 from tidbytes import *
@@ -27,6 +37,43 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
     elif isinstance(bit_count_or_init, (str, list, tuple)):
         mem.bits = list(int(i) for i in bit_count_or_init)
     return mem
+
+
+def index_to_byte_offset(
+    bit_index: int,
+    bit_len: int,
+    bit_order: Order,
+    byte_order: Order
+) -> int:
+    """
+    This function assumes that:
+    - 'First bit' is within 'First byte'
+    - 'Ninth bit' is within the 'Second byte'
+    - 'First byte' is the 'First byte'
+    - 'Second byte' is after the 'First byte' according to the byte order
+    - The input bit index is within the logical memory region
+    - The output bit index plugs into the physical memory region
+
+    You can emulate byte indices by making sure the bit index is divisible by 8.
+    """
+
+    # TODO(pbz): Current thought? Store bytes as list of bits. Store list of bytes
+    # TODO(pbz): There needs to be a universal calculation of what exact bit an
+    # TODO(pbz): index corresponds to <-- If so, you could just iterate
+
+    # ! Current status: How to handle partial bytes
+
+    """
+    Byte L2R: 1 0 0 1 1 1 1 1   1 0 0 0 0 0 0 1   1 1 1 1 0 0 0 0
+    Byte R2L: 1 1 1 1 0 0 0 0   1 0 0 0 0 0 0 1   1 0 0 1 1 1 1 1
+
+    Byte L2R: 1 0 0 1 1 1 1 1   1 0 0 0 0 0 0 1   1 1 1 1 <- Partial bytes...?
+    Byte R2L: 1 1 1 1 1 0 0 0   0 0 0 1 1 0 0 1   1 1 1 1 <- Wow. How to handle?
+    Byte R2L:         1 1 1 1   1 0 0 0 0 0 0 1   1 0 0 1 1 1 1 1
+
+    R2L, L2R: 1 0 0 1 1 1 1 1   1 0 0 0 0 0 0 1   1 1 1 1 0 0 0 0
+    R2L, L2R: 1 1 1 1 1 0 0 1   1 0 0 0 0 0 0 1   0 0 0 0 1 1 1 1
+    """
 
 
 # TODO(pbz): Move this to the idiomatic interface and make it a utility function
