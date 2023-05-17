@@ -6,6 +6,90 @@ Trying to keep a running total of the considerations that I've run into:
 - Bit order
 - Memory transformations between universes
 - Partial bytes
+
+---
+
+Help me design a bit manipulation library. I don't want you to mention the
+choice of language as it is unimportant. I am stuck on the problem of how to
+handle partial bytes.
+
+Normally, bit manipulation is performed on various sizes of integers. My library
+uses lists of ints where each int represents 1 or 0. Those lists are only a max
+of 8 bits so entire memory regions will be a list of lists of bits.
+
+The problem is that when specifying memory regions that are not divisible by 8,
+I don't know how to handle bit and byte order.
+
+Bit order exists. Byte order exists and is often expressed as little and big
+endian. However, I've found that endianness is irrelevant to my library. I just
+want to put bits where I want them to be period. As far as my library is
+concerned, there is left to right and right to left bit order and byte order.
+
+When getting a bit from a memory region, that memory region exists in memory
+raw. However, it is not straightforward to answer the question: "what is the 9th
+bit?" due to the bit and byte order.
+
+I have figured out how to get the 9th bit for both left to right and right to
+left bit and byte order, but that is only for memory regions that have a length
+that is evenly divisible by 8.
+
+I discovered that left to right byte order means the memory is unchanged. Right
+to left byte order means a logical transformation where all the bytes (but not
+bits) are reversed.
+
+Normally, they would go left to right byte order and you'd read each bit
+starting from the left or right depending on bit order. However, what happens
+when you first transform the bytes from right to left (reversing them) and then
+start reading bits? There's a logical gap of 4 bits. What do I do with that 4
+bit gap?
+
+---
+
+I figured it out: I need `op_transform(bit_order, byte_order)`
+
+If I create this operation, all indexing and setting operations are trivial. For
+the purposes of this initial implementation, I need to use lists of lists of
+bits along with null values so that I can just skip empty bits in partial bytes.
+
+I have created some sort of operation that I don't know the name of:
+
+Transform Byte Order To L2R, Transform Bit Order To L2R = >>
+Byte Order To R2L, Bit Order To R2L = <<
+Bytes To L2R, Bits To R2L = ><
+Bytes R2L, Bits L2R = <>
+
+In other words, the first arrow is the byte order, the second is the bit order.
+This ordering is because byte order always happens first. I haven't figured out
+if this actually matters.
+
+rgn = Memory Region
+>> rgn = Identity operation (does nothing) (`op_identity()`)
+<< rgn = Inverse operation (`op_reverse()`)
+<> rgn = Reverse bytes, keep bits (`op_reverse_bytes()`)
+>< rgn = Keep bytes, reverse bits (`op_reverse_bits()`)
+
+Notation:
+
+The top arrow is the byte order. The bottom arrow is the bit order. This
+notation matches the `>>` syntax and the order corresponds to it also. Since
+these symbols conflict with bit shifting syntax, a line could be added that
+makes them more into arrows and gives the impression that the first arrow is
+bigger which matches the canonicalized representation: `->>` `-<>`, `-><`, `-<<`
+
+      -->               -->
+1 1 1 1 0 0 0 0   1 0 1 0 . . . .
+>                 >
+
+Example Operation:
+1 1 1 1 0 0 0 0   1 0 1 0 . . . . <>= 1 0 1 0 . . . .   1 1 1 1 0 0 0 0
+
+Ninth Bit:
+1 1 1 1 0 0 0 0   1 0 1 0 . . . .
+                  ^
+
+9th bit of: <> 1 1 1 1 0 0 0 0   1 0 1 0 . . . .
+    1 0 1 0 . . . .   1 1 1 1 0 0 0 0
+                              ^  <- Trivial due to transformation operations!!
 """
 
 import pytest
