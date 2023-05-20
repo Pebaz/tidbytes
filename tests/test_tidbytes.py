@@ -39,32 +39,6 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
     return mem
 
 
-def validate_memory(mem: MemRgn) -> bool:
-    assert all(len(byte) == 8 for byte in mem.bytes), (
-        f'Some bytes not 8 bits: {mem.bytes}'
-    )
-    assert all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes), (
-        f'Some bytes do not contain 0, 1, or None: {mem.bytes}'
-    )
-    assert any(any(i in {0, 1} for i in byte) for byte in mem.bytes), (
-        f'No bits set: {mem.bytes}'
-    )
-
-    all_bits = []
-    for byte in mem.bytes:
-        for bit in byte:
-            if bit != None:
-                all_bits.append(bit)
-    all_bits += [None] * (8 - len(all_bits) % 8)
-    all_bytes = []
-    while all_bits:
-        all_bytes.append(all_bits[:8])
-        all_bits = all_bits[8:]
-    assert mem.bytes == all_bytes, (
-        f'Some bytes contained unset bits in the middle: {mem.bytes}. Should be: {all_bytes}'
-    )
-
-
 def test_get_bit():
     mem = memory(9)
     for i in range(op_bit_length(mem)):

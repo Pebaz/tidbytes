@@ -6,7 +6,8 @@ Trying to keep a running total of the considerations that I've run into:
 - Bit order
 - Memory transformations between universes
 - Partial bytes & over-fetching & over-setting
-- Exclusive or inclusive start/stop indices for getting/setting ranges
+- API Design: Exclusive or inclusive start/stop indices range getting/setting
+- API Design: Define clear validation boundaries to avoid defensive programming
 
 ---
 

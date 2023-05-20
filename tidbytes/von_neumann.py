@@ -98,12 +98,45 @@ def op_byte_length(mem: MemRgn) -> int:
     return len(mem.bytes)
 
 
+def validate_memory(mem: MemRgn):
+    ensure(
+        all(len(byte) == 8 for byte in mem.bytes),
+        f'Some bytes not 8 bits: {mem.bytes}'
+    )
+    ensure(
+        all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes),
+        f'Some bytes do not contain 0, 1, or None: {mem.bytes}'
+    )
+    ensure(
+        any(any(i in {0, 1} for i in byte) for byte in mem.bytes),
+        f'No bits set: {mem.bytes}'
+    )
+
+    all_bits = []
+    for byte in mem.bytes:
+        for bit in byte:
+            if bit != None:
+                all_bits.append(bit)
+    all_bits += [None] * (8 - len(all_bits) % 8)
+    all_bytes = []
+    while all_bits:
+        all_bytes.append(all_bits[:8])
+        all_bits = all_bits[8:]
+    ensure(
+        mem.bytes == all_bytes,
+        (
+            f'Some bytes contained unset bits in the middle: {mem.bytes}.'
+            f'Should be: {all_bytes}'
+        )
+    )
+
+
 # ------------------------------------------------------------------------------
 # Fundamental memory read and write operations
 # ------------------------------------------------------------------------------
 # TODO(pbz): Call validate_memory() each time?
 def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     ensure(0 <= index < op_bit_length(mem), f'Index out of bounds: {index}')
 
     out = MemRgn()
@@ -121,7 +154,7 @@ def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
 # TODO(pbz): Call validate_memory() each time?
 def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     """
-    Invariant: input memory region must be mapped to the program's universe.
+    Invariant: input memory must be valid and mapped to program's universe.
 
     Note: Returned byte can be partial depending on byte order if on far side.
 
@@ -139,7 +172,7 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
 
 # TODO(pbz): Call validate_memory() each time?
 def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     # TODO(pbz): I'm fairly certain this needs to be `stop < op_bit_length(mem)`
     # TODO(pbz): since I think it should be an exclusive range? Empty ranges?
     ensure(0 <= start <= stop <= op_bit_length(mem), 'Index out of bounds')
@@ -160,7 +193,7 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
 
 # TODO(pbz): Call validate_memory() each time?
 def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     ensure(
         0 <= start * 8 <= stop * 8 <= op_byte_length(mem),
         'Index out of bounds'
@@ -179,7 +212,7 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Call validate_memory() each time?
 def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     ensure(op_bit_length(payload) == 1, 'More than one bit supplied')
     ensure(0 <= offset < op_bit_length(mem), 'Offset out of bounds')
 
@@ -206,7 +239,7 @@ def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Call validate_memory() each time?
 def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     mem_len = op_bit_length(mem)
     ending_index = offset + op_bit_length(payload)
     ensure(0 <= offset < mem_len, 'Offset out of bounds')
@@ -222,17 +255,18 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     for byte in mem.bytes:
         out_byte = []
         for bit in byte:
-            if bit != None:
-                if offset <= index_counter < ending_index:
-                    out_byte.append(op_get_bit(payload, index_counter))
-                else:
-                    out_byte.append(bit)
+            if offset <= index_counter < ending_index:
+                bit = op_get_bit(payload, index_counter - offset).bytes[0][0]
+                out_byte.append(bit)
+            else:
+                out_byte.append(bit)
 
-                if len(out_byte) == 8:
-                    out.bytes.append(out_byte[:])
-                    out_byte.clear()
+            if len(out_byte) == 8:
+                out.bytes.append(out_byte[:])
+                out_byte.clear()
 
-                index_counter += 1
+            index_counter += 1
+
         if out_byte:
             out.bytes.append(out_byte[:])
     return out
@@ -241,7 +275,7 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Call validate_memory() each time?
 def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     payload_bits = op_bit_length(payload)
     ensure(payload_bits <= 8, f'Bit count greater than 8: {payload_bits}')
     ensure(
@@ -255,7 +289,7 @@ def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 # TODO(pbz): Assumes exact bit length of payload should fit in dest. Concat?
 # TODO(pbz): Call validate_memory() each time?
 def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
-    "Invariant: input memory region must be mapped to the program's universe."
+    "Invariant: input memory must be valid and mapped to program's universe."
     payload_bits = op_bit_length(payload)
     ensure(
         0 <= offset * 8 <= offset * 8 + payload_bits < op_bit_length(mem),
