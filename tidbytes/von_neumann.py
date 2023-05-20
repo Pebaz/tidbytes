@@ -73,6 +73,13 @@ def op_identity(mem: MemRgn) -> MemRgn:
 # ------------------------------------------------------------------------------
 
 # TODO(pbz): Call validate_memory() each time?
+def iterate_logical_bits(mem: MemRgn):
+    for byte in mem.bytes:
+        for bit in byte:
+            if bit != None:
+                yield bit
+
+# TODO(pbz): Call validate_memory() each time?
 def op_bit_length(mem: MemRgn) -> int:
     """
     The number of used bits in the memory region.
