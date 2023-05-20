@@ -45,6 +45,13 @@ def test_get_bit():
         assert op_get_bit(mem, i).bytes == memory(1).bytes
 
 
+def test_get_bits():
+    mem = memory([0] * 8 + [1, 0, 1, 0])
+    out = op_get_bits(mem, 0, 8)
+    assert out.bytes == [[0] * 8]
+    validate_memory(out)
+
+
 def test_get_byte():
     mem = memory(4)
     assert op_get_byte(mem, 0).bytes == memory(4).bytes
@@ -57,6 +64,7 @@ def test_set_bit():
     mem = op_set_bit(mem, 8, pay)
     assert mem.bytes[1][0] == 1
     validate_memory(mem)
+
 
 def test_set_bits():
     mem = memory(12)

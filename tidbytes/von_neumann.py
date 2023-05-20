@@ -117,7 +117,9 @@ def validate_memory(mem: MemRgn):
         for bit in byte:
             if bit != None:
                 all_bits.append(bit)
-    all_bits += [None] * (8 - len(all_bits) % 8)
+
+    if len(all_bits) % 8 > 0:
+        all_bits += [None] * (8 - len(all_bits) % 8)
     all_bytes = []
     while all_bits:
         all_bytes.append(all_bits[:8])
@@ -178,14 +180,19 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     ensure(0 <= start <= stop <= op_bit_length(mem), 'Index out of bounds')
 
     out = MemRgn()
+    index_counter = 0
     for byte in mem.bytes:
         out_byte = []
         for bit in byte:
             if bit != None:
-                out_byte.append(bit)
+                if start <= index_counter < stop:
+                    out_byte.append(bit)
+
                 if len(out_byte) == 8:
                     out.bytes.append(out_byte[:])
                     out_byte.clear()
+
+                index_counter += 1
         if out_byte:
             out.bytes.append(out_byte[:])
     return out
