@@ -21,9 +21,12 @@ class MemRgn:
 def op_ensure_bit_length(): ...
 def op_ensure_byte_length(): ...
 def op_concatenate(): ...
-def op_extend(mem: Mem, amount: int, direction: Order, fill: int) -> None:
+def op_extend(mem: MemRgn, amount: int, direction: Order, fill: int) -> None:
     "Fill the left or right side with the following bit value of 0 or 1."
 
+# TODO(pbz): Idiomatic interface:
+def repr_byte(mem: MemRgn): ...
+def repr_byte_in_universe(mem: MemRgn, bit_order: Order, byte_order: Order): ...
 
 
 # ------------------------------------------------------------------------------
@@ -138,6 +141,8 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
                 if len(out_byte) == 8:
                     out.bytes.append(out_byte[:])
                     out_byte.clear()
+        if out_byte:
+            out.bytes.append(out_byte[:])
     return out
 
 
@@ -180,6 +185,8 @@ def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
                     out_byte.clear()
 
                 index_counter += 1
+        if out_byte:
+            out.bytes.append(out_byte[:])
     return out
 
 
@@ -212,6 +219,8 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
                     out_byte.clear()
 
                 index_counter += 1
+        if out_byte:
+            out.bytes.append(out_byte[:])
     return out
 
 
