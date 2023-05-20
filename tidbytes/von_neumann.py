@@ -37,6 +37,7 @@ def repr_byte_in_universe(mem: MemRgn, bit_order: Order, byte_order: Order): ...
 # also be added as a universe boundary. All memory is eventually mapped to
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
+# TODO(pbz): Call validate_memory() each time?
 def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order):
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
     bit_direction = iter if bit_order == Order.LeftToRight else reversed
@@ -47,18 +48,22 @@ def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order):
     ]
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_reverse(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.RightToLeft, Order.RightToLeft)
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_reverse_bytes(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.RightToLeft, Order.LeftToRight)
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.LeftToRight, Order.RightToLeft)
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_identity(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.LeftToRight, Order.LeftToRight)
 
@@ -67,6 +72,7 @@ def op_identity(mem: MemRgn) -> MemRgn:
 # Host language specific meta operations for memory regions
 # ------------------------------------------------------------------------------
 
+# TODO(pbz): Call validate_memory() each time?
 def op_bit_length(mem: MemRgn) -> int:
     """
     The number of used bits in the memory region.
@@ -82,6 +88,7 @@ def op_bit_length(mem: MemRgn) -> int:
     return index_counter
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_byte_length(mem: MemRgn) -> int:
     """
     The number of bytes necessary to contain the bits in the memory region.
@@ -94,6 +101,7 @@ def op_byte_length(mem: MemRgn) -> int:
 # ------------------------------------------------------------------------------
 # Fundamental memory read and write operations
 # ------------------------------------------------------------------------------
+# TODO(pbz): Call validate_memory() each time?
 def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     ensure(0 <= index < op_bit_length(mem), f'Index out of bounds: {index}')
@@ -110,6 +118,7 @@ def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     assert False, 'Unreachable'
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     """
     Invariant: input memory region must be mapped to the program's universe.
@@ -128,8 +137,11 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     return out
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
+    # TODO(pbz): I'm fairly certain this needs to be `stop < op_bit_length(mem)`
+    # TODO(pbz): since I think it should be an exclusive range? Empty ranges?
     ensure(0 <= start <= stop <= op_bit_length(mem), 'Index out of bounds')
 
     out = MemRgn()
@@ -146,6 +158,7 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     return out
 
 
+# TODO(pbz): Call validate_memory() each time?
 def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     ensure(
@@ -164,6 +177,7 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
 def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     ensure(op_bit_length(payload) == 1, 'More than one bit supplied')
@@ -174,23 +188,23 @@ def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     for byte in mem.bytes:
         out_byte = []
         for bit in byte:
-            if bit != None:
-                if index_counter == offset:
-                    out_byte.append(payload.bytes[0][0])
-                else:
-                    out_byte.append(bit)
+            if index_counter == offset:
+                out_byte.append(payload.bytes[0][0])
+            else:
+                out_byte.append(bit)
 
-                if len(out_byte) == 8:
-                    out.bytes.append(out_byte[:])
-                    out_byte.clear()
+            if len(out_byte) == 8:
+                out.bytes.append(out_byte[:])
+                out_byte.clear()
 
-                index_counter += 1
+            index_counter += 1
         if out_byte:
             out.bytes.append(out_byte[:])
     return out
 
 
 # TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
 def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     mem_len = op_bit_length(mem)
@@ -225,6 +239,7 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
 def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     payload_bits = op_bit_length(payload)
@@ -238,6 +253,7 @@ def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Assumes exact bit length of payload should fit in dest. Concat?
+# TODO(pbz): Call validate_memory() each time?
 def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     payload_bits = op_bit_length(payload)

@@ -35,16 +35,34 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
                 byte.clear()
             byte.append(bit)
         mem.bytes.append((byte + [None] * 8)[:8])
-    assert valid_memory(mem)
+    validate_memory(mem)
     return mem
 
 
-def valid_memory(mem: MemRgn) -> bool:
-    if not all(len(byte) == 8 for byte in mem.bytes):
-        return False
-    if not all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes):
-        return False
-    return True
+def validate_memory(mem: MemRgn) -> bool:
+    assert all(len(byte) == 8 for byte in mem.bytes), (
+        f'Some bytes not 8 bits: {mem.bytes}'
+    )
+    assert all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes), (
+        f'Some bytes do not contain 0, 1, or None: {mem.bytes}'
+    )
+    assert any(any(i in {0, 1} for i in byte) for byte in mem.bytes), (
+        f'No bits set: {mem.bytes}'
+    )
+
+    all_bits = []
+    for byte in mem.bytes:
+        for bit in byte:
+            if bit != None:
+                all_bits.append(bit)
+    all_bits += [None] * (8 - len(all_bits) % 8)
+    all_bytes = []
+    while all_bits:
+        all_bytes.append(all_bits[:8])
+        all_bits = all_bits[8:]
+    assert mem.bytes == all_bytes, (
+        f'Some bytes contained unset bits in the middle: {mem.bytes}. Should be: {all_bytes}'
+    )
 
 
 def test_get_bit():
@@ -60,11 +78,16 @@ def test_get_byte():
 
 def test_set_bit():
     mem = memory(9)
-    print(mem.bytes)
     pay = memory(1)
-    print(pay.bytes)
     pay.bytes[0][0] = 1
     mem = op_set_bit(mem, 8, pay)
-    print(mem.bytes)
     assert mem.bytes[1][0] == 1
-    assert valid_memory(mem)
+    validate_memory(mem)
+
+def test_set_bits():
+    mem = memory(12)
+    pay = memory([1, 0, 1, 0])
+    pay.bytes[0][0] = 1
+    mem = op_set_bits(mem, 8, pay)
+    assert mem.bytes[1] == pay.bytes[0]
+    validate_memory(mem)
