@@ -20,7 +20,11 @@ class MemRgn:
 
 # ------------------------------------------------------------------------------
 # Memory transformation operations to map memory from another universe into the
-# universe of the host system of the running application or back the other way
+# universe of the host system of the running application or back the other way.
+# They are generally used as transitions between memory universe boundaries.
+# This bit and byte order system is scalable in that mixed-endian byte order can
+# also be added as a universe boundary. All memory is eventually mapped to
+# identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
 def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order):
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
@@ -89,6 +93,8 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     """
     Invariant: input memory region must be mapped to the program's universe.
 
+    Note: Returned byte can be partial depending on byte order if on far side.
+
     Partial bytes are handled by returning them since the input memory is
     already in the host CPU's memory universe. This makes sense because the only
     way a partial byte would be undefined is if the bit or byte order was
@@ -105,4 +111,28 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory region must be mapped to the program's universe."
     ensure(0 <= start <= stop <= op_bit_length(mem), 'Index out of bounds')
 
-    # TODO(pbz): left off here 😁
+    out = MemRgn()
+    for byte in mem.bytes:
+        out_byte = []
+        for bit in byte:
+            if bit != None:
+                out_byte.append(bit)
+                if len(out_byte) == 8:
+                    out.bytes.append(out_byte[:])
+                    out_byte.clear()
+    return out
+
+
+def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
+    "Invariant: input memory region must be mapped to the program's universe."
+    ensure(
+        0 <= start * 8 <= stop * 8 <= op_byte_length(mem),
+        'Index out of bounds'
+    )
+
+    start_index = start * 8
+    stop_index = start * 8
+    out = MemRgn()
+
+    for index in range(start_index, stop_index):
+        out.bytes.append(op_get_byte(index))
