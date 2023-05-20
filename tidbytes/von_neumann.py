@@ -18,6 +18,14 @@ class MemRgn:
         self.bytes: list[list[int]] = []
 
 
+def op_ensure_bit_length(): ...
+def op_ensure_byte_length(): ...
+def op_concatenate(): ...
+def op_extend(mem: Mem, amount: int, direction: Order, fill: int) -> None:
+    "Fill the left or right side with the following bit value of 0 or 1."
+
+
+
 # ------------------------------------------------------------------------------
 # Memory transformation operations to map memory from another universe into the
 # universe of the host system of the running application or back the other way.
@@ -57,6 +65,12 @@ def op_identity(mem: MemRgn) -> MemRgn:
 # ------------------------------------------------------------------------------
 
 def op_bit_length(mem: MemRgn) -> int:
+    """
+    The number of used bits in the memory region.
+
+    Does not count unset partial bits. For example, the bit length would be 9:
+    [[0, 0, 0, 0, 0, 0, 0, 0], [0, None, None, None, None, None, None, None]]
+    """
     index_counter = 0
     for byte in mem.bytes:
         for bit in byte:
@@ -66,7 +80,11 @@ def op_bit_length(mem: MemRgn) -> int:
 
 
 def op_byte_length(mem: MemRgn) -> int:
-    "Relies on the assumption that `MemRgn` always stores a multiple of 8 bits."
+    """
+    The number of bytes necessary to contain the bits in the memory region.
+
+    Relies on the assumption that `MemRgn` always stores a multiple of 8 bits.
+    """
     return len(mem.bytes)
 
 
@@ -135,4 +153,88 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     out = MemRgn()
 
     for index in range(start_index, stop_index):
-        out.bytes.append(op_get_byte(index))
+        out.bytes.append(op_get_byte(index).bytes[0])
+
+    return out
+
+
+# TODO(pbz): Should this be pass by reference?
+def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
+    "Invariant: input memory region must be mapped to the program's universe."
+    ensure(op_bit_length(payload) == 1, 'More than one bit supplied')
+    ensure(0 <= offset < op_bit_length(mem), 'Offset out of bounds')
+
+    out = MemRgn()
+    index_counter = 0
+    for byte in mem.bytes:
+        out_byte = []
+        for bit in byte:
+            if bit != None:
+                if index_counter == offset:
+                    out_byte.append(payload.bytes[0][0])
+                else:
+                    out_byte.append(bit)
+
+                if len(out_byte) == 8:
+                    out.bytes.append(out_byte[:])
+                    out_byte.clear()
+
+                index_counter += 1
+    return out
+
+
+# TODO(pbz): Should this be pass by reference?
+def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
+    "Invariant: input memory region must be mapped to the program's universe."
+    mem_len = op_bit_length(mem)
+    ending_index = offset + op_bit_length(payload)
+    ensure(0 <= offset < mem_len, 'Offset out of bounds')
+    ensure(
+        ending_index <= mem_len,
+        f"Payload can't fit: bit offset ({offset}) with length "
+        f"({op_bit_length(payload)}) is too big for space left after offset "
+        f"({mem_len - offset})"
+    )
+
+    out = MemRgn()
+    index_counter = 0
+    for byte in mem.bytes:
+        out_byte = []
+        for bit in byte:
+            if bit != None:
+                if offset <= index_counter < ending_index:
+                    out_byte.append(op_get_bit(payload, index_counter))
+                else:
+                    out_byte.append(bit)
+
+                if len(out_byte) == 8:
+                    out.bytes.append(out_byte[:])
+                    out_byte.clear()
+
+                index_counter += 1
+    return out
+
+
+# TODO(pbz): Should this be pass by reference?
+def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
+    "Invariant: input memory region must be mapped to the program's universe."
+    payload_bits = op_bit_length(payload)
+    ensure(payload_bits <= 8, f'Bit count greater than 8: {payload_bits}')
+    ensure(
+        0 <= offset * 8 <= offset * 8 + payload_bits < op_bit_length(mem),
+        "Payload byte doesn't fit within destination"
+    )
+
+    return op_set_bits(mem, offset * 8, payload)
+
+# TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Assumes exact bit length of payload should fit in dest. Concat?
+def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
+    "Invariant: input memory region must be mapped to the program's universe."
+    payload_bits = op_bit_length(payload)
+    ensure(
+        0 <= offset * 8 <= offset * 8 + payload_bits < op_bit_length(mem),
+        "Payload byte doesn't fit within destination"
+    )
+
+    return op_set_bits(mem, offset * 8, payload)
