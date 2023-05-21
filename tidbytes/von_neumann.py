@@ -80,31 +80,6 @@ def iterate_logical_bits(mem: MemRgn):
                 yield bit
 
 
-# TODO(pbz): Call validate_memory() each time?
-def op_bit_length(mem: MemRgn) -> int:
-    """
-    The number of used bits in the memory region.
-
-    Does not count unset partial bits. For example, the bit length would be 9:
-    [[0, 0, 0, 0, 0, 0, 0, 0], [0, None, None, None, None, None, None, None]]
-
-    Invariant: input memory must be valid and mapped to program's universe.
-    """
-    return len(list(iterate_logical_bits(mem)))
-
-
-# TODO(pbz): Call validate_memory() each time?
-def op_byte_length(mem: MemRgn) -> int:
-    """
-    The number of bytes necessary to contain the bits in the memory region.
-
-    Relies on the assumption that `MemRgn` always stores a multiple of 8 bits.
-
-    Invariant: input memory must be valid and mapped to program's universe.
-    """
-    return len(mem.bytes)
-
-
 def validate_memory(mem: MemRgn):
     ensure(
         all(len(byte) == 8 for byte in mem.bytes),
@@ -134,6 +109,31 @@ def validate_memory(mem: MemRgn):
             f'Should be: {all_bytes}'
         )
     )
+
+
+# TODO(pbz): Call validate_memory() each time?
+def op_bit_length(mem: MemRgn) -> int:
+    """
+    The number of used bits in the memory region.
+
+    Does not count unset partial bits. For example, the bit length would be 9:
+    [[0, 0, 0, 0, 0, 0, 0, 0], [0, None, None, None, None, None, None, None]]
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
+    return len(list(iterate_logical_bits(mem)))
+
+
+# TODO(pbz): Call validate_memory() each time?
+def op_byte_length(mem: MemRgn) -> int:
+    """
+    The number of bytes necessary to contain the bits in the memory region.
+
+    Relies on the assumption that `MemRgn` always stores a multiple of 8 bits.
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
+    return len(mem.bytes)
 
 
 # ------------------------------------------------------------------------------

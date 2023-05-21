@@ -39,6 +39,10 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
     return mem
 
 
+# ------------------------------------------------------------------------------
+# Fail fast tests
+# ------------------------------------------------------------------------------
+
 def test_bit_length():
     mem = memory(9)
     assert op_bit_length(mem) == 9
@@ -83,3 +87,50 @@ def test_set_bits():
     mem = op_set_bits(mem, 8, pay)
     assert mem.bytes[1] == pay.bytes[0]
     validate_memory(mem)
+
+
+# ------------------------------------------------------------------------------
+# Parametrized tests
+# ------------------------------------------------------------------------------
+
+@pytest.mark.parametrize('init,expect,msg', [
+    (1, 1, 'Single bit, 7 unset bits'),
+    (8, 8, '8 set bits'),
+    (9, 9, '9 set bits, 7 unset bits crossing byte boundary'),
+])
+def test_op_bit_length(init, expect, msg):
+    mem = memory(init)
+    out = op_bit_length(mem)
+    assert out == expect, msg
+
+
+@pytest.mark.parametrize('init,expect,msg', [
+    (1, 1, 'Single bit, 7 unset bits, 1 byte'),
+    (8, 1, '1 full byte'),
+    (9, 2, '9 set bits, 7 unset bits crossing byte boundary'),
+    (17, 3, '3 bytes, 7 unset bits'),
+])
+def test_op_byte_length(init, expect, msg):
+    mem = memory(init)
+    out = op_byte_length(mem)
+    assert out == expect, msg
+
+
+@pytest.mark.parametrize('init,index,expect,msg', [
+    (1, 0, [[0] + [None] * 7], 'Get only bit'),
+    (2, 0, [[0] + [None] * 7], 'Get first bit'),
+])
+def test_op_get_bit(init, index, expect, msg):
+    mem = memory(init)
+    out = op_get_bit(mem, index)
+    assert out.bytes == expect, msg
+
+
+
+@pytest.mark.parametrize('init,index,expect,msg', [
+    (8, 0, [[0] * 8], 'Get only byte'),
+])
+def test_op_get_byte(init, index, expect, msg):
+    mem = memory(init)
+    out = op_get_byte(mem, index)
+    assert out.bytes == expect, msg
