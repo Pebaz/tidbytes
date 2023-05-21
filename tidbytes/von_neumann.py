@@ -79,6 +79,7 @@ def iterate_logical_bits(mem: MemRgn):
             if bit != None:
                 yield bit
 
+
 # TODO(pbz): Call validate_memory() each time?
 def op_bit_length(mem: MemRgn) -> int:
     """
@@ -86,7 +87,10 @@ def op_bit_length(mem: MemRgn) -> int:
 
     Does not count unset partial bits. For example, the bit length would be 9:
     [[0, 0, 0, 0, 0, 0, 0, 0], [0, None, None, None, None, None, None, None]]
+
+    Invariant: input memory must be valid and mapped to program's universe.
     """
+    return len(list(iterate_logical_bits(mem)))
     index_counter = 0
     for byte in mem.bytes:
         for bit in byte:
@@ -101,6 +105,8 @@ def op_byte_length(mem: MemRgn) -> int:
     The number of bytes necessary to contain the bits in the memory region.
 
     Relies on the assumption that `MemRgn` always stores a multiple of 8 bits.
+
+    Invariant: input memory must be valid and mapped to program's universe.
     """
     return len(mem.bytes)
 
@@ -119,11 +125,14 @@ def validate_memory(mem: MemRgn):
         f'No bits set: {mem.bytes}'
     )
 
-    all_bits = []
-    for byte in mem.bytes:
-        for bit in byte:
-            if bit != None:
-                all_bits.append(bit)
+    all_bits = list(iterate_logical_bits(mem))
+
+
+    # all_bits = []
+    # for byte in mem.bytes:
+    #     for bit in byte:
+    #         if bit != None:
+    #             all_bits.append(bit)
 
     if len(all_bits) % 8 > 0:
         all_bits += [None] * (8 - len(all_bits) % 8)

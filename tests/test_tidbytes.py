@@ -39,6 +39,16 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
     return mem
 
 
+def test_bit_length():
+    mem = memory(9)
+    assert op_bit_length(mem) == 9
+
+
+def test_byte_length():
+    mem = memory(9)
+    assert op_byte_length(mem) == 2
+
+
 def test_get_bit():
     mem = memory(9)
     for i in range(op_bit_length(mem)):
