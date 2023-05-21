@@ -91,12 +91,6 @@ def op_bit_length(mem: MemRgn) -> int:
     Invariant: input memory must be valid and mapped to program's universe.
     """
     return len(list(iterate_logical_bits(mem)))
-    index_counter = 0
-    for byte in mem.bytes:
-        for bit in byte:
-            if bit != None:
-                index_counter += 1
-    return index_counter
 
 
 # TODO(pbz): Call validate_memory() each time?
@@ -126,13 +120,6 @@ def validate_memory(mem: MemRgn):
     )
 
     all_bits = list(iterate_logical_bits(mem))
-
-
-    # all_bits = []
-    # for byte in mem.bytes:
-    #     for bit in byte:
-    #         if bit != None:
-    #             all_bits.append(bit)
 
     if len(all_bits) % 8 > 0:
         all_bits += [None] * (8 - len(all_bits) % 8)
