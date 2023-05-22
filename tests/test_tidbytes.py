@@ -126,11 +126,62 @@ def test_op_get_bit(init, index, expect, msg):
     assert out.bytes == expect, msg
 
 
-
 @pytest.mark.parametrize('init,index,expect,msg', [
     (8, 0, [[0] * 8], 'Get only byte'),
 ])
 def test_op_get_byte(init, index, expect, msg):
     mem = memory(init)
     out = op_get_byte(mem, index)
+    assert out.bytes == expect, msg
+
+
+@pytest.mark.parametrize('init,start,stop,expect,msg', [
+    (1, 0, 1, [[0] + [None] * 7], 'Get only bit'),
+    (2, 0, 1, [[0] + [None] * 7], 'Get first bit'),
+])
+def test_op_get_bits(init, start, stop, expect, msg):
+    mem = memory(init)
+    out = op_get_bits(mem, start, stop)
+    assert out.bytes == expect, msg
+
+
+@pytest.mark.parametrize('init,start,stop,expect,msg', [
+    (8, 0, 1, [[0] * 8], 'Get only byte'),
+])
+def test_op_get_bytes(init, start, stop, expect, msg):
+    mem = memory(init)
+    out = op_get_bytes(mem, start, stop)
+    assert out.bytes == expect, msg
+
+
+@pytest.mark.parametrize('init,offset,payload,expect,msg', [
+    (1, 0, [1], [[1] + [None] * 7], 'Set only bit'),
+    (2, 0, [1], [[1, 0] + [None] * 6], 'Set first bit'),
+])
+def test_op_set_bit(init, offset, payload, expect, msg):
+    mem = memory(init)
+    payload_mem = memory(payload)
+    out = op_set_bit(mem, offset, payload_mem)
+    assert out.bytes == expect, msg
+
+
+@pytest.mark.parametrize('init,offset,payload,expect,msg', [
+    (1, 0, [1], [[1] + [None] * 7], 'Set only bit'),
+    (2, 0, [1], [[1, 0] + [None] * 6], 'Set first bit'),
+])
+def test_op_set_bits(init, offset, payload, expect, msg):
+    mem = memory(init)
+    payload_mem = memory(payload)
+    out = op_set_bit(mem, offset, payload_mem)
+    assert out.bytes == expect, msg
+
+
+@pytest.mark.parametrize('init,offset,payload,expect,msg', [
+    (1, 0, [1], [[1] + [None] * 7], 'Set only byte'),
+    # (9, 0, [1], [[1] + [None] * 8], 'Set first byte'),
+])
+def test_op_set_byte(init, offset, payload, expect, msg):
+    mem = memory(init)
+    payload_mem = memory(payload)
+    out = op_set_byte(mem, offset, payload_mem)
     assert out.bytes == expect, msg

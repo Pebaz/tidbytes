@@ -187,17 +187,20 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     for byte in mem.bytes:
         out_byte = []
         for bit in byte:
-            if bit != None:
-                if start <= index_counter < stop:
-                    out_byte.append(bit)
+            if start <= index_counter < stop:
+                out_byte.append(bit)
 
-                if len(out_byte) == 8:
-                    out.bytes.append(out_byte[:])
-                    out_byte.clear()
+            if len(out_byte) == 8:
+                out.bytes.append(out_byte[:])
+                out_byte.clear()
 
-                index_counter += 1
+            index_counter += 1
         if out_byte:
             out.bytes.append(out_byte[:])
+
+    if out.bytes and len(out.bytes[-1]) < 8:
+        out.bytes[-1] = (out.bytes[-1] + [None] * 8)[:8]
+
     return out
 
 
@@ -205,16 +208,14 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
 def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     ensure(
-        0 <= start * 8 <= stop * 8 <= op_byte_length(mem),
+        0 <= start <= stop <= op_byte_length(mem),
         'Index out of bounds'
     )
 
-    start_index = start * 8
-    stop_index = start * 8
     out = MemRgn()
 
-    for index in range(start_index, stop_index):
-        out.bytes.append(op_get_byte(index).bytes[0])
+    for index in range(start, stop):
+        out.bytes.append(op_get_byte(mem, index).bytes[0])
 
     return out
 
@@ -226,24 +227,27 @@ def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     ensure(op_bit_length(payload) == 1, 'More than one bit supplied')
     ensure(0 <= offset < op_bit_length(mem), 'Offset out of bounds')
 
-    out = MemRgn()
-    index_counter = 0
-    for byte in mem.bytes:
-        out_byte = []
-        for bit in byte:
-            if index_counter == offset:
-                out_byte.append(payload.bytes[0][0])
-            else:
-                out_byte.append(bit)
+    return op_set_bits(mem, offset, payload)
 
-            if len(out_byte) == 8:
-                out.bytes.append(out_byte[:])
-                out_byte.clear()
+    # ? Should this be kept
+    # out = MemRgn()
+    # index_counter = 0
+    # for byte in mem.bytes:
+    #     out_byte = []
+    #     for bit in byte:
+    #         if index_counter == offset:
+    #             out_byte.append(payload.bytes[0][0])
+    #         else:
+    #             out_byte.append(bit)
 
-            index_counter += 1
-        if out_byte:
-            out.bytes.append(out_byte[:])
-    return out
+    #         if len(out_byte) == 8:
+    #             out.bytes.append(out_byte[:])
+    #             out_byte.clear()
+
+    #         index_counter += 1
+    #     if out_byte:
+    #         out.bytes.append(out_byte[:])
+    # return out
 
 
 # TODO(pbz): Should this be pass by reference?
@@ -289,8 +293,13 @@ def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     payload_bits = op_bit_length(payload)
     ensure(payload_bits <= 8, f'Bit count greater than 8: {payload_bits}')
     ensure(
-        0 <= offset * 8 <= offset * 8 + payload_bits < op_bit_length(mem),
-        "Payload byte doesn't fit within destination"
+        0 <= offset * 8 < op_bit_length(mem),
+        f"Offset out of bounds: {op_bit_length(mem)=}, {offset=}"
+    )
+    ensure(
+        op_bit_length(mem) - offset * 8 + payload_bits >= 0,
+        f"Payload byte doesn't fit within destination: "
+        f"{op_bit_length(mem)=}, {offset=}, {op_bit_length(payload)=}"
     )
 
     return op_set_bits(mem, offset * 8, payload)

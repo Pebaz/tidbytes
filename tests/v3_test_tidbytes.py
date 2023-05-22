@@ -8,6 +8,7 @@ Trying to keep a running total of the considerations that I've run into:
 - Partial bytes & over-fetching & over-setting
 - API Design: Exclusive or inclusive start/stop indices range getting/setting
 - API Design: Define clear validation boundaries to avoid defensive programming
+- API Design: Nomenclature: "Index" for getting and "Offset" for setting
 
 ---
 
