@@ -304,15 +304,22 @@ def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
     return op_set_bits(mem, offset * 8, payload)
 
+
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Assumes exact bit length of payload should fit in dest. Concat?
 # TODO(pbz): Call validate_memory() each time?
 def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
-    "Invariant: input memory must be valid and mapped to program's universe."
+    """
+    Assumes exact bit length of payload should fit in destination. Does not
+    concatenate the bits that don't fit from the payload. The payload is
+    expected to be smaller than or equal to the memory region (plus offset * 8).
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
     payload_bits = op_bit_length(payload)
     ensure(
-        0 <= offset * 8 <= offset * 8 + payload_bits < op_bit_length(mem),
-        "Payload byte doesn't fit within destination"
+        0 <= offset * 8 <= offset * 8 + payload_bits <= op_bit_length(mem),
+        f"Payload byte doesn't fit within destination: "
+        f"{op_bit_length(mem)=}, {offset=}, {payload_bits=}"
     )
 
     return op_set_bits(mem, offset * 8, payload)

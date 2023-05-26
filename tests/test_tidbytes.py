@@ -20,6 +20,11 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
     """
     The Idiomatic interface is for rich memory construction. This is a utility
     function since mixing the Idiomatic and Von Neumann would be no good.
+
+    int: num bits
+    str: bit string
+    list: bit list
+    tuple: bit tuple
     """
     mem = MemRgn()
     if isinstance(bit_count_or_init, int):
@@ -185,3 +190,15 @@ def test_op_set_byte(init, offset, payload, expect, msg):
     payload_mem = memory(payload)
     out = op_set_byte(mem, offset, payload_mem)
     assert out.bytes == expect, msg
+
+
+@pytest.mark.parametrize('init,offset,payload,expect,msg', [
+    (1, 0, [1], [[1] + [None] * 7], 'Set only byte'),
+    (9, 0, [1], [[1] + [0] * 7, [0] + [None] * 7], 'Set first byte'),
+])
+def test_op_set_bytes(init, offset, payload, expect, msg):
+    mem = memory(init)
+    payload_mem = memory(payload)
+    out = op_set_bytes(mem, offset, payload_mem)
+    assert out.bytes == expect, msg
+
