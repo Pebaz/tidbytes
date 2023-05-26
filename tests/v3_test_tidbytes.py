@@ -9,6 +9,7 @@ Trying to keep a running total of the considerations that I've run into:
 - API Design: Exclusive or inclusive start/stop indices range getting/setting
 - API Design: Define clear validation boundaries to avoid defensive programming
 - API Design: Nomenclature: "Index" for getting and "Offset" for setting
+- API Design: All I needed was op_get_bits() and op_set_bits()!
 
 ---
 

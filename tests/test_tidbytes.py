@@ -102,6 +102,7 @@ def test_set_bits():
     (1, 1, 'Single bit, 7 unset bits'),
     (8, 8, '8 set bits'),
     (9, 9, '9 set bits, 7 unset bits crossing byte boundary'),
+    (16, 16, '2 bytes'),
 ])
 def test_op_bit_length(init, expect, msg):
     mem = memory(init)
@@ -124,6 +125,9 @@ def test_op_byte_length(init, expect, msg):
 @pytest.mark.parametrize('init,index,expect,msg', [
     (1, 0, [[0] + [None] * 7], 'Get only bit'),
     (2, 0, [[0] + [None] * 7], 'Get first bit'),
+    ([0] * 7 + [1], 7, [[1] + [None] * 7], 'Get last bit'),
+    ([0] * 1 + [1] + [0] * 2, 1, [[1] + [None] * 7], 'Even bit'),
+    ([0] * 2 + [1] + [0] * 2, 2, [[1] + [None] * 7], 'Odd bit'),
 ])
 def test_op_get_bit(init, index, expect, msg):
     mem = memory(init)
@@ -133,6 +137,7 @@ def test_op_get_bit(init, index, expect, msg):
 
 @pytest.mark.parametrize('init,index,expect,msg', [
     (8, 0, [[0] * 8], 'Get only byte'),
+    ([0] * 8 + [1] + [0] * 3, 1, [[1] + [0] * 3 + [None] * 4], 'Odd byte'),
 ])
 def test_op_get_byte(init, index, expect, msg):
     mem = memory(init)

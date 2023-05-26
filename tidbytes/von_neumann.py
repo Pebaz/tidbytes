@@ -144,17 +144,6 @@ def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     ensure(0 <= index < op_bit_length(mem), f'Index out of bounds: {index}')
 
-    # out = MemRgn()
-    # index_counter = 0
-    # for byte in mem.bytes:
-    #     for bit in byte:
-    #         if bit != None:
-    #             if index_counter == index:
-    #                 out.bytes = [[bit] + [None] * 7]
-    #                 return out
-    #             index_counter += 1
-    # assert False, 'Unreachable'
-
     return op_get_bits(mem, index, index + 1)
 
 
@@ -177,10 +166,6 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     """
     mem_bits = op_bit_length(mem)
     ensure(0 <= index < mem_bits, f'Index out of bounds: {index}')
-
-    # out = MemRgn()
-    # out.bytes.append(mem.bytes[index][:])
-    # return out
 
     return op_get_bits(mem, index * 8, min(index * 8 + 8, mem_bits))
 
@@ -222,11 +207,6 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
         'Index out of bounds'
     )
 
-    # out = MemRgn()
-    # for index in range(start, stop):
-    #     out.bytes.append(op_get_byte(mem, index).bytes[0])
-    # return out
-
     return op_get_bits(mem, start * 8, stop * 8)
 
 
@@ -238,26 +218,6 @@ def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     ensure(0 <= offset < op_bit_length(mem), 'Offset out of bounds')
 
     return op_set_bits(mem, offset, payload)
-
-    # ? Should this be kept
-    # out = MemRgn()
-    # index_counter = 0
-    # for byte in mem.bytes:
-    #     out_byte = []
-    #     for bit in byte:
-    #         if index_counter == offset:
-    #             out_byte.append(payload.bytes[0][0])
-    #         else:
-    #             out_byte.append(bit)
-
-    #         if len(out_byte) == 8:
-    #             out.bytes.append(out_byte[:])
-    #             out_byte.clear()
-
-    #         index_counter += 1
-    #     if out_byte:
-    #         out.bytes.append(out_byte[:])
-    # return out
 
 
 # TODO(pbz): Should this be pass by reference?
