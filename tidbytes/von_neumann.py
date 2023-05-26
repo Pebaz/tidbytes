@@ -144,16 +144,18 @@ def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     ensure(0 <= index < op_bit_length(mem), f'Index out of bounds: {index}')
 
-    out = MemRgn()
-    index_counter = 0
-    for byte in mem.bytes:
-        for bit in byte:
-            if bit != None:
-                if index_counter == index:
-                    out.bytes = [[bit] + [None] * 7]
-                    return out
-                index_counter += 1
-    assert False, 'Unreachable'
+    # out = MemRgn()
+    # index_counter = 0
+    # for byte in mem.bytes:
+    #     for bit in byte:
+    #         if bit != None:
+    #             if index_counter == index:
+    #                 out.bytes = [[bit] + [None] * 7]
+    #                 return out
+    #             index_counter += 1
+    # assert False, 'Unreachable'
+
+    return op_get_bits(mem, index, index + 1)
 
 
 # TODO(pbz): Call validate_memory() each time?
