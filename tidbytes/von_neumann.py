@@ -167,12 +167,20 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     already in the host CPU's memory universe. This makes sense because the only
     way a partial byte would be undefined is if the bit or byte order was
     unknown.
-    """
-    ensure(0 <= index < op_byte_length(mem), f'Index out of bounds: {index}')
 
-    out = MemRgn()
-    out.bytes.append(mem.bytes[index][:])
-    return out
+    Memory can always be addressed with byte indices. However, over-fetching is
+    handled by truncating the returned bits to the bit length of the source
+    memory. If 2 bytes is fetched from a 15 bit region, only 15 bits will be
+    returned but it will not error out since bits aren't addressable.
+    """
+    mem_bits = op_bit_length(mem)
+    ensure(0 <= index < mem_bits, f'Index out of bounds: {index}')
+
+    # out = MemRgn()
+    # out.bytes.append(mem.bytes[index][:])
+    # return out
+
+    return op_get_bits(mem, index * 8, min(index * 8 + 8, mem_bits))
 
 
 # TODO(pbz): Call validate_memory() each time?
@@ -212,12 +220,12 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
         'Index out of bounds'
     )
 
-    out = MemRgn()
+    # out = MemRgn()
+    # for index in range(start, stop):
+    #     out.bytes.append(op_get_byte(mem, index).bytes[0])
+    # return out
 
-    for index in range(start, stop):
-        out.bytes.append(op_get_byte(mem, index).bytes[0])
-
-    return out
+    return op_get_bits(mem, start * 8, stop * 8)
 
 
 # TODO(pbz): Should this be pass by reference?
