@@ -18,17 +18,6 @@ class MemRgn:
         self.bytes: list[list[int]] = []
 
 
-def op_ensure_bit_length(): ...
-def op_ensure_byte_length(): ...
-def op_concatenate(): ...
-def op_extend(mem: MemRgn, amount: int, direction: Order, fill: int) -> None:
-    "Fill the left or right side with the following bit value of 0 or 1."
-
-# TODO(pbz): Idiomatic interface:
-def repr_byte(mem: MemRgn): ...
-def repr_byte_in_universe(mem: MemRgn, bit_order: Order, byte_order: Order): ...
-
-
 # ------------------------------------------------------------------------------
 # Memory transformation operations to map memory from another universe into the
 # universe of the host system of the running application or back the other way.
@@ -293,3 +282,89 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     )
 
     return op_set_bits(mem, offset * 8, payload)
+
+
+# ------------------------------------------------------------------------------
+# Memory transformation operations for memory within the program's universe.
+# ------------------------------------------------------------------------------
+def op_fill(): ...
+def op_fill_range(): ...
+
+# TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
+def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
+    mem_len = op_bit_length(fill)
+    ensure(mem_len == 1, 'Fill payload must be 0 or 1')
+
+    length = mem_len + amount
+    bits = [bit for bit in byte for byte in mem.bytes] + [0] * length - mem_len
+    out = MemRgn()
+    byte = []
+
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            out.bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    out.bytes.append((byte + [None] * 8)[:8])
+
+    return out
+
+
+# TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
+def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
+    mem_len = op_bit_length(mem)
+    ensure(
+        mem_len <= length,
+        f'Cannot truncate bits from {mem_len} to {length}'
+    )
+
+    fill = MemRgn()
+    fill.bytes.append([0] + [None] * 7)
+
+    return op_extend(
+        mem,
+        mem_len - length,
+        fill
+    )
+
+
+# TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
+def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
+    mem_len = op_bit_length(mem)
+    ensure(
+        mem_len <= length * 8,
+        f'Cannot truncate bits from {mem_len} to {length * 8}'
+    )
+    return op_ensure_bit_length(mem, length * 8)
+
+
+# TODO(pbz): Call validate_memory() each time?
+def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
+    """
+    Invariant: memory regions should be from the same universe and valid.
+    """
+    bits = [
+        bit for region in [mem_left, mem_right]
+        for byte in region
+        for bit in byte
+    ]
+
+    out = MemRgn()
+    byte = []
+
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            out.bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    out.bytes.append((byte + [None] * 8)[:8])
+
+    return out
+
+
+# TODO(pbz): Idiomatic interface:
+def repr_byte(mem: MemRgn): ...
+def repr_byte_in_universe(mem: MemRgn, bit_order: Order, byte_order: Order): ...
