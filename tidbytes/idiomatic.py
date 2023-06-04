@@ -1,3 +1,4 @@
+import sys
 from .mem_types import *
 from .von_neumann import *
 
@@ -8,6 +9,94 @@ from .von_neumann import *
 class Mem:
     def __init__(self):
         self.rgn = MemRgn()
+
+    def __setitem__(self, key, value):
+        payload = MemRgn()
+        payload.bytes = [[value] + [None] * 7]
+        op_set_bit(self.rgn, key, payload)
+
+    def __str__(self):
+        bits = ' '.join(
+            ''.join(
+                str(bit) if bit != None else ''  # ? '▫'
+                for bit in byte
+            )
+            for byte in self.rgn.bytes
+        )
+        return f'<Mem [{bits}]>'
+
+    __format__ = __str__
+    __repr__ = __str__
+
+    def __add__(self, other):
+        mem = Mem()
+        mem.rgn = op_concatenate(self.rgn, other.rgn)
+        return mem
+
+    # TODO(pbz): What about byte order?
+    @classmethod
+    def from_u8(cls, value, bit_length=8):
+        """
+        This is different from `from_u8_byte()` because it assumes the provided
+        u8 value is numeric data with the least significant bit on the right.
+        This means bit order is from right to left always.
+        """
+        ensure(bit_length <= 8, 'Only 8 bits in a u8')
+
+        mem = Mem()
+        bits = []
+
+        for i in range(bit_length):
+            bit = int(bool(value & (1 << i)))
+            sys.byteorder == 'little'
+            bits.insert(0, bit)
+
+        mem.rgn.bytes.append((bits + [None] * 8)[:8])
+
+        return mem
+
+    # TODO(pbz): What about byte order?
+    @classmethod
+    def from_u8_byte(cls, value, bit_length=8):
+        """
+        This is different from `from_u8()` because it assumes that the provided
+        u8 value is not numeric data but a slice of memory 1-byte long. This
+        means bit order is left to right always.
+
+        Providing a lower bit length lets fewer than 8 bits to be stored.
+        """
+        ensure(bit_length <= 8, 'Only 8 bits in a u8')
+
+        mem = Mem()
+        bits = []
+
+        for i in range(bit_length):
+            bit = int(bool(value & (1 << i)))
+            sys.byteorder == 'little'
+            bits.append(bit)
+
+        mem.rgn.bytes.append((bits + [None] * 8)[:8])
+
+        return mem
+
+
+    # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
+    # TODO(pbz): What about byte order?
+    @classmethod
+    def from_u16_bytes(cls, value, bit_length=16):
+        ensure(bit_length <= 16, 'Only 16 bits in a u16')
+
+        # mem = Mem()
+        # bits = []
+
+        # for i in range(bit_length):
+        #     bit = int(bool(value & (1 << i)))
+        #     sys.byteorder == 'little'
+        #     bits.append(bit)
+
+        # mem.rgn.bytes.append((bits + [None] * 8)[:8])
+
+        # return mem
 
 
 # * Getting

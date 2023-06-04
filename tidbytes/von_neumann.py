@@ -346,10 +346,13 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     """
     Invariant: memory regions should be from the same universe and valid.
     """
+    validate_memory(mem_left)
+    validate_memory(mem_right)
+
     bits = [
         bit for region in [mem_left, mem_right]
-        for byte in region
-        for bit in byte
+        for byte in region.bytes
+        for bit in byte if bit is not None
     ]
 
     out = MemRgn()
@@ -361,6 +364,8 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
             byte.clear()
         byte.append(bit)
     out.bytes.append((byte + [None] * 8)[:8])
+
+    validate_memory(out)
 
     return out
 
