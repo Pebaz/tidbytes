@@ -37,27 +37,28 @@ class Mem:
     @classmethod
     def from_u8(cls, value, bit_length=8):
         """
-        This is different from `from_u8_byte()` because it assumes the provided
+        This is different from `from_u8_as_byte()` because it assumes the provided
         u8 value is numeric data with the least significant bit on the right.
         This means bit order is from right to left always.
         """
         ensure(bit_length <= 8, 'Only 8 bits in a u8')
+        ensure(value >= 0, 'Positive values only')
 
         mem = Mem()
-        bits = []
+        byte = []
 
         for i in range(bit_length):
             bit = int(bool(value & (1 << i)))
             sys.byteorder == 'little'
-            bits.insert(0, bit)
+            byte.insert(0, bit)
 
-        mem.rgn.bytes.append((bits + [None] * 8)[:8])
+        mem.rgn.bytes.append((byte + [None] * 8)[:8])
 
         return mem
 
     # TODO(pbz): What about byte order?
     @classmethod
-    def from_u8_byte(cls, value, bit_length=8):
+    def from_u8_as_byte(cls, value, bit_length=8):
         """
         This is different from `from_u8()` because it assumes that the provided
         u8 value is not numeric data but a slice of memory 1-byte long. This
@@ -66,16 +67,17 @@ class Mem:
         Providing a lower bit length lets fewer than 8 bits to be stored.
         """
         ensure(bit_length <= 8, 'Only 8 bits in a u8')
+        ensure(value >= 0, 'Positive values only')
 
         mem = Mem()
-        bits = []
+        byte = []
 
         for i in range(bit_length):
             bit = int(bool(value & (1 << i)))
             sys.byteorder == 'little'
-            bits.append(bit)
+            byte.append(bit)
 
-        mem.rgn.bytes.append((bits + [None] * 8)[:8])
+        mem.rgn.bytes.append((byte + [None] * 8)[:8])
 
         return mem
 
@@ -83,20 +85,33 @@ class Mem:
     # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
     # TODO(pbz): What about byte order?
     @classmethod
-    def from_u16_bytes(cls, value, bit_length=16):
+    def from_u16_as_bytes(cls, value, bit_length=16):
+        """
+        Treat the bytes of a number as a memory region, not a numeric value.
+        """
         ensure(bit_length <= 16, 'Only 16 bits in a u16')
+        ensure(value >= 0, 'Positive values only')
 
-        # mem = Mem()
-        # bits = []
+        mem = Mem()
+        byte = []
 
-        # for i in range(bit_length):
-        #     bit = int(bool(value & (1 << i)))
-        #     sys.byteorder == 'little'
-        #     bits.append(bit)
+        for i in range(bit_length):
+            bit = int(bool(value & (1 << i)))
 
-        # mem.rgn.bytes.append((bits + [None] * 8)[:8])
+            byte.append(bit)
 
-        # return mem
+            if len(byte) == 8:
+                mem.rgn.bytes.append(byte[:])
+                # if sys.byteorder == 'little':
+                #     mem.rgn.bytes.append(byte[:])
+                # else:
+                #     mem.rgn.bytes.insert(0, byte[:])
+                byte.clear()
+
+        if byte:
+            mem.rgn.bytes.append((byte + [None] * 8)[:8])
+
+        return mem
 
 
 # * Getting
