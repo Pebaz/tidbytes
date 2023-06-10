@@ -15,18 +15,20 @@ class Mem:
         payload.bytes = [[value] + [None] * 7]
         op_set_bit(self.rgn, key, payload)
 
-    def __str__(self):
-        bits = ' '.join(
+    def __str__(self):  # Display
+        return ' '.join(
             ''.join(
                 str(bit) if bit != None else ''  # ? '▫'
                 for bit in byte
             )
             for byte in self.rgn.bytes
         )
+
+    def __repr__(self):  # Debug
+        bits = str(self)
         return f'<Mem [{bits}]>'
 
     __format__ = __str__
-    __repr__ = __str__
 
     def __add__(self, other):
         mem = Mem()
