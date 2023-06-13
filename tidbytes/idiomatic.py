@@ -83,13 +83,40 @@ class Mem:
 
         return mem
 
-
     # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
     # TODO(pbz): What about byte order?
     @classmethod
     def from_u16_as_bytes(cls, value, bit_length=16):
         """
+        The bits of the number will be exactly reversed from how they are
+        written.
+
         Treat the bytes of a number as a memory region, not a numeric value.
+
+        Note: Byte order is system byte order.
+        Note: Bit order is left to right.
+        """
+        ensure(bit_length <= 16, 'Only 16 bits in a u16')
+        ensure(value >= 0, 'Positive values only')
+
+        mem = cls.from_u16(value, bit_length)
+
+        raise Exception('Need to figure this out')
+
+        if sys.byteorder == 'big':
+            mem.rgn = op_reverse(mem.rgn)
+
+        return mem
+
+    @classmethod
+    def from_u16(cls, value, bit_length=16):
+        """
+        There's no need to assume the byte order. It will always match the order
+        of the system. To load an integer from another memory universe, use the
+        memory transformation operations such as reverse_bytes, etc.
+
+        Note: Byte order is system byte order.
+        Note: Bit order is right to left.
         """
         ensure(bit_length <= 16, 'Only 16 bits in a u16')
         ensure(value >= 0, 'Positive values only')
@@ -100,14 +127,14 @@ class Mem:
         for i in range(bit_length):
             bit = int(bool(value & (1 << i)))
 
-            byte.append(bit)
+            byte.insert(0, bit)
 
             if len(byte) == 8:
-                mem.rgn.bytes.append(byte[:])
-                # if sys.byteorder == 'little':
-                #     mem.rgn.bytes.append(byte[:])
-                # else:
-                #     mem.rgn.bytes.insert(0, byte[:])
+                if sys.byteorder == 'little':
+                    mem.rgn.bytes.append(byte[:])
+                else:
+                    mem.rgn.bytes.insert(0, byte[:])
+
                 byte.clear()
 
         if byte:

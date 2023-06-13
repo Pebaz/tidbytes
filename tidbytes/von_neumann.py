@@ -27,14 +27,22 @@ class MemRgn:
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
 # TODO(pbz): Call validate_memory() each time?
-def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order):
+def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
     bit_direction = iter if bit_order == Order.LeftToRight else reversed
 
-    return [
+    mem = MemRgn()
+    mem.bytes = [
         [bit for bit in bit_direction(byte)]
         for byte in byte_direction(mem.bytes)
     ]
+
+    return mem
+
+
+# TODO(pbz): Call validate_memory() each time?
+def op_identity(mem: MemRgn) -> MemRgn:
+    return op_transform(mem, Order.LeftToRight, Order.LeftToRight)
 
 
 # TODO(pbz): Call validate_memory() each time?
@@ -50,11 +58,6 @@ def op_reverse_bytes(mem: MemRgn) -> MemRgn:
 # TODO(pbz): Call validate_memory() each time?
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.LeftToRight, Order.RightToLeft)
-
-
-# TODO(pbz): Call validate_memory() each time?
-def op_identity(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.LeftToRight, Order.LeftToRight)
 
 
 # ------------------------------------------------------------------------------
