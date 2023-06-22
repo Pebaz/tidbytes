@@ -3,82 +3,43 @@ import pytest
 from typing import *
 from tidbytes import *
 
-1
-# FROM_U8 = Mem.from_u8_as_byte
-# FROM_U16 = Mem.from_u16_as_bytes
 
-
-# @pytest.mark.parametrize('init,expect,ctor,msg', [
-#     (0b101, '10100000', FROM_U8, 'Single byte'),
-#     (0b100000101, '10100000', FROM_U8, 'Single byte out of 2 bytes'),
-#     # (0b100000101, '10100000 10000000', FROM_U16, 'Two bytes'),
-# ])
-# def test_internal_representation(init, expect, ctor, msg):
-#     assert str(ctor(init)) == expect, msg
-
-
-# @pytest.mark.parametrize('init,expect,endianness,msg', [
-#     (0b00000100_00000101, '00000101 00000100', 'little', 'little endian'),
-#     (0b00000100_00000101, '00000100 00000101', 'big', 'little endian')
-# ])
-# def test_from_u16(init, expect, endianness, msg):
-#     pre = sys.byteorder
-#     try:
-#         sys.byteorder = endianness
-#         mem = Mem.from_u16(init)
-#         assert str(mem) == expect
-#     finally:
-#         sys.byteorder = pre
-
-
-# @pytest.mark.parametrize('init,expect,endianness,msg', [
-#     (0b00000100_00000101, '10100000 00100000', 'little', 'little endian'),
-#     (0b00000100_00000101, '00000100 00000101', 'big', 'little endian')
-# ])
-# def test_from_u16_as_bytes(init, expect, endianness, msg):
-#     pre = sys.byteorder
-#     try:
-#         sys.byteorder = endianness
-#         mem = Mem.from_u16_as_bytes(init)
-#         assert str(mem) == expect
-#     finally:
-#         sys.byteorder = pre
+@pytest.mark.parametrize('init,expect,msg', [
+    (b'\x00', '00000000', 'Single byte'),
+    (b'\x00\x01', '00000000 00000001', '2 bytes 1 bit'),
+    (b'\x00\x02', '00000000 00000010', '2 bytes 2 bits'),
+])
+def test_from_bytes(init, expect, msg):
+    assert str(Mem.from_bytes(init)) == expect, msg
 
 
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '11010000', 'Single byte'),
     (0b100000101, '10100000', 'Single byte out of 2 bytes'),
 ])
-def test_from_u8_as_byte(init, expect, msg):
-    assert str(Mem.from_u8_as_byte(init)) == expect, msg
+def test_from_byte_u8(init, expect, msg):
+    assert str(Mem.from_byte_u8(init)) == expect, msg
 
 
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '00001011', 'Single byte'),
     (0b100000101, '00000101', 'Single byte out of 2 bytes'),
 ])
-def test_from_u8(init, expect, msg):
-    assert str(Mem.from_u8(init)) == expect, msg
+def test_from_numeric_u8(init, expect, msg):
+    assert str(Mem.from_numeric_u8(init)) == expect, msg
 
 
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '11010000 00000000', 'Single byte'),
     (0b100000101, '10100000 10000000', '2 bytes'),
 ])
-def test_from_u16_as_bytes(init, expect, msg):
-    assert str(Mem.from_u16_as_bytes(init)) == expect, msg
+def test_from_bytes_u16(init, expect, msg):
+    assert str(Mem.from_bytes_u16(init)) == expect, msg
 
 
-# @pytest.mark.parametrize('init,expect,msg', [
-#     (0b1011, '00000000 00001011', 'Single byte'),
-#     (0b100000101, '00000001 00000101', '2 bytes'),
-# ])
-# def test_from_u16(init, expect, msg):
-#     assert str(Mem.from_u16(init)) == expect, msg
-
-
-# TODO(pbz): Need to make sense of big and little endian tests.
-# TODO(pbz): Perhaps use the QEMU Monitor Protocol (QMP) to automate tests?
-raise Exception(
-    'Make sure to do: if sys.byteorder == "little"'
-)
+@pytest.mark.parametrize('init,expect,msg', [
+    (0b1011, '00000000 00001011', 'Single byte'),
+    (0b100000101, '00000001 00000101', '2 bytes'),
+])
+def test_from_numeric_u16(init, expect, msg):
+    assert str(Mem.from_numeric_u16(init)) == expect, msg

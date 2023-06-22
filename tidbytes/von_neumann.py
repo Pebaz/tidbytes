@@ -31,13 +31,13 @@ def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
     bit_direction = iter if bit_order == Order.LeftToRight else reversed
 
-    mem = MemRgn()
-    mem.bytes = [
+    out = MemRgn()
+    out.bytes = [
         [bit for bit in bit_direction(byte)]
         for byte in byte_direction(mem.bytes)
     ]
 
-    return mem
+    return out
 
 
 # TODO(pbz): Call validate_memory() each time?

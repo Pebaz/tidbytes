@@ -30,6 +30,10 @@ class Mem:
 
     __format__ = __str__
 
+    def __bool__(self):
+        "False if Mem is null else True"
+        return bool(self.rgn.bytes)
+
     def __add__(self, other):
         mem = Mem()
         mem.rgn = op_concatenate(self.rgn, other.rgn)
@@ -39,37 +43,28 @@ class Mem:
         validate_memory(self.rgn)
         return self
 
-    # TODO(pbz): What about byte order?
     @classmethod
-    def from_u8(cls, value, bit_length=8):
+    def from_bytes(cls, value):
         """
-        This is different from `from_u8_as_byte()` because it assumes the provided
-        u8 value is numeric data with the least significant bit on the right.
-        This means bit order is from right to left always.
-
-        For instance, 0b00010011 will be turned into: [00010011]. It appears
-        the same as written because it is treated as a numeric value.
+        Treats a memory region as if it had identity bit and byte order (left
+        to right for both). To transform into another memory universe, use the
+        transformation operations:
+            - identity()
+            - reverse()
+            - reverse_bytes()
+            - reverse_bits()
         """
-        ensure(bit_length <= 8, 'Only 8 bits in a u8')
-        ensure(value >= 0, 'Positive values only')
-
-        mem = cls()
-        byte = []
-
-        for i in range(bit_length):
-            bit = int(bool(value & (1 << i)))
-            sys.byteorder == 'little'
-            byte.insert(0, bit)
-
-        mem.rgn.bytes.append((byte + [None] * 8)[:8])
-
-        return mem.validate()
+        mem = Mem()
+        for byte in value:
+            mem_byte = cls.from_numeric_u8(byte)
+            mem = mem + mem_byte if mem else mem_byte
+        return mem
 
     # TODO(pbz): What about byte order?
     @classmethod
-    def from_u8_as_byte(cls, value, bit_length=8):
+    def from_byte_u8(cls, value, bit_length=8):
         """
-        This is different from `from_u8()` because it assumes that the provided
+        This is different from `from_numeric_u8()` because it assumes that the provided
         u8 value is not numeric data but a slice of memory 1-byte long. This
         means bit order is left to right always.
 
@@ -86,25 +81,47 @@ class Mem:
 
         for i in range(bit_length):
             bit = int(bool(value & (1 << i)))
-            sys.byteorder == 'little'
             byte.append(bit)
 
         mem.rgn.bytes.append((byte + [None] * 8)[:8])
 
         return mem.validate()
 
+
+    # TODO(pbz): What about byte order?
+    @classmethod
+    def from_numeric_u8(cls, value, bit_length=8):
+        """
+        This is different from `from_byte_u8()` because it assumes the provided
+        u8 value is numeric data with the least significant bit on the right.
+        This means bit order is from right to left always.
+
+        For instance, 0b00010011 will be turned into: [00010011]. It appears
+        the same as written because it is treated as a numeric value.
+        """
+        ensure(bit_length <= 8, 'Only 8 bits in a u8')
+        ensure(value >= 0, 'Positive values only')
+
+        mem = cls.from_byte_u8(value, bit_length)
+        mem.rgn = op_reverse(mem.rgn)
+
+        return mem.validate()
+
     # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
     # TODO(pbz): What about byte order?
     @classmethod
-    def from_u16_as_bytes(cls, value, bit_length=16):
+    def from_bytes_u16(cls, value, bit_length=16):
         """
+        Non-numeric bit order is always left to right. Treat a u16 value as a
+        memory region with padding bits on the right and the resulting region
+        will have identity bit and byte order (left to right for both).
+
+        Host endianness is irrelevant as bits are read from right to left.
+
         The bits of the number will be exactly reversed from how they are
         written.
 
         Treat the bytes of a number as a memory region, not a numeric value.
-
-        Note: Byte order is system byte order.
-        Note: Bit order is left to right.
 
         For instance, 0b1_00010011 will be turned into: [11001000 10000000]. It
         appears backwards because it is treated as a memory region not a numeric
@@ -113,56 +130,11 @@ class Mem:
         ensure(bit_length <= 16, 'Only 16 bits in a u16')
         ensure(value >= 0, 'Positive values only')
 
-        mem = cls.from_u16(value, bit_length)
-
-        if sys.byteorder == 'big':
-            mem.rgn = op_reverse(mem.rgn)
-
-        return mem.validate()
-
-    @classmethod
-    def from_u16(cls, value, bit_length=16):
-        """
-        There's no need to assume the byte order. It will always match the order
-        of the system. To load an integer from another memory universe, use the
-        memory transformation operations such as reverse_bytes, etc.
-
-        Note: Byte order is system byte order.
-        Note: Bit order is right to left.
-
-        For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
-        appears the same as written because it is treated as a numeric value.
-        """
-        ensure(bit_length <= 16, 'Only 16 bits in a u16')
-        ensure(value >= 0, 'Positive values only')
-
-        # mem = cls()
-        # byte = []
-
-        # for i in range(bit_length):
-        #     bit = int(bool(value & (1 << i)))
-
-        #     byte.insert(0, bit)
-
-        #     if len(byte) == 8:
-        #         if sys.byteorder == 'little':
-        #             mem.rgn.bytes.append(byte[:])
-        #         else:
-        #             mem.rgn.bytes.insert(0, byte[:])
-
-        #         byte.clear()
-
-        # if byte:
-        #     mem.rgn.bytes.append((byte + [None] * 8)[:8])
-
-        # return mem.validate()
-
         mem = cls()
         byte = []
 
         for i in range(bit_length):
             bit = int(bool(value & (1 << i)))
-            sys.byteorder == 'little'
             byte.append(bit)
 
             if len(byte) == 8:
@@ -171,6 +143,26 @@ class Mem:
 
         if byte:
             mem.rgn.bytes.append((byte + [None] * 8)[:8])
+
+        return mem.validate()
+
+    @classmethod
+    def from_numeric_u16(cls, value, bit_length=16):
+        """
+        Numeric bit order is always right to left. Treat a u16 value as a memory
+        region with padding bits on the left but the resulting region will have
+        identity bit and byte order (left to right for both).
+
+        Host endianness is irrelevant as bits are read from right to left.
+
+        For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
+        appears the same as written because it is treated as a numeric value.
+        """
+        ensure(bit_length <= 16, 'Only 16 bits in a u16')
+        ensure(value >= 0, 'Positive values only')
+
+        mem = cls.from_bytes_u16(value, bit_length)
+        mem.rgn = op_reverse(mem.rgn)
 
         return mem.validate()
 
