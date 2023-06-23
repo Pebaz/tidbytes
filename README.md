@@ -25,10 +25,25 @@ graph TD;
 ```mermaid
 graph TD;
     subgraph Host Language Specific Meta Operations
-        %% direction RL
         op_bit_length
         op_byte_length
         validate_memory
         iterate_logical_bits
+    end
+```
+
+```mermaid
+graph TD;
+    subgraph Fundamental Memory Read And Write Operations
+        %% direction RL
+        op_get_bit --> op_get_bits
+        op_get_byte --> op_get_bits
+        op_get_bytes --> op_get_bits
+        op_get_bits
+
+        op_set_bit --> op_set_bits
+        op_set_byte --> op_set_bits
+        op_set_bytes --> op_set_bits
+        op_set_bits
     end
 ```
