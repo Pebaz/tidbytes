@@ -60,7 +60,6 @@ class Mem:
             mem = mem + mem_byte if mem else mem_byte
         return mem
 
-    # TODO(pbz): What about byte order?
     @classmethod
     def from_byte_u8(cls, value, bit_length=8):
         """
@@ -87,8 +86,6 @@ class Mem:
 
         return mem.validate()
 
-
-    # TODO(pbz): What about byte order?
     @classmethod
     def from_numeric_u8(cls, value, bit_length=8):
         """
@@ -108,7 +105,6 @@ class Mem:
         return mem.validate()
 
     # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
-    # TODO(pbz): What about byte order?
     @classmethod
     def from_bytes_u16(cls, value, bit_length=16):
         """
@@ -162,6 +158,65 @@ class Mem:
         ensure(value >= 0, 'Positive values only')
 
         mem = cls.from_bytes_u16(value, bit_length)
+        mem.rgn = op_reverse(mem.rgn)
+
+        return mem.validate()
+
+    @classmethod
+    def from_bytes_u32(cls, value, bit_length=32):
+        """
+        Non-numeric bit order is always left to right. Treat a u32 value as a
+        memory region with padding bits on the right and the resulting region
+        will have identity bit and byte order (left to right for both).
+
+        Host endianness is irrelevant as bits are read from right to left.
+
+        The bits of the number will be exactly reversed from how they are
+        written.
+
+        Treat the bytes of a number as a memory region, not a numeric value.
+
+        For instance, 0b1_00010011 will be turned into:
+        [11001000 10000000 00000000 00000000]. It appears backwards because it
+        is treated as a memory region not a numeric value.
+        """
+        ensure(bit_length <= 32, 'Only 32 bits in a u32')
+        ensure(value >= 0, 'Positive values only')
+
+        mem = cls()
+        byte = []
+
+        for i in range(bit_length):
+            bit = int(bool(value & (1 << i)))
+            byte.append(bit)
+
+            if len(byte) == 8:
+                mem.rgn.bytes.append(byte[:])
+                byte.clear()
+
+        if byte:
+            mem.rgn.bytes.append((byte + [None] * 8)[:8])
+
+        return mem.validate()
+
+
+    @classmethod
+    def from_numeric_u32(cls, value, bit_length=32):
+        """
+        Numeric bit order is always right to left. Treat a u32 value as a memory
+        region with padding bits on the left but the resulting region will have
+        identity bit and byte order (left to right for both).
+
+        Host endianness is irrelevant as bits are read from right to left.
+
+        For instance, 0b1_00010011 will be turned into:
+        [00000000 00000000 00000001 00010011]. It appears the same as written
+        because it is treated as a numeric value.
+        """
+        ensure(bit_length <= 32, 'Only 32 bits in a u32')
+        ensure(value >= 0, 'Positive values only')
+
+        mem = cls.from_bytes_u32(value, bit_length)
         mem.rgn = op_reverse(mem.rgn)
 
         return mem.validate()

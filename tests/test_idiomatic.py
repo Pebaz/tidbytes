@@ -43,3 +43,23 @@ def test_from_bytes_u16(init, expect, msg):
 ])
 def test_from_numeric_u16(init, expect, msg):
     assert str(Mem.from_numeric_u16(init)) == expect, msg
+
+
+@pytest.mark.parametrize('init,expect,msg', [
+    (0b1011, '11010000 00000000 00000000 00000000', 'Single byte'),
+    (0b101100001011, '11010000 11010000 00000000 00000000', '4 bytes'),
+])
+def test_from_bytes_u32(init, expect, msg):
+    assert str(Mem.from_bytes_u32(init)) == expect, msg
+
+
+@pytest.mark.parametrize('init,expect,msg', [
+    (0b1011, '00000000 00000000 00000000 00001011', 'Single byte'),
+    (
+        0b00000001000001010000000100000101,
+        '00000001 00000101 00000001 00000101',
+        '4 bytes'
+    ),
+])
+def test_from_numeric_u32(init, expect, msg):
+    assert str(Mem.from_numeric_u32(init)) == expect, msg
