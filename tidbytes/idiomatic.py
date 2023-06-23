@@ -60,6 +60,31 @@ class Mem:
             mem = mem + mem_byte if mem else mem_byte
         return mem
 
+    @staticmethod
+    def __from_big_integer_bytes(
+        value: int,
+        bit_length: int
+    ) -> list[list[int]]:
+        """
+        Helper function to convert a Python big integer to a list of lists of
+        bits.
+        """
+        bytes = []
+        byte = []
+
+        for i in range(bit_length):
+            bit = int(bool(value & (1 << i)))
+            byte.append(bit)
+
+            if len(byte) == 8:
+                bytes.append(byte[:])
+                byte.clear()
+
+        if byte:
+            bytes.append((byte + [None] * 8)[:8])
+
+        return bytes
+
     @classmethod
     def from_byte_u8(cls, value, bit_length=8):
         """
@@ -76,13 +101,7 @@ class Mem:
         ensure(value >= 0, 'Positive values only')
 
         mem = cls()
-        byte = []
-
-        for i in range(bit_length):
-            bit = int(bool(value & (1 << i)))
-            byte.append(bit)
-
-        mem.rgn.bytes.append((byte + [None] * 8)[:8])
+        mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
 
         return mem.validate()
 
@@ -127,18 +146,7 @@ class Mem:
         ensure(value >= 0, 'Positive values only')
 
         mem = cls()
-        byte = []
-
-        for i in range(bit_length):
-            bit = int(bool(value & (1 << i)))
-            byte.append(bit)
-
-            if len(byte) == 8:
-                mem.rgn.bytes.append(byte[:])
-                byte.clear()
-
-        if byte:
-            mem.rgn.bytes.append((byte + [None] * 8)[:8])
+        mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
 
         return mem.validate()
 
@@ -184,18 +192,7 @@ class Mem:
         ensure(value >= 0, 'Positive values only')
 
         mem = cls()
-        byte = []
-
-        for i in range(bit_length):
-            bit = int(bool(value & (1 << i)))
-            byte.append(bit)
-
-            if len(byte) == 8:
-                mem.rgn.bytes.append(byte[:])
-                byte.clear()
-
-        if byte:
-            mem.rgn.bytes.append((byte + [None] * 8)[:8])
+        mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
 
         return mem.validate()
 
@@ -246,18 +243,7 @@ class Mem:
         ensure(value >= 0, 'Positive values only')
 
         mem = cls()
-        byte = []
-
-        for i in range(bit_length):
-            bit = int(bool(value & (1 << i)))
-            byte.append(bit)
-
-            if len(byte) == 8:
-                mem.rgn.bytes.append(byte[:])
-                byte.clear()
-
-        if byte:
-            mem.rgn.bytes.append((byte + [None] * 8)[:8])
+        mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
 
         return mem.validate()
 
