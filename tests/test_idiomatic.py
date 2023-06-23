@@ -63,3 +63,39 @@ def test_from_bytes_u32(init, expect, msg):
 ])
 def test_from_numeric_u32(init, expect, msg):
     assert str(Mem.from_numeric_u32(init)) == expect, msg
+
+
+@pytest.mark.parametrize('init,expect,msg', [
+    (
+        0b1011,
+        '11010000 00000000 00000000 00000000 '
+        '00000000 00000000 00000000 00000000',
+        'Single byte'
+    ),
+    (
+        0b1011000010110000101100001011,
+        '11010000 11010000 11010000 11010000 '
+        '00000000 00000000 00000000 00000000',
+        '8 bytes'
+    ),
+])
+def test_from_bytes_u64(init, expect, msg):
+    assert str(Mem.from_bytes_u64(init)) == expect, msg
+
+
+@pytest.mark.parametrize('init,expect,msg', [
+    (
+        0b1011,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00000000 00001011',
+        'Single byte'
+    ),
+    (
+        0b0000000100000101000000010000010100000001000001010000000100000101,
+        '00000001 00000101 00000001 00000101 '
+        '00000001 00000101 00000001 00000101',
+        '8 bytes'
+    ),
+])
+def test_from_numeric_u64(init, expect, msg):
+    assert str(Mem.from_numeric_u64(init)) == expect, msg
