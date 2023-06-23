@@ -99,3 +99,13 @@ def test_from_bytes_u64(init, expect, msg):
 ])
 def test_from_numeric_u64(init, expect, msg):
     assert str(Mem.from_numeric_u64(init)) == expect, msg
+
+
+def test_from_bit_length():
+    mem = Mem.from_bit_length(1)
+    assert str(mem) == '0', 'Invalid!'
+
+
+# def test_index():
+#     mem = Mem.from_byte_u8(255)
+#     print(repr(mem))

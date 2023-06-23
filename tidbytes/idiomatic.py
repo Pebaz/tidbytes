@@ -1,4 +1,5 @@
 import sys
+from typing import Any
 from .mem_types import *
 from .von_neumann import *
 
@@ -16,6 +17,9 @@ class Mem:
         op_set_bit(self.rgn, key, payload)
 
     def __str__(self):  # Display
+        """
+        Displays all bits up to bit length 64, then displays bit length.
+        """
         return ' '.join(
             ''.join(
                 str(bit) if bit != None else ''  # ? '▫'
@@ -26,9 +30,35 @@ class Mem:
 
     def __repr__(self):  # Debug
         bits = str(self)
+
+        # More than 8 bytes is getting long
+        if bits.count(' ') > 7:
+            bits = f'{len(self)} bits'
+
+            # TODO(pbz): Use __int__(self)
+            # hex_bits = hex(int(''.join(bits.split()), base=2))[2:]
+
+            # length_of_8_bytes = 71
+            # if len(hex_bits) > length_of_8_bytes:
+            #     pass
+            # else:
+            #     pass
+
         return f'<Mem [{bits}]>'
 
-    __format__ = __str__
+    def __format__(self, specifier: str) -> str:
+        match specifier:
+            case 'bits':
+                return str(self)
+            case 'hex' | 'x':
+                return hex(int(''.join(str(self).split()), base=2))[2:]
+            case 'X':
+                return format(self, 'x').upper()
+            case _:
+                return str(self)
+
+    def __len__(self):
+        return op_bit_length(self.rgn)
 
     def __bool__(self):
         "False if Mem is null else True"
@@ -38,6 +68,9 @@ class Mem:
         mem = Mem()
         mem.rgn = op_concatenate(self.rgn, other.rgn)
         return mem.validate()
+
+    def __getitem__(self, index: slice) -> Any:
+        print('here')
 
     def validate(self):
         validate_memory(self.rgn)
@@ -270,6 +303,25 @@ class Mem:
         mem.rgn = op_reverse(mem.rgn)
 
         return mem.validate()
+
+    @classmethod
+    def from_bit_length(cls, bit_length: int):
+        mem = cls()
+
+        bytes = []
+        byte = []
+
+        for i in range(bit_length):
+            byte.append(0)
+            if len(byte) == 8:
+                bytes.append(byte[:])
+                byte.clear()
+
+        if byte:
+            bytes.append(byte)
+
+        mem.rgn.bytes = bytes
+        return mem
 
 
 # * Getting
