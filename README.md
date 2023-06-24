@@ -47,3 +47,31 @@ graph TD;
         op_set_bits
     end
 ```
+
+```mermaid
+graph TD;
+    subgraph Transformation Operations In Program's Memory Universe
+        direction LR
+        op_ensure_bit_length --> op_extend
+        op_ensure_byte_length --> op_ensure_bit_length
+        op_concatenate
+    end
+```
+
+
+```mermaid
+graph LR;
+    subgraph Host Language Specific Von Neumann API
+        rgn[MemRgn Type]
+    end
+```
+
+```mermaid
+graph LR;
+    subgraph Host Language Specific Idiomatic API
+        mem[Mem Type]
+    end
+```
+
+
+
