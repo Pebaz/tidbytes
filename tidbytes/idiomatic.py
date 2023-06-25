@@ -324,6 +324,33 @@ class Mem:
         return mem
 
 
+# TODO(pbz): Codec operations
+
+import ctypes
+
+u8 = ctypes.c_ubyte
+u16 = ctypes.c_uint16
+u32 = ctypes.c_uint32
+u64 = ctypes.c_uint64
+i8 = ctypes.c_byte
+i16 = ctypes.c_int16
+i32 = ctypes.c_int32
+i64 = ctypes.c_int64
+f32 = ctypes.c_float
+f64 = ctypes.c_double
+
+
+# TODO(pbz): int.bit_length() works on any integer negative or positive.
+# TODO(pbz): The idiomatic interface needs to use this.
+
+(3).bit_length()
+
+# TODO(pbz): Use float.hex() and struct.pack/unpack for dealing with bit parsing
+import struct
+
+float.hex
+
+
 # * Getting
 
 def op_get_bits_u8_bit_arr(): ...
@@ -386,3 +413,13 @@ def op_from_byte_length(byte_length: int) -> Mem:
 
 def op_from_u8_bit_arr(): ...
 def op_from_u8_byte_arr(): ...
+
+
+def repr_byte(mem: MemRgn): ...
+def repr_byte_in_universe(mem: MemRgn, bit_order: Order, byte_order: Order): ...
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# ! It's time to determine if op_bitwise_or is necessary given the above
+# ! fundamental operations like get and set bit. I'm also curious if op_execute
+# ! is a fundamental operation because if it is, compile time code is possible.
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

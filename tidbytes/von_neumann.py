@@ -371,16 +371,3 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     validate_memory(out)
 
     return out
-
-
-# TODO(pbz): Idiomatic interface:
-def repr_byte(mem: MemRgn): ...
-def repr_byte_in_universe(mem: MemRgn, bit_order: Order, byte_order: Order): ...
-
-
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# ! It's time to determine if op_bitwise_or is necessary given the above
-# ! fundamental operations like get and set bit. I'm also curious if op_execute
-# ! is a fundamental operation because if it is, compile time code is possible.
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
