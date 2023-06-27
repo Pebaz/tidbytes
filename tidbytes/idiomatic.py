@@ -8,8 +8,33 @@ from .von_neumann import *
 # ! ----------------------------------------------------------------------------
 
 class Mem:
-    def __init__(self):
+    def __init__(
+        self,
+        init=None,
+        in_bit_order=Order.LeftToRight,
+        in_byte_order=Order.LeftToRight
+    ):
+        """
+        This is by far the most versatile constructor. It inspects the init
+        value and calls the right codec method to initialize the memory region.
+        Since it's up to the user to know the input memory origin universe, the
+        appropriate memory transformation operation must be called directly
+        after initialization to remain valid. To assist with this and to prevent
+        errors, an input bit and byte order may be specified so that the right
+        transformation operation can be called automatically. This is the funnel
+        by which most users will initialize memory regions. However, for more
+        explicit control, the other codec methods are a solid choice. The output
+        bit and byte order is always left to right.
+        """
         self.rgn = MemRgn()
+
+        # TODO(pbz): Inspect `init` and call the right codec method
+
+        # All codec methods treat input values as left to right big and byte
+        # order so transforming according to the input bit and byte order always
+        # results in left to right bit and byte order.
+        op_transform(self.rgn, in_bit_order, in_byte_order)
+
 
     def __setitem__(self, key, value):
         payload = MemRgn()
@@ -27,6 +52,9 @@ class Mem:
             )
             for byte in self.rgn.bytes
         )
+
+    def __reversed__(self):
+        "This might cause more harm than good as the bits will also be reversed"
 
     def __repr__(self):  # Debug
         bits = str(self)
@@ -326,7 +354,8 @@ class Mem:
 
 # TODO(pbz): Codec operations
 
-import ctypes
+import ctypes, struct
+from typing import Union
 
 u8 = ctypes.c_ubyte
 u16 = ctypes.c_uint16
@@ -339,6 +368,61 @@ i64 = ctypes.c_int64
 f32 = ctypes.c_float
 f64 = ctypes.c_double
 
+Primitive = Union[u8, u16, u32, u64, i8, i16, i32, i64, f32, f64]
+
+
+def get_identity_bytes(value: Primitive) -> bytes:
+    """
+    Returns the bytes of the primitive value with left to right bit and byte
+    order regardless of the system endianness. Treats the input value as a raw
+    memory region rather than a numeric value.
+    """
+    # The slice of memory that the primitive resides in
+    byte_slice = ctypes.string_at(
+        ctypes.byref(value),
+        ctypes.sizeof(type(value))
+    )
+
+    # Little endian is reverse for numeric data but not for raw memory
+    if sys.byteorder == 'big':
+        byte_slice = bytearray(byte_slice)
+        byte_slice.reverse()
+        byte_slice = bytes(byte_slice)
+
+    return byte_slice
+
+
+def get_identity_bytes_numeric(value: Primitive) -> bytes:
+    """
+    Returns the bytes of the primitive value with left to right bit and byte
+    order regardless of the system endianness. Treats the input value as a
+    numeric value rather than a raw memory region.
+    """
+    # The slice of memory that the primitive resides in
+    byte_slice = ctypes.string_at(
+        ctypes.byref(value),
+        ctypes.sizeof(type(value))
+    )
+
+    # Big endian is reverse for raw memory but not for numeric data
+    if sys.byteorder == 'little':
+        byte_slice = bytearray(byte_slice)
+        byte_slice.reverse()
+        byte_slice = bytes(byte_slice)
+
+    return byte_slice
+
+
+
+# Can control the types passed into it
+
+# Bytes are always identity order
+# List[byte] are always identity order, if not, **transform the Mem after**
+# List[bit] are always identity order, if not, **transform the Mem after**
+# List[u32] are always identity order, if not, **transform the Mem after**
+
+
+# TODO(pbz): Negative Python big integers will always have an extra 1 bit.
 
 # TODO(pbz): int.bit_length() works on any integer negative or positive.
 # TODO(pbz): The idiomatic interface needs to use this.
@@ -351,9 +435,9 @@ import struct
 float.hex
 
 value = []
-isinstance(value, list[int])
-isinstance(value, [u8, u16, u32, u64, i8, i16, i32, i64, f32, f64])
-isinstance(value, tuple)
+# isinstance(value, list[int])
+# isinstance(value, [u8, u16, u32, u64, i8, i16, i32, i64, f32, f64])
+# isinstance(value, tuple)
 
 
 # * Getting
