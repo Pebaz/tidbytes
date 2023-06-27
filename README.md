@@ -58,7 +58,6 @@ graph TD;
     end
 ```
 
-
 ```mermaid
 graph LR;
     subgraph Host Language Specific Von Neumann API
@@ -73,5 +72,17 @@ graph LR;
     end
 ```
 
-
-
+```mermaid
+graph LR;
+    subgraph Many Input Types, Only One Output Type
+        u8 --> Mem
+        i64 --> Mem
+        f32 --> Mem
+        ascii --> Mem
+        utf8 --> Mem
+        _1["list[bit]"] --> Mem
+        _2["list[byte]"] --> Mem
+        _3["list[u8]"] --> Mem
+        _4["list[i64]"] --> Mem
+    end
+```
