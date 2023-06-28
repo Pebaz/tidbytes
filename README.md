@@ -66,7 +66,7 @@ graph TD;
 ```
 
 ```mermaid
-graph TD;
+graph RL;
     subgraph Fundamental Memory Read And Write Operations
         %% direction RL
         op_get_bit --> op_get_bits
@@ -175,10 +175,10 @@ graph LR;
 
 ```mermaid
 mindmap
-    root("`
+    root("
         Tree Of Re-
         Implementation
-    `")
+    ")
         op_transform
             op_identity
             op_reverse
