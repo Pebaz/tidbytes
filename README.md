@@ -14,11 +14,23 @@ operations can be created in order in another language.**
 
 ```mermaid
 graph TD;
+    subgraph Operation API Design
+        direction LR
+        mem1{{Mem}}
+        mem2{{Mem}}
+        mem1 -- input --> op -- output --> mem2
+    end
+```
+
+
+```mermaid
+graph TD;
     subgraph Memory Transformation Operations
-        op_identity --> op_transform
-        op_reverse --> op_transform
-        op_reverse_bits --> op_transform
-        op_reverse_bytes --> op_transform
+        _1[[op_transform]]
+        op_identity --> _1
+        op_reverse --> _1
+        op_reverse_bits --> _1
+        op_reverse_bytes --> _1
     end
 ```
 
@@ -30,6 +42,27 @@ graph TD;
         validate_memory
         iterate_logical_bits
     end
+```
+
+```mermaid
+graph TD;
+    subgraph Memory Universe Boundaries Require Transformation Operations
+        direction LR
+
+        _1(((Memory Universe 1)))
+        _2(((Memory Universe 2)))
+        op_transform
+        _1 <===> op_transform <===> _2
+
+        subgraph op_transform
+            op_identity
+            op_reverse
+            op_reverse_bytes
+            op_reverse_bits
+        end
+    end
+
+    style op_transform fill:#9893bf,stroke:#5c5975
 ```
 
 ```mermaid
@@ -59,30 +92,66 @@ graph TD;
 ```
 
 ```mermaid
+graph RL;
+    subgraph API Design Layers
+        direction LR
+
+        idiomatic("`
+            **Language Specific
+            Idiomatic Interface**
+            *(High Level API)*
+        `")
+
+        von_neumann("`
+            **Language Agnostic Interface
+            Based On Von Neumann Architecture**
+            *(Low Level API)*
+        `")
+    end
+
+    vonn_type{{"`
+        **Von Neumann Type**
+        *(Language Specific)*
+    `"}}
+
+    idio_type{{"`
+        **Idiomatic Type**
+        *(Language Specific)*
+    `"}}
+
+    idiomatic ==> von_neumann
+    vonn_type --> von_neumann
+    idio_type --> idiomatic
+    vonn_type --> idiomatic
+```
+
+```mermaid
 graph LR;
     subgraph Host Language Specific Von Neumann API
-        rgn[MemRgn Type]
+        rgn{{MemRgn Type}}
     end
 ```
 
 ```mermaid
 graph LR;
     subgraph Host Language Specific Idiomatic API
-        mem[Mem Type]
+        mem{{Mem Type}}
     end
 ```
 
+<!-- https://mermaid.js.org/syntax/flowchart.html#styling-line-curves -->
 ```mermaid
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
 graph LR;
     subgraph Many Input Types, Only One Output Type
-        u8 --> Mem
-        i64 --> Mem
-        f32 --> Mem
-        ascii --> Mem
-        utf8 --> Mem
-        _1["list[bit]"] --> Mem
-        _2["list[byte]"] --> Mem
-        _3["list[u8]"] --> Mem
-        _4["list[i64]"] --> Mem
+        _1{{u8}} ---> Mem
+        _2{{i64}} --> Mem
+        _3{{f32}} ---> Mem
+        _4{{ascii}} --> Mem
+        _5{{utf8}} ---> Mem
+        _6{{"list[bit]"}} --> Mem
+        _7{{"list[byte]"}} ---> Mem
+        _8{{"list[u8]"}} --> Mem
+        _9{{"list[i64]"}} ---> Mem
     end
 ```
