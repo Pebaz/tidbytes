@@ -155,3 +155,26 @@ graph LR;
         _9{{"list[i64]"}} ---> Mem
     end
 ```
+
+```mermaid
+mindmap
+    root("`
+        Tree Of Re-
+        Implementation
+    `")
+        op_transform
+            op_identity
+            op_reverse
+            op_reverse_bytes
+            op_reverse_bits
+        op_get_bits
+            op_get_bit
+            op_get_byte
+            op_get_bytes
+        op_set_bits
+            op_set_bit
+            op_set_byte
+            op_set_bytes
+        op_bit_length
+            op_byte_length
+```
