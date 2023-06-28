@@ -144,15 +144,32 @@ graph LR;
 %%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
 graph LR;
     subgraph Many Input Types, Only One Output Type
-        _1{{u8}} ---> Mem
-        _2{{i64}} --> Mem
-        _3{{f32}} ---> Mem
-        _4{{ascii}} --> Mem
-        _5{{utf8}} ---> Mem
-        _6{{"list[bit]"}} --> Mem
-        _7{{"list[byte]"}} ---> Mem
-        _8{{"list[u8]"}} --> Mem
-        _9{{"list[i64]"}} ---> Mem
+        subgraph Higher Level Types
+            _6{{"list[bit]"}}
+            _7{{"list[byte]"}}
+            _8{{"list[u8]"}}
+            _9{{"list[i64]"}}
+            _10{{int}}
+            _4{{ascii}}
+            _5{{utf8}}
+        end
+
+        %% Order matters here, they are interlieved
+        _1{{u8}} --- Mem
+        _10{{int}} ---- Mem
+        _3{{f32}} --- Mem
+        _5{{utf8}} ---- Mem
+        _2{{i64}} --- Mem
+        _6{{"list[bit]"}} ---- Mem
+        _11{{u16}} --- Mem
+        _7{{"list[byte]"}} ---- Mem
+        _12{{u32}} --- Mem
+        _8{{"list[u8]"}} ---- Mem
+        _13{{u64}} --- Mem
+        _9{{"list[i64]"}} ---- Mem
+        _14{{i8}} --- Mem
+        _4{{ascii}} ---- Mem
+        _15{{i16}} --- Mem
     end
 ```
 
