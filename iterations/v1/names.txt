@@ -1,0 +1,10 @@
+tidbits
+lilbits
+gambit
+zed-bits
+memory-types
+binary-types
+nanobytes
+millibytes
+centibytes
+nanobits
