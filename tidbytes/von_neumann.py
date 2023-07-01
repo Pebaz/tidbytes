@@ -66,10 +66,7 @@ def op_reverse_bits(mem: MemRgn) -> MemRgn:
 
 # TODO(pbz): Call validate_memory() each time?
 def iterate_logical_bits(mem: MemRgn):
-    for byte in mem.bytes:
-        for bit in byte:
-            if bit != None:
-                yield bit
+    return (bit for byte in mem.bytes for bit in byte if bit != None)
 
 
 def validate_memory(mem: MemRgn):
