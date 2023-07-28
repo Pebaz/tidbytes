@@ -1,15 +1,29 @@
 from typing import Any
 from .mem_types import *
 from .von_neumann import *
+from .codec import *
 
 # ! ----------------------------------------------------------------------------
 # ! Idiomatic API
 # ! ----------------------------------------------------------------------------
 
+# TODO(pbz): 7/28/23
+# TODO(pbz): Remove all the Mem.from_x() and just use decentralized codec funcs
+
 class Mem:
+    # !-------------------------------------------------------------------------
+    # TODO(pbz): 7/28/23
+    # TODO(pbz): This is the most important function in the whole library. It
+    # TODO(pbz): allows any Python primitive type to be converted into Mem.
+    # TODO(pbz): In Rust, From & Into traits allow this (sometimes
+    # TODO(pbz): automatically). Here, the Constructor acts like an entrypoint
+    # TODO(pbz): to the data by initializing it appropriately using codecs.
+    # TODO(pbz): Since most users will want precise semantics, they will use the
+    # TODO(pbz): types from C/Rust (u8, f64). However, idiomatic types work too.
+    # !-------------------------------------------------------------------------
     def __init__(
         self,
-        init=None,
+        init: int = None,
         in_bit_order=Order.LeftToRight,
         in_byte_order=Order.LeftToRight
     ):
@@ -27,13 +41,35 @@ class Mem:
         """
         self.rgn = MemRgn()
 
+        supported_codecs = {
+            int: None,
+            float: None,
+            str: None,
+            bytes: None,
+            bytearray: None,
+            list: None,
+            u8: None,
+            u16: None,
+            u32: None,
+            u64: None,
+            i8: None,
+            i16: None,
+            i32: None,
+            i64: None,
+            f32: None,
+            f64: None,
+        }
+
         # TODO(pbz): Inspect `init` and call the right codec method
+        if type(init) in supported_codecs:
+            self.rgn = supported_codecs[type(init)](init)
+        else:
+            raise MemException(f'Ambiguous memory initializer: {type(init)}')
 
         # All codec methods treat input values as left to right big and byte
         # order so transforming according to the input bit and byte order always
         # results in left to right bit and byte order.
         op_transform(self.rgn, in_bit_order, in_byte_order)
-
 
     def __setitem__(self, key, value):
         payload = MemRgn()
@@ -102,6 +138,46 @@ class Mem:
     def validate(self):
         validate_memory(self.rgn)
         return self
+
+
+
+
+
+
+    # TODO(pbz): 7/28/23
+    # TODO(pbz): These are not codecs because "bit/byte length" is not a type.
+    @classmethod
+    def from_bit_length(cls, bit_length: int):
+        mem = cls()
+
+        bytes = []
+        byte = []
+
+        for i in range(bit_length):
+            byte.append(0)
+            if len(byte) == 8:
+                bytes.append(byte[:])
+                byte.clear()
+
+        if byte:
+            bytes.append(byte)
+
+        mem.rgn.bytes = bytes
+        return mem
+
+
+
+
+
+
+
+
+
+
+
+
+    # TODO(pbz): 7/28/23
+    # TODO(pbz): These definitions are good just convert them to codecs
 
     @classmethod
     def from_bytes(cls, value):
@@ -330,22 +406,3 @@ class Mem:
         mem.rgn = op_reverse(mem.rgn)
 
         return mem.validate()
-
-    @classmethod
-    def from_bit_length(cls, bit_length: int):
-        mem = cls()
-
-        bytes = []
-        byte = []
-
-        for i in range(bit_length):
-            byte.append(0)
-            if len(byte) == 8:
-                bytes.append(byte[:])
-                byte.clear()
-
-        if byte:
-            bytes.append(byte)
-
-        mem.rgn.bytes = bytes
-        return mem

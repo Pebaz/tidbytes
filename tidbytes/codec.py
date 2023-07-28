@@ -43,6 +43,22 @@ into_i8_arr = ...
 
 
 
+# TODO(pbz): 7/28/23 -> Current:
+# TODO(pbz): Need from_float, from_int, from_bool, from_etc because those are
+# TODO(pbz): the actual idiomatic types. All the other ones are from C. In the
+# TODO(pbz): `Mem` constructor, just match the type and call the correct
+# TODO(pbz): initializer.
+
+# TODO(pbz): What would make this project complete?
+# TODO(pbz): A Mem type that can support indexing and all other operations.
+# TODO(pbz): A Struct type that could support nested types, offset, and
+# TODO(pbz): alignment.
+
+
+def get_identity_bytes_float(value: float) -> bytearray:
+    return bytearray(struct.unpack('d', value))
+
+
 class Int:
     u8 = ctypes.c_uint8
     u16 = ctypes.c_uint16
