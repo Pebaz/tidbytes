@@ -1,7 +1,8 @@
 from typing import Any
 from .mem_types import *
 from .von_neumann import *
-from .codec import *
+# TODO(pbz): Circular import
+# ! from .codec import *
 
 # ! ----------------------------------------------------------------------------
 # ! Idiomatic API
@@ -10,38 +11,102 @@ from .codec import *
 # TODO(pbz): 7/28/23
 # TODO(pbz): Remove all the Mem.from_x() and just use decentralized codec funcs
 
-class Numeric:
-    def __init__(self, type_):
-        self.type_ = type_
 
-# TODO(pbz): 7/28/23 USE THAT METACLASS [] LIB TO INDEX INTO SUPPORTED_CODECS
+# TODO(pbz): 8/2/23
+# TODO(pbz): Is it truly that there cannot be one data entry point since there
+# TODO(pbz): are things like `is_numeric`, `ascii`, and other metadata?
 
-class Numeric:
-    pass
 
-# !!!!!!!!!!!!!!!!!!!!
-Numeric[u8]
+class MemFactory:
+    def __call__(self, *args, **kwargs):
+        pass
+
+    def register_codec(self, codec):
+        pass
+
+Mem = MemFactory()
+Mem.register_codec(...)
+
+Mem(123)
+Mem('asdf', ascii=True)
+
+
+class MemBuilder:
+    def __call__(self, *args, **kwargs):
+        pass
+
+    def __getattribute__(self, attribute: str):
+        return lambda: self
+
+Mem = MemBuilder().foo().bar().baz()
+
+
+
+
+
+
+
+
+
+
+
+
+
+# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
+# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
+# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
+# TODO(pbz):
+# TODO(pbz):
+# TODO(pbz):
+# TODO(pbz): mem = Mem(123)
+# TODO(pbz): mem = tidbytes.codecs.from_ascii("Hello World!")
+# TODO(pbz):
+# TODO(pbz): But what about legit memory regions?
+# TODO(pbz): mem = Mem("Hello World!".encode())
+# TODO(pbz):
+# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
+# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class Mem:
     # This is static so that it can be dynamically added to at runtime
-    SUPPORTED_CODECS = {
-        int: None,
-        float: None,
-        str: None,
-        bytes: None,
-        bytearray: None,
-        list: None,
-        u8: None,
-        u16: None,
-        u32: None,
-        u64: None,
-        i8: None,
-        i16: None,
-        i32: None,
-        i64: None,
-        f32: None,
-        f64: None,
-    }
+    # SUPPORTED_CODECS = {
+    #     int: None,
+    #     float: None,
+    #     str: None,
+    #     bytes: None,
+    #     bytearray: None,
+    #     list: None,
+    #     u8: None,
+    #     u16: None,
+    #     u32: None,
+    #     u64: None,
+    #     i8: None,
+    #     i16: None,
+    #     i32: None,
+    #     i64: None,
+    #     f32: None,
+    #     f64: None,
+    # }
 
     # !-------------------------------------------------------------------------
     # TODO(pbz): 7/28/23
@@ -55,7 +120,8 @@ class Mem:
     # !-------------------------------------------------------------------------
     def __init__(
         self,
-        init: int = None,
+        init: object = None,
+        numeric: bool = True,
         in_bit_order=Order.LeftToRight,
         in_byte_order=Order.LeftToRight
     ):
@@ -77,7 +143,7 @@ class Mem:
         if type(init) in Mem.SUPPORTED_CODECS:
             self.rgn = Mem.SUPPORTED_CODECS[type(init)](init)
         else:
-            raise MemException(f'Ambiguous memory initializer: {type(init)}')
+            raise MemException(f'Ambiguous memory initializer: {init_type}')
 
         # All codec methods treat input values as left to right big and byte
         # order so transforming according to the input bit and byte order always

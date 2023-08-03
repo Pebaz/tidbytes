@@ -109,3 +109,7 @@ def test_from_bit_length():
 # def test_index():
 #     mem = Mem.from_byte_u8(255)
 #     print(repr(mem))
+
+
+def test_mem_constructor():
+    mem = Mem.from_ascii('Hello World!')
