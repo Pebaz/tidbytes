@@ -491,16 +491,6 @@ def memory(init):
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
 
-def identity_bits_from_numeric_byte(byte: int) -> list[int]:
-    "Returns all bits of a byte holding numeric data going from right to left"
-    ensure(0 <= byte <= 255, 'Not a byte')
-    return [
-        int(bool(byte & 1 << bit_index))
-        for bit_index in range(8)
-    ]
-
-
-
 # def reverse_byte(byte: int) -> int:
 #     "Reverses the bits of an 8-bit unsigned integer"
 #     ensure(0 <= byte <= 255, 'Only values from 0-255 inclusive supported')
@@ -525,6 +515,17 @@ def identity_bytes(value: Primitive, struct_descriptor: str) -> list[int]:
 '''
 
 
+# Identity bits & bytes
+
+def identity_bits_from_numeric_byte(byte: int) -> list[int]:
+    "Returns all bits of a byte holding numeric data going from right to left"
+    ensure(0 <= byte <= 255, 'Not a byte')
+    return [
+        int(bool(byte & 1 << bit_index))
+        for bit_index in range(8)
+    ]
+
+
 def identity_bytes_u8(value: u8) -> list[int]:
     "Get the raw memory of a u8 in bit & byte order left-to-right"
     little_endian_u8 = '<B'
@@ -539,38 +540,21 @@ def identity_bytes_u8(value: u8) -> list[int]:
     ]
 
 
-
 def identity_bytes_u16(value: u16) -> list[int]:
     "Get the raw memory of a u16 in bit & byte order left-to-right"
     little_endian_u16 = '<H'
     little_endian_bytes = struct.pack(little_endian_u16, value.value)
-
-    # print(hex(value.value), bin(value.value), little_endian_bytes)
-
-    # print([(byte, reverse_byte(byte)) for byte in little_endian_bytes])
-
     return [
         identity_bits_from_numeric_byte(byte)
         for byte in little_endian_bytes
     ]
 
 
-def from_bytes_u16(value, bit_length=8) -> MemRgn:
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u16(value)
-    return op_identity(mem)
+# MemRgn from primitive idiomatic types
 
+# TODO(pbz): Rename "bytes" to "logical" or "natural"?
 
-def from_numeric_u16(value: u16, bit_length=8) -> MemRgn:
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u16(value)
-    return op_reverse(mem)
-
-
-
-
-
-def from_byte_u8(value, bit_length=8) -> MemRgn:
+def from_byte_u8(value: u8) -> MemRgn:
     """
     This is different from `from_numeric_u8()` because it assumes that the provided
     u8 value is not numeric data but a slice of memory 1-byte long. This
@@ -581,6 +565,34 @@ def from_byte_u8(value, bit_length=8) -> MemRgn:
     For instance, 0b00010011 will be turned into: [11001000]. It appears
     backwards because it is treated as a memory region not a numeric value.
     """
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u8(value)
+    return op_identity(mem)
+
+
+def from_bytes_u16(value: u16) -> MemRgn:
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u16(value)
+    return op_identity(mem)
+
+
+def from_numeric_u8(value: u8) -> MemRgn:
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u8(value)
+    return op_reverse(mem)
+
+
+def from_numeric_u16(value: u16) -> MemRgn:
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u16(value)
+    return op_reverse(mem)
+
+
+
+
+
+def from_big_integer(value, bit_length=8) -> MemRgn:
+
     ensure(bit_length <= 8, 'Only 8 bits in a u8')
     ensure(value >= 0, 'Positive values only')
 
@@ -588,6 +600,18 @@ def from_byte_u8(value, bit_length=8) -> MemRgn:
     mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
 
     return mem.validate()
+
+
+def from_numeric_big_integer(value, bit_length=8) -> MemRgn:
+
+    ensure(bit_length <= 8, 'Only 8 bits in a u8')
+    ensure(value >= 0, 'Positive values only')
+
+    mem = MemRgn()
+    mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
+
+    return mem.validate()
+
 
 def into_byte_u8(value) -> u8:
     pass

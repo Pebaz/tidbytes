@@ -259,6 +259,47 @@ class Mem:
         # results in left to right bit and byte order.
         op_transform(self.rgn, in_bit_order, in_byte_order)
 
+    def __str__(self):  # Display
+        """
+        Displays all bits up to bit length 64, then displays bit length.
+        """
+        return ' '.join(
+            ''.join(
+                str(bit) if bit != None else ''  # ? '▫'
+                for bit in byte
+            )
+            for byte in self.rgn.bytes
+        )
+
+    def __repr__(self):  # Debug
+        bits = str(self)
+
+        # More than 8 bytes is getting long
+        if bits.count(' ') > 7:
+            bits = f'{len(self)} bits'
+
+            # TODO(pbz): Use __int__(self)
+            # hex_bits = hex(int(''.join(bits.split()), base=2))[2:]
+
+            # length_of_8_bytes = 71
+            # if len(hex_bits) > length_of_8_bytes:
+            #     pass
+            # else:
+            #     pass
+
+        return f'<Mem [{bits}]>'
+
+    def __format__(self, specifier: str) -> str:
+        match specifier:
+            case 'bits':
+                return str(self)
+            case 'hex' | 'x':
+                return hex(int(''.join(str(self).split()), base=2))[2:]
+            case 'X':
+                return format(self, 'x').upper()
+            case _:
+                return str(self)
+
     # ! -> Mem::from <-
     @classmethod
     def from_(cls, init: T) -> 'Mem':
