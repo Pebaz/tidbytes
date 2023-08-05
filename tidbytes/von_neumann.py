@@ -26,6 +26,15 @@ class MemRgn:
 # also be added as a universe boundary. All memory is eventually mapped to
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
+
+def iterate_bits(byte: int) -> list[int]:
+    ensure(0 <= byte <= 255, 'Not a byte')
+    bits = []
+    for bit_index in range(8):
+        bits.append(byte & 1 << bit_index)
+    return bits
+
+
 # TODO(pbz): Call validate_memory() each time?
 def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
@@ -33,7 +42,7 @@ def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
 
     out = MemRgn()
     out.bytes = [
-        [bit for bit in bit_direction(byte)]
+        [bit for bit in bit_direction(iterate_bits(byte))]
         for byte in byte_direction(mem.bytes)
     ]
 

@@ -24,90 +24,6 @@ from .von_neumann import *
 
 T = TypeVar('T')
 
-# ! ----------------------------------------------------------------------------
-# ! Codecs (From & Into)
-# ! ----------------------------------------------------------------------------
-
-def reverse_byte(byte: int) -> int:
-    "Reverses the bits of an 8-bit unsigned integer"
-    ensure(0 <= byte <= 256, 'Only values from 0-255 inclusive supported')
-
-    new_byte = 0
-    for bit_index in range(8):  # Iterate from right to left
-        bit = bool(byte & (1 << bit_index))
-        if bit:  # Set the opposite bit from left to right
-            new_byte |= 1 << (8 - bit_index - 1)
-    return new_byte
-
-
-# TODO(pbz): Is this a good idea?
-'''
-def identity_bytes(value: Primitive, struct_descriptor: str) -> list[int]:
-    little_endian_bytes = struct.pack(struct_descriptor, value.value)
-
-    # At this point bytes are in correct numeric right-to-left order but the
-    # bits are in left to right order. Whether or not they are numeric is
-    # another story. Return the bits in identity order
-    return [reverse_byte(byte) for byte in little_endian_bytes]
-'''
-
-
-def identity_bytes_u8(value: u8) -> list[int]:
-    "Get the raw memory of a u8 in bit & byte order left-to-right"
-    little_endian_u8 = '<B'
-    little_endian_bytes = struct.pack(little_endian_u8, value.value)
-
-    # At this point bytes are in correct numeric right-to-left order but the
-    # bits are in left to right order. Whether or not they are numeric is
-    # another story. Return the bits in identity order
-    return [reverse_byte(byte) for byte in little_endian_bytes]
-
-
-
-def identity_bytes_u16(value: u16) -> list[int]:
-    "Get the raw memory of a u16 in bit & byte order left-to-right"
-    little_endian_u16 = '<H'
-    little_endian_bytes = struct.pack(little_endian_u16, value.value)
-
-    # print(hex(value.value), bin(value.value), little_endian_bytes)
-
-    return [reverse_byte(byte) for byte in little_endian_bytes]
-
-
-def from_bytes_u16(value, bit_length=8) -> MemRgn:
-    pass
-
-
-def from_numeric_u16(value: u16, bit_length=8) -> MemRgn:
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u16(value)
-    return mem
-
-
-
-
-
-def from_byte_u8(value, bit_length=8) -> MemRgn:
-    """
-    This is different from `from_numeric_u8()` because it assumes that the provided
-    u8 value is not numeric data but a slice of memory 1-byte long. This
-    means bit order is left to right always.
-
-    Providing a lower bit length lets fewer than 8 bits to be stored.
-
-    For instance, 0b00010011 will be turned into: [11001000]. It appears
-    backwards because it is treated as a memory region not a numeric value.
-    """
-    ensure(bit_length <= 8, 'Only 8 bits in a u8')
-    ensure(value >= 0, 'Positive values only')
-
-    mem = MemRgn()
-    mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
-
-    return mem.validate()
-
-def into_byte_u8(value) -> u8:
-    pass
 
 
 
@@ -567,5 +483,95 @@ def memory(init):
         return from_numeric_u64(u64(init))
 
 
+
+
+
+
+# ! ----------------------------------------------------------------------------
+# ! Codecs (From & Into)
+# ! ----------------------------------------------------------------------------
+
+def reverse_byte(byte: int) -> int:
+    "Reverses the bits of an 8-bit unsigned integer"
+    ensure(0 <= byte <= 256, 'Only values from 0-255 inclusive supported')
+
+    new_byte = 0
+    for bit_index in range(8):  # Iterate from right to left
+        bit = bool(byte & (1 << bit_index))
+        if bit:  # Set the opposite bit from left to right
+            new_byte |= 1 << (8 - bit_index - 1)
+    return new_byte
+
+
+# TODO(pbz): Is this a good idea?
+'''
+def identity_bytes(value: Primitive, struct_descriptor: str) -> list[int]:
+    little_endian_bytes = struct.pack(struct_descriptor, value.value)
+
+    # At this point bytes are in correct numeric right-to-left order but the
+    # bits are in left to right order. Whether or not they are numeric is
+    # another story. Return the bits in identity order
+    return [reverse_byte(byte) for byte in little_endian_bytes]
+'''
+
+
+def identity_bytes_u8(value: u8) -> list[int]:
+    "Get the raw memory of a u8 in bit & byte order left-to-right"
+    little_endian_u8 = '<B'
+    little_endian_bytes = struct.pack(little_endian_u8, value.value)
+
+    # At this point bytes are in correct numeric right-to-left order but the
+    # bits are in left to right order. Whether or not they are numeric is
+    # another story. Return the bits in identity order
+    return [reverse_byte(byte) for byte in little_endian_bytes]
+
+
+
+def identity_bytes_u16(value: u16) -> list[int]:
+    "Get the raw memory of a u16 in bit & byte order left-to-right"
+    little_endian_u16 = '<H'
+    little_endian_bytes = struct.pack(little_endian_u16, value.value)
+
+    # print(hex(value.value), bin(value.value), little_endian_bytes)
+
+    return [reverse_byte(byte) for byte in little_endian_bytes]
+
+
+def from_bytes_u16(value, bit_length=8) -> MemRgn:
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u16(value)
+    return op_identity(mem)
+
+
+def from_numeric_u16(value: u16, bit_length=8) -> MemRgn:
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u16(value)
+    return op_reverse(mem)
+
+
+
+
+
+def from_byte_u8(value, bit_length=8) -> MemRgn:
+    """
+    This is different from `from_numeric_u8()` because it assumes that the provided
+    u8 value is not numeric data but a slice of memory 1-byte long. This
+    means bit order is left to right always.
+
+    Providing a lower bit length lets fewer than 8 bits to be stored.
+
+    For instance, 0b00010011 will be turned into: [11001000]. It appears
+    backwards because it is treated as a memory region not a numeric value.
+    """
+    ensure(bit_length <= 8, 'Only 8 bits in a u8')
+    ensure(value >= 0, 'Positive values only')
+
+    mem = MemRgn()
+    mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
+
+    return mem.validate()
+
+def into_byte_u8(value) -> u8:
+    pass
 
 

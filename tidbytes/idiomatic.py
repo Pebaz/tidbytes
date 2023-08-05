@@ -269,6 +269,8 @@ class Mem:
 
         if isinstance(init, u8):
             return from_byte_u8(init)
+        if isinstance(init, u16):
+            return from_bytes_u16(init)
         else:
             raise MemException('Invalid initializer')
 
