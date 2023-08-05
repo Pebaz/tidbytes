@@ -1,5 +1,6 @@
 import ctypes
 from enum import Enum, auto
+from typing import Union, List
 
 
 class MemException(Exception):
@@ -21,3 +22,21 @@ def ensure(condition: bool, message=''):
 class Order(Enum):
     LeftToRight = auto()  # First element is on far left
     RightToLeft = auto()  # First element is on far right
+
+
+u8 = ctypes.c_ubyte
+u16 = ctypes.c_uint16
+u32 = ctypes.c_uint32
+u64 = ctypes.c_uint64
+i8 = ctypes.c_byte
+i16 = ctypes.c_int16
+i32 = ctypes.c_int32
+i64 = ctypes.c_int64
+f32 = ctypes.c_float
+f64 = ctypes.c_double
+
+BitList = List[int]
+ByteList = List[int | u8]
+PrimitiveInt = int | u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64
+PrimitiveFloat = float | f32 | f64
+Primitive = PrimitiveInt | PrimitiveFloat | BitList | ByteList

@@ -1,25 +1,58 @@
+"""
+The job of a codec is to efficiently create a MemRgn from any supported type.
+They are exactly analogous to Rust's From & Into traits.
+"""
+
 import ctypes, sys, struct
 from array import array
 from typing import Union, List
-from .mem_types import Order
-from .idiomatic import Mem
+from .mem_types import *
+from .von_neumann import MemRgn
 
-u8 = ctypes.c_ubyte
-u16 = ctypes.c_uint16
-u32 = ctypes.c_uint32
-u64 = ctypes.c_uint64
-i8 = ctypes.c_byte
-i16 = ctypes.c_int16
-i32 = ctypes.c_int32
-i64 = ctypes.c_int64
-f32 = ctypes.c_float
-f64 = ctypes.c_double
 
-BitList = List[int]
-ByteList = List[int | u8]
-PrimitiveInt = int | u8 | u16 | u32 | u64 | i8 | i16 | i32 | i64
-PrimitiveFloat = float | f32 | f64
-Primitive = PrimitiveInt | PrimitiveFloat | BitList | ByteList
+# ! ----------------------------------------------------------------------------
+# ! Codecs (From & Into)
+# ! ----------------------------------------------------------------------------
+
+def from_byte_u8(value, bit_length=8) -> MemRgn:
+    """
+    This is different from `from_numeric_u8()` because it assumes that the provided
+    u8 value is not numeric data but a slice of memory 1-byte long. This
+    means bit order is left to right always.
+
+    Providing a lower bit length lets fewer than 8 bits to be stored.
+
+    For instance, 0b00010011 will be turned into: [11001000]. It appears
+    backwards because it is treated as a memory region not a numeric value.
+    """
+    ensure(bit_length <= 8, 'Only 8 bits in a u8')
+    ensure(value >= 0, 'Positive values only')
+
+    mem = MemRgn()
+    mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
+
+    return mem.validate()
+
+def into_byte_u8(value) -> u8:
+    pass
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -172,36 +205,6 @@ value = []
 # isinstance(value, tuple)
 
 
-# * Getting
-
-def op_get_bits_u8_bit_arr(): ...
-def op_get_bits_u8_byte_arr(): ...
-
-# * Setting
-
-def op_set_bits_u8_bit_arr(): ...
-def op_set_bits_u8_byte_arr(): ...
-def op_set_bits_u16_arr(): ...
-def op_set_bits_u32_arr(): ...
-def op_set_bits_u64_arr(): ...
-
-def op_set_bits_u8(): ...
-def op_set_bits_u16(): ...
-def op_set_bits_u32(): ...
-def op_set_bits_u64(): ...
-def op_set_bits_i8(): ...
-def op_set_bits_i16(): ...
-def op_set_bits_i32(): ...
-def op_set_bits_i64(): ...
-def op_set_bytes_u8(): ...
-def op_set_bytes_u16(): ...
-def op_set_bytes_u32(): ...
-def op_set_bytes_u64(): ...
-def op_set_bytes_i8(): ...
-def op_set_bytes_i16(): ...
-def op_set_bytes_i32(): ...
-def op_set_bytes_i64(): ...
-
 # * Conversion Operations
 # TODO(pbz): I'd like to point out that I think it would be possible to not
 # TODO(pbz): include these C-ABI-inspired conversion operations but I don't want
@@ -227,8 +230,8 @@ def op_from_u8_bit_arr(): ...
 def op_from_u8_byte_arr(): ...
 
 
-def repr_byte(mem: Mem): ...
-def repr_byte_in_universe(mem: Mem, bit_order: Order, byte_order: Order): ...
+# def repr_byte(mem: Mem): ...
+# def repr_byte_in_universe(mem: Mem, bit_order: Order, byte_order: Order): ...
 
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 # ! It's time to determine if op_bitwise_or is necessary given the above
@@ -261,7 +264,6 @@ def from_bytes(cls, value):
         mem = mem + mem_byte if mem else mem_byte
     return mem
 
-@staticmethod
 def __from_big_integer_bytes(
     value: int,
     bit_length: int
@@ -285,25 +287,6 @@ def __from_big_integer_bytes(
         bytes.append((byte + [None] * 8)[:8])
 
     return bytes
-
-def from_byte_u8(cls, value, bit_length=8):
-    """
-    This is different from `from_numeric_u8()` because it assumes that the provided
-    u8 value is not numeric data but a slice of memory 1-byte long. This
-    means bit order is left to right always.
-
-    Providing a lower bit length lets fewer than 8 bits to be stored.
-
-    For instance, 0b00010011 will be turned into: [11001000]. It appears
-    backwards because it is treated as a memory region not a numeric value.
-    """
-    ensure(bit_length <= 8, 'Only 8 bits in a u8')
-    ensure(value >= 0, 'Positive values only')
-
-    mem = cls()
-    mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
-
-    return mem.validate()
 
 def from_numeric_u8(cls, value, bit_length=8):
     """
@@ -496,3 +479,17 @@ into_i8_list = ...
 into_i8_arr = ...
 
 into_int = ...  # TODO(pbz): Examine host endianness, use struct.unpack
+
+
+
+
+def memory(init):
+    if hasattr(init, '__mem__'):
+        return init.__mem__()
+
+    elif isinstance(init, int):
+        return from_numeric_u64(u64(init))
+
+
+
+
