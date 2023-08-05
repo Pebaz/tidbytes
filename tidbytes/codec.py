@@ -491,16 +491,26 @@ def memory(init):
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
 
-def reverse_byte(byte: int) -> int:
-    "Reverses the bits of an 8-bit unsigned integer"
-    ensure(0 <= byte <= 256, 'Only values from 0-255 inclusive supported')
+def identity_bits_from_numeric_byte(byte: int) -> list[int]:
+    "Returns all bits of a byte holding numeric data going from right to left"
+    ensure(0 <= byte <= 255, 'Not a byte')
+    return [
+        int(bool(byte & 1 << bit_index))
+        for bit_index in range(8)
+    ]
 
-    new_byte = 0
-    for bit_index in range(8):  # Iterate from right to left
-        bit = bool(byte & (1 << bit_index))
-        if bit:  # Set the opposite bit from left to right
-            new_byte |= 1 << (8 - bit_index - 1)
-    return new_byte
+
+
+# def reverse_byte(byte: int) -> int:
+#     "Reverses the bits of an 8-bit unsigned integer"
+#     ensure(0 <= byte <= 255, 'Only values from 0-255 inclusive supported')
+
+#     new_byte = 0
+#     for bit_index in range(8):  # Iterate from right to left
+#         bit = bool(byte & (1 << bit_index))
+#         if bit:  # Set the opposite bit from left to right
+#             new_byte |= 1 << (8 - bit_index - 1)
+#     return new_byte
 
 
 # TODO(pbz): Is this a good idea?
@@ -523,7 +533,10 @@ def identity_bytes_u8(value: u8) -> list[int]:
     # At this point bytes are in correct numeric right-to-left order but the
     # bits are in left to right order. Whether or not they are numeric is
     # another story. Return the bits in identity order
-    return [reverse_byte(byte) for byte in little_endian_bytes]
+    return [
+        identity_bits_from_numeric_byte(byte)
+        for byte in little_endian_bytes
+    ]
 
 
 
@@ -534,7 +547,12 @@ def identity_bytes_u16(value: u16) -> list[int]:
 
     # print(hex(value.value), bin(value.value), little_endian_bytes)
 
-    return [reverse_byte(byte) for byte in little_endian_bytes]
+    # print([(byte, reverse_byte(byte)) for byte in little_endian_bytes])
+
+    return [
+        identity_bits_from_numeric_byte(byte)
+        for byte in little_endian_bytes
+    ]
 
 
 def from_bytes_u16(value, bit_length=8) -> MemRgn:
