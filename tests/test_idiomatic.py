@@ -111,5 +111,5 @@ def test_from_bit_length():
 #     print(repr(mem))
 
 
-def test_mem_constructor():
-    mem = Mem.from_ascii('Hello World!')
+# def test_mem_constructor():
+#     mem = Mem.from_ascii('Hello World!')

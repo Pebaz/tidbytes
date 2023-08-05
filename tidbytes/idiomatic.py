@@ -243,6 +243,10 @@ class Mem:
         validate_memory(self.rgn)
         return self
 
+    def truncate(self, bit_length: int):
+        "Useful for setting values in structs that are shorter than a byte."
+        self.rgn = op_truncate(self.rgn, bit_length)
+
 
 # TODO(pbz): 8/4/23
 class Mem:

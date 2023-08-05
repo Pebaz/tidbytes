@@ -207,3 +207,9 @@ def test_op_set_bytes(init, offset, payload, expect, msg):
     out = op_set_bytes(mem, offset, payload_mem)
     assert out.bytes == expect, msg
 
+
+def test_op_truncate():
+    mem = memory(8)
+    out = op_truncate(mem, 4)
+    assert op_bit_length(out) == 4
+    assert out.bytes == [[0, 0, 0, 0, None, None, None, None]]

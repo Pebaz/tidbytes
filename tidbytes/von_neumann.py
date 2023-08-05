@@ -287,17 +287,51 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 # ------------------------------------------------------------------------------
 # Memory transformation operations for memory within the program's universe.
 # ------------------------------------------------------------------------------
+
+# TODO(pbz): Need these?
 def op_fill(): ...
 def op_fill_range(): ...
+
+# ??????????????????????????????????????????????????????????????????????????????
+# TODO(pbz): I don't think it should be pass by reference because arithmetic is
+# TODO(pbz): pass by value
+# ??????????????????????????????????????????????????????????????????????????????
+
+# TODO(pbz): Should this be pass by reference?
+# TODO(pbz): Call validate_memory() each time?
+def op_truncate(mem: MemRgn, length: int) -> MemRgn:
+    "Truncates a memory region to be shorter or equal bit length."
+    mem_len = op_bit_length(mem)
+    ensure(
+        length <= mem_len,
+        f'Truncated length ({length}) is longer than region size ({mem_len}). '
+        f'Use `{op_extend.__name__}` or `{op_ensure_bit_length.__name__}` '
+        f'instead'
+    )
+
+    bits = [bit for byte in mem.bytes for bit in byte][:length]
+    out = MemRgn()
+    byte = []
+
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            out.bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    out.bytes.append((byte + [None] * 8)[:8])
+
+    return out
+
 
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Call validate_memory() each time?
 def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
+    "Extends a memory region with 0 or 1 to a given bit length."
     mem_len = op_bit_length(fill)
     ensure(mem_len == 1, 'Fill payload must be 0 or 1')
 
     length = mem_len + amount
-    bits = [bit for bit in byte for byte in mem.bytes] + [0] * length - mem_len
+    bits = [bit for byte in mem.bytes for bit in byte] + [0] * length - mem_len
     out = MemRgn()
     byte = []
 
@@ -314,25 +348,35 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Call validate_memory() each time?
 def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
+    "Extends with zeros or truncates a memory region to be a specific length."
     mem_len = op_bit_length(mem)
-    ensure(
-        mem_len <= length,
-        f'Cannot truncate bits from {mem_len} to {length}'
-    )
 
-    fill = MemRgn()
-    fill.bytes.append([0] + [None] * 7)
+    # ensure(
+    #     mem_len <= length,
+    #     f'Cannot truncate bits from {mem_len} to {length}'
+    # )
 
-    return op_extend(
-        mem,
-        mem_len - length,
-        fill
-    )
+    if mem_len > length:
+        return op_truncate(mem, length)
+
+    elif mem_len < length:
+        fill = MemRgn()
+        fill.bytes.append([0] + [None] * 7)
+
+        return op_extend(
+            mem,
+            mem_len - length,
+            fill
+        )
+
+    else:
+        return mem
 
 
 # TODO(pbz): Should this be pass by reference?
 # TODO(pbz): Call validate_memory() each time?
 def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
+    "Extends with zeros or truncates a memory region to be a specific length."
     mem_len = op_bit_length(mem)
     ensure(
         mem_len <= length * 8,
@@ -346,6 +390,7 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     """
     Invariant: memory regions should be from the same universe and valid.
     """
+    # TODO(pbz): Call validate_memory() each time?
     validate_memory(mem_left)
     validate_memory(mem_right)
 

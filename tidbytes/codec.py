@@ -1,6 +1,7 @@
 """
-The job of a codec is to efficiently create a MemRgn from any supported type.
-They are exactly analogous to Rust's From & Into traits.
+
+The job of a codec is to efficiently bring idiomatic types into the algebraic
+system of MemRgn. They are exactly analogous to Rust's From & Into traits.
 
 All integers coming from Python will be logical values. They assume numeric data
 and so bit order is right to left. To successfully treat a number as a memory
