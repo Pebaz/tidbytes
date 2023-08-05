@@ -20,7 +20,7 @@ import ctypes, sys, struct
 from array import array
 from typing import List, Generic, TypeVar
 from .mem_types import *
-from .von_neumann import MemRgn
+from .von_neumann import *
 
 T = TypeVar('T')
 
@@ -74,8 +74,14 @@ def identity_bytes_u16(value: u16) -> list[int]:
     return [reverse_byte(byte) for byte in little_endian_bytes]
 
 
+def from_bytes_u16(value, bit_length=8) -> MemRgn:
+    pass
 
 
+def from_numeric_u16(value: u16, bit_length=8) -> MemRgn:
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u16(value)
+    return mem
 
 
 
