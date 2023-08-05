@@ -1,24 +1,32 @@
 """
 The job of a codec is to efficiently create a MemRgn from any supported type.
 They are exactly analogous to Rust's From & Into traits.
+
+All integers coming from Python will be logical values. They assume numeric data
+and so bit order is right to left. To successfully treat a number as a memory
+region, they need to be transformed to identity order (bit & byte order being
+left to right). Semantically, this is the same because numbers go from right to
+left logically since the least significant bit is on the right. The reason any
+of this is important is the answer to the question: "what is the second bit?".
+For numbers this is the rightmost bit less one. For raw memory, this is the
+leftmost bit plus one.
+
+Identity bytes operations always assume the input number is raw memory and not
+numeric data. Transformation operations can be performed after initialization if
+numeric logic is relevant.
 """
 
 import ctypes, sys, struct
 from array import array
-from typing import Union, List
+from typing import List, Generic, TypeVar
 from .mem_types import *
 from .von_neumann import MemRgn
 
+T = TypeVar('T')
 
 # ! ----------------------------------------------------------------------------
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
-
-
-
-def identity_bytes(value: bytes) -> list[int]:
-    pass
-
 
 def reverse_byte(byte: int) -> int:
     "Reverses the bits of an 8-bit unsigned integer"
@@ -32,23 +40,28 @@ def reverse_byte(byte: int) -> int:
     return new_byte
 
 
-
-def identity_bytes_u8(value: u8) -> list[int]:
-    "Get the raw memory of a u8 in bit & byte order left-to-right"
-    little_endian_u8 = '=B'
-    little_endian_bytes = struct.pack(little_endian_u8, value.value)
-
-    # return identity_bytes(reversed(little_endian_bytes))
+# TODO(pbz): Is this a good idea?
+'''
+def identity_bytes(value: Primitive, struct_descriptor: str) -> list[int]:
+    little_endian_bytes = struct.pack(struct_descriptor, value.value)
 
     # At this point bytes are in correct numeric right-to-left order but the
     # bits are in left to right order. Whether or not they are numeric is
     # another story. Return the bits in identity order
+    return [reverse_byte(byte) for byte in little_endian_bytes]
+'''
 
-    print(little_endian_bytes)
 
-    identity_bytes = [reverse_byte(byte) for byte in little_endian_bytes]
+def identity_bytes_u8(value: u8) -> list[int]:
+    "Get the raw memory of a u8 in bit & byte order left-to-right"
+    little_endian_u8 = '<B'
+    little_endian_bytes = struct.pack(little_endian_u8, value.value)
 
-    return identity_bytes
+    # At this point bytes are in correct numeric right-to-left order but the
+    # bits are in left to right order. Whether or not they are numeric is
+    # another story. Return the bits in identity order
+    return [reverse_byte(byte) for byte in little_endian_bytes]
+
 
 
 def identity_bytes_u16(value: u16) -> list[int]:
@@ -56,17 +69,9 @@ def identity_bytes_u16(value: u16) -> list[int]:
     little_endian_u16 = '<H'
     little_endian_bytes = struct.pack(little_endian_u16, value.value)
 
-    # return identity_bytes(reversed(little_endian_bytes))
+    # print(hex(value.value), bin(value.value), little_endian_bytes)
 
-    # At this point bytes are in correct numeric right-to-left order but the
-    # bits are in left to right order. Whether or not they are numeric is
-    # another story. Return the bits in identity order
-
-    print(hex(value.value), bin(value.value), little_endian_bytes)
-
-    identity_bytes = [reverse_byte(byte) for byte in little_endian_bytes]
-
-    return identity_bytes
+    return [reverse_byte(byte) for byte in little_endian_bytes]
 
 
 

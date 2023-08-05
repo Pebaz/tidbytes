@@ -6,7 +6,7 @@ from tidbytes import *
 print(identity_bytes_u8(u8(0xFF)))
 # print(identity_bytes_u16(u16(0x01FF)))
 
-i = identity_bytes_u16(u16(0b1011))
+i = identity_bytes_u16(u16(0b1))
 print(i)
 print([bin(a) for a in i])
 
