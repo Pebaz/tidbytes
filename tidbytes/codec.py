@@ -589,18 +589,59 @@ def from_numeric_u16(value: u16) -> MemRgn:
     return op_reverse(mem)
 
 
+# TODO(pbz): Use this in op_extend/op_truncate/etc.
+def group_bits_into_bytes(bits: list[int]) -> list[list[int]]:
+    bytes = []
+    byte = []
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    bytes.append((byte + [None] * 8)[:8])
+    return bytes
+
+
+def from_big_integer(value: int) -> MemRgn:
+    # TODO(pbz): Positive & Negative values
+
+    #   0000000000001010  10
+    #   1111111111110101  flip all bits
+    # + 0000000000000001  add 1
+    #   ----------------
+    #   1111111111110110  -10
+
+
+    if value < 0:
+        positive_value = abs(value)
+        ones_complement = ~positive_value
+        value -= ~(abs(value) - 1)
+
+
+    bits = [
+        int(bool(value & 1 << bit_index))
+        for bit_index in range(value.bit_length())
+    ]
+
+    mem = MemRgn()
+    mem.bytes = group_bits_into_bytes(bits)
+
+    # TODO(pbz): return validate_memory(mem)
+    return mem
 
 
 
-def from_big_integer(value, bit_length=8) -> MemRgn:
 
-    ensure(bit_length <= 8, 'Only 8 bits in a u8')
-    ensure(value >= 0, 'Positive values only')
+
+    byte = []
+    for i in range(value.bit_length()):
+        byte.append(int(bool(value & (1 << i))))
+
 
     mem = MemRgn()
     mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
 
-    return mem.validate()
+
 
 
 def from_numeric_big_integer(value, bit_length=8) -> MemRgn:
