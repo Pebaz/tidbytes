@@ -14,6 +14,68 @@ from .von_neumann import MemRgn
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
 
+
+
+def identity_bytes(value: bytes) -> list[int]:
+    pass
+
+
+def reverse_byte(byte: int) -> int:
+    "Reverses the bits of an 8-bit unsigned integer"
+    ensure(0 <= byte <= 256, 'Only values from 0-255 inclusive supported')
+
+    new_byte = 0
+    for bit_index in range(8):  # Iterate from right to left
+        bit = bool(byte & (1 << bit_index))
+        if bit:  # Set the opposite bit from left to right
+            new_byte |= 1 << (8 - bit_index - 1)
+    return new_byte
+
+
+
+def identity_bytes_u8(value: u8) -> list[int]:
+    "Get the raw memory of a u8 in bit & byte order left-to-right"
+    little_endian_u8 = '=B'
+    little_endian_bytes = struct.pack(little_endian_u8, value.value)
+
+    # return identity_bytes(reversed(little_endian_bytes))
+
+    # At this point bytes are in correct numeric right-to-left order but the
+    # bits are in left to right order. Whether or not they are numeric is
+    # another story. Return the bits in identity order
+
+    print(little_endian_bytes)
+
+    identity_bytes = [reverse_byte(byte) for byte in little_endian_bytes]
+
+    return identity_bytes
+
+
+def identity_bytes_u16(value: u16) -> list[int]:
+    "Get the raw memory of a u16 in bit & byte order left-to-right"
+    little_endian_u16 = '<H'
+    little_endian_bytes = struct.pack(little_endian_u16, value.value)
+
+    # return identity_bytes(reversed(little_endian_bytes))
+
+    # At this point bytes are in correct numeric right-to-left order but the
+    # bits are in left to right order. Whether or not they are numeric is
+    # another story. Return the bits in identity order
+
+    print(hex(value.value), bin(value.value), little_endian_bytes)
+
+    identity_bytes = [reverse_byte(byte) for byte in little_endian_bytes]
+
+    return identity_bytes
+
+
+
+
+
+
+
+
+
 def from_byte_u8(value, bit_length=8) -> MemRgn:
     """
     This is different from `from_numeric_u8()` because it assumes that the provided
@@ -272,6 +334,9 @@ def __from_big_integer_bytes(
     Helper function to convert a Python big integer to a list of lists of
     bits.
     """
+    # TODO(pbz): This is a bug!
+    assert False, 'THIS IS A BUG. THIS SHOULD RETURN BYTES NOT BITS!'
+
     bytes = []
     byte = []
 
