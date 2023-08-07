@@ -314,6 +314,8 @@ class Mem:
 
         if isinstance(init, MemRgn):
             return init
+        elif isinstance(init, int):
+            return from_big_integer(init)
         elif isinstance(init, u8):
             return from_byte_u8(init)
         elif isinstance(init, u16):

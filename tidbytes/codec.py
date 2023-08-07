@@ -627,18 +627,14 @@ def from_big_integer(value: int, bit_length=64) -> MemRgn:
     #   ----------------
     #   1111111111110110  -10
 
-    if value < 0:
-        ensure(
-            value.bit_length() <= bit_length,
-            'Negative big integers must fit in destination bit length'
-        )
-        total_bits = bit_length  # Must choose region width for negative numbers
-    else:
-        total_bits = value.bit_length()  # Choose width of positive
+    ensure(
+        value.bit_length() <= bit_length,
+        f'Big integers must fit in destination bit length: {bit_length}'
+    )
 
     bits = [
         int(bool(value & 1 << bit_index))
-        for bit_index in range(total_bits)
+        for bit_index in range(bit_length)
     ]
 
     mem = MemRgn()
@@ -648,15 +644,9 @@ def from_big_integer(value: int, bit_length=64) -> MemRgn:
     return mem
 
 
-def from_numeric_big_integer(value, bit_length=8) -> MemRgn:
-
-    ensure(bit_length <= 8, 'Only 8 bits in a u8')
-    ensure(value >= 0, 'Positive values only')
-
-    mem = MemRgn()
-    mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
-
-    return mem.validate()
+def from_numeric_big_integer(value, bit_length=64) -> MemRgn:
+    mem = from_big_integer(value, bit_length)
+    return op_reverse(mem)
 
 
 def into_byte_u8(value) -> u8:
