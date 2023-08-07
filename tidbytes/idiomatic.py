@@ -312,9 +312,11 @@ class Mem:
         # ? bytes (str.encode('ascii'), hash())
         # ? bytearray
 
-        if isinstance(init, u8):
+        if isinstance(init, MemRgn):
+            return init
+        elif isinstance(init, u8):
             return from_byte_u8(init)
-        if isinstance(init, u16):
+        elif isinstance(init, u16):
             return from_bytes_u16(init)
         else:
             raise MemException('Invalid initializer')

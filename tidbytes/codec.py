@@ -602,25 +602,43 @@ def group_bits_into_bytes(bits: list[int]) -> list[list[int]]:
     return bytes
 
 
-def from_big_integer(value: int) -> MemRgn:
-    # TODO(pbz): Positive & Negative values
+# ??????????????????????????????????????????????????????????????????????????????
+# TODO(pbz): This codec requires an input parameter: bit_length due to negatives
+# TODO(pbz): It's possible a bit_length or rgn_width parameter is needed:
+# TODO(pbz): Mem[64](-123)
+# TODO(pbz): I wonder if this is applicable beyond negative numbers?
+# TODO(pbz): from_bit_length() would just use __param__
+# TODO(pbz): It might just be better to do: Mem(-123, bit_length=16): **kwargs
+# ??????????????????????????????????????????????????????????????????????????????
+def from_big_integer(value: int, bit_length=64) -> MemRgn:
+    """
+    Initializes a memory region from a big integer, assuming a bit length for
+    negative numbers to allow for twos-complement encoding. Big integers that
+    are positive are allowed to be larger than the provided bit length. Negative
+    numbers must fit into the provided bit length because they are stored with
+    their bits flipped which means all available bits are flipped. That wouldn't
+    work if there wasn't a max storage size, resulting in infinite bits flipped.
+    """
 
+    # TODO(pbz): Keep this around for the tests
     #   0000000000001010  10
     #   1111111111110101  flip all bits
     # + 0000000000000001  add 1
     #   ----------------
     #   1111111111110110  -10
 
-
     if value < 0:
-        positive_value = abs(value)
-        ones_complement = ~positive_value
-        value -= ~(abs(value) - 1)
-
+        ensure(
+            value.bit_length() <= bit_length,
+            'Negative big integers must fit in destination bit length'
+        )
+        total_bits = bit_length  # Must choose region width for negative numbers
+    else:
+        total_bits = value.bit_length()  # Choose width of positive
 
     bits = [
         int(bool(value & 1 << bit_index))
-        for bit_index in range(value.bit_length())
+        for bit_index in range(total_bits)
     ]
 
     mem = MemRgn()
@@ -628,20 +646,6 @@ def from_big_integer(value: int) -> MemRgn:
 
     # TODO(pbz): return validate_memory(mem)
     return mem
-
-
-
-
-
-    byte = []
-    for i in range(value.bit_length()):
-        byte.append(int(bool(value & (1 << i))))
-
-
-    mem = MemRgn()
-    mem.rgn.bytes = __from_big_integer_bytes(value, bit_length)
-
-
 
 
 def from_numeric_big_integer(value, bit_length=8) -> MemRgn:
