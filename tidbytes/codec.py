@@ -281,141 +281,28 @@ def __from_big_integer_bytes(
 
     return bytes
 
-def from_numeric_u8(cls, value, bit_length=8):
-    """
-    This is different from `from_byte_u8()` because it assumes the provided
-    u8 value is numeric data with the least significant bit on the right.
-    This means bit order is from right to left always.
 
-    For instance, 0b00010011 will be turned into: [00010011]. It appears
-    the same as written because it is treated as a numeric value.
-    """
-    ensure(bit_length <= 8, 'Only 8 bits in a u8')
-    ensure(value >= 0, 'Positive values only')
-
-    mem = cls.from_byte_u8(value, bit_length)
-    mem.rgn = op_reverse(mem.rgn)
-
-    return mem.validate()
 
 # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
-def from_bytes_u16(cls, value, bit_length=16):
-    """
-    Non-numeric bit order is always left to right. Treat a u16 value as a
-    memory region with padding bits on the right and the resulting region
-    will have identity bit and byte order (left to right for both).
 
-    Host endianness is irrelevant as bits are read from right to left.
 
-    The bits of the number will be exactly reversed from how they are
-    written.
 
-    Treat the bytes of a number as a memory region, not a numeric value.
 
-    For instance, 0b1_00010011 will be turned into: [11001000 10000000]. It
-    appears backwards because it is treated as a memory region not a numeric
-    value.
-    """
-    ensure(bit_length <= 16, 'Only 16 bits in a u16')
-    ensure(value >= 0, 'Positive values only')
 
-    mem = cls()
-    mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
 
-    return mem.validate()
 
-def from_numeric_u16(cls, value, bit_length=16):
-    """
-    Numeric bit order is always right to left. Treat a u16 value as a memory
-    region with padding bits on the left but the resulting region will have
-    identity bit and byte order (left to right for both).
 
-    Host endianness is irrelevant as bits are read from right to left.
 
-    For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
-    appears the same as written because it is treated as a numeric value.
-    """
-    ensure(bit_length <= 16, 'Only 16 bits in a u16')
-    ensure(value >= 0, 'Positive values only')
 
-    mem = cls.from_bytes_u16(value, bit_length)
-    mem.rgn = op_reverse(mem.rgn)
 
-    return mem.validate()
 
-def from_bytes_u32(cls, value, bit_length=32):
-    """
-    Non-numeric bit order is always left to right. Treat a u32 value as a
-    memory region with padding bits on the right and the resulting region
-    will have identity bit and byte order (left to right for both).
 
-    Host endianness is irrelevant as bits are read from right to left.
 
-    The bits of the number will be exactly reversed from how they are
-    written.
 
-    Treat the bytes of a number as a memory region, not a numeric value.
 
-    For instance, 0b1_00010011 will be turned into:
-    [11001000 10000000 00000000 00000000]. It appears backwards because it
-    is treated as a memory region not a numeric value.
-    """
-    ensure(bit_length <= 32, 'Only 32 bits in a u32')
-    ensure(value >= 0, 'Positive values only')
 
-    mem = cls()
-    mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
 
-    return mem.validate()
 
-def from_numeric_u32(cls, value, bit_length=32):
-    """
-    Numeric bit order is always right to left. Treat a u32 value as a memory
-    region with padding bits on the left but the resulting region will have
-    identity bit and byte order (left to right for both).
-
-    Host endianness is irrelevant as bits are read from right to left.
-
-    For instance, 0b1_00010011 will be turned into:
-    [00000000 00000000 00000001 00010011]. It appears the same as written
-    because it is treated as a numeric value.
-    """
-    ensure(bit_length <= 32, 'Only 32 bits in a u32')
-    ensure(value >= 0, 'Positive values only')
-
-    mem = cls.from_bytes_u32(value, bit_length)
-    mem.rgn = op_reverse(mem.rgn)
-
-    return mem.validate()
-
-def from_bytes_u64(cls, value, bit_length=64):
-    """
-    Non-numeric bit order is always left to right. Treat a u64 value as a
-    memory region with padding bits on the right and the resulting region
-    will have identity bit and byte order (left to right for both).
-
-    Host endianness is irrelevant as bits are read from right to left.
-
-    The bits of the number will be exactly reversed from how they are
-    written.
-
-    Treat the bytes of a number as a memory region, not a numeric value.
-
-    For instance, 0b1_00010011 will be turned into:
-
-        11001000 10000000 00000000 00000000
-        00000000 00000000 00000000 00000000
-
-    It appears backwards because it is treated as a memory region not a
-    numeric value.
-    """
-    ensure(bit_length <= 64, 'Only 64 bits in a u64')
-    ensure(value >= 0, 'Positive values only')
-
-    mem = cls()
-    mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
-
-    return mem.validate()
 
 def from_numeric_u64(cls, value, bit_length=64):
     """
@@ -482,6 +369,19 @@ def memory(init):
 
     elif isinstance(init, int):
         return from_numeric_u64(u64(init))
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -572,21 +472,155 @@ def from_byte_u8(value: u8) -> MemRgn:
 
 
 def from_bytes_u16(value: u16) -> MemRgn:
+    """
+    Non-numeric bit order is always left to right. Treat a u16 value as a
+    memory region with padding bits on the right and the resulting region
+    will have identity bit and byte order (left to right for both).
+
+    Host endianness is irrelevant as bits are read from right to left.
+
+    The bits of the number will be exactly reversed from how they are
+    written.
+
+    Treat the bytes of a number as a memory region, not a numeric value.
+
+    For instance, 0b1_00010011 will be turned into: [11001000 10000000]. It
+    appears backwards because it is treated as a memory region not a numeric
+    value.
+    """
+    ensure(value >= 0, 'Positive values only')
+
     mem = MemRgn()
     mem.bytes = identity_bytes_u16(value)
     return op_identity(mem)
 
 
+def from_bytes_u32(value: u32) -> MemRgn:
+    """
+    Non-numeric bit order is always left to right. Treat a u32 value as a
+    memory region with padding bits on the right and the resulting region
+    will have identity bit and byte order (left to right for both).
+
+    Host endianness is irrelevant as bits are read from right to left.
+
+    The bits of the number will be exactly reversed from how they are
+    written.
+
+    Treat the bytes of a number as a memory region, not a numeric value.
+
+    For instance, 0b1_00010011 will be turned into:
+    [11001000 10000000 00000000 00000000]. It appears backwards because it
+    is treated as a memory region not a numeric value.
+    """
+    ensure(value >= 0, 'Positive values only')
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u32(value)
+    return op_identity(mem)
+
+
+def from_bytes_u64(cls, value, bit_length=64):
+    """
+    Non-numeric bit order is always left to right. Treat a u64 value as a
+    memory region with padding bits on the right and the resulting region
+    will have identity bit and byte order (left to right for both).
+
+    Host endianness is irrelevant as bits are read from right to left.
+
+    The bits of the number will be exactly reversed from how they are
+    written.
+
+    Treat the bytes of a number as a memory region, not a numeric value.
+
+    For instance, 0b1_00010011 will be turned into:
+
+        11001000 10000000 00000000 00000000
+        00000000 00000000 00000000 00000000
+
+    It appears backwards because it is treated as a memory region not a
+    numeric value.
+    """
+    ensure(bit_length <= 64, 'Only 64 bits in a u64')
+    ensure(value >= 0, 'Positive values only')
+
+    mem = cls()
+    mem.rgn.bytes = cls.__from_big_integer_bytes(value, bit_length)
+
+    return mem.validate()
+
+
 def from_numeric_u8(value: u8) -> MemRgn:
+    """
+    This is different from `from_byte_u8()` because it assumes the provided
+    u8 value is numeric data with the least significant bit on the right.
+    This means bit order is from right to left always.
+
+    For instance, 0b00010011 will be turned into: [00010011]. It appears
+    the same as written because it is treated as a numeric value.
+    """
+    ensure(value >= 0, 'Positive values only')
+
     mem = MemRgn()
     mem.bytes = identity_bytes_u8(value)
     return op_reverse(mem)
 
 
 def from_numeric_u16(value: u16) -> MemRgn:
+    """
+    Numeric bit order is always right to left. Treat a u16 value as a memory
+    region with padding bits on the left but the resulting region will have
+    identity bit and byte order (left to right for both).
+
+    Host endianness is irrelevant as bits are read from right to left.
+
+    For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
+    appears the same as written because it is treated as a numeric value.
+    """
+    ensure(value >= 0, 'Positive values only')
+
     mem = MemRgn()
     mem.bytes = identity_bytes_u16(value)
     return op_reverse(mem)
+
+
+
+def from_numeric_u32(cls, value, bit_length=32):
+    """
+    Numeric bit order is always right to left. Treat a u32 value as a memory
+    region with padding bits on the left but the resulting region will have
+    identity bit and byte order (left to right for both).
+
+    Host endianness is irrelevant as bits are read from right to left.
+
+    For instance, 0b1_00010011 will be turned into:
+    [00000000 00000000 00000001 00010011]. It appears the same as written
+    because it is treated as a numeric value.
+    """
+    ensure(value >= 0, 'Positive values only')
+    mem = MemRgn()
+    mem.bytes = identity_bytes_u32(value)
+    return op_reverse(mem)
+
+
+
+def from_f32(value: f32) -> MemRgn:
+    "Treats an f32 like a sequence of bytes"
+    byte_slice = ctypes.string_at(
+        ctypes.byref(value),
+        ctypes.sizeof(type(value))
+    )
+    mem = MemRgn()
+    for byte in byte_slice:
+        bits = []
+        for i in range(8):
+            bits.append(int(bool(byte & (1 << i))))
+        mem.bytes.append(bits[:])
+        bits.clear()
+    return mem
+
+
+def from_f64(value: f64) -> MemRgn:
+    "Treats an f64 like a sequence of bytes"
+    return from_f32(value)
 
 
 # ??????????????????????????????????????????????????????????????????????????????
@@ -640,3 +674,13 @@ def into_byte_u8(value) -> u8:
     pass
 
 
+
+# twos_complement(bit_length)
+# allow_negative
+# Mem[bit_length]
+#
+
+# Mem[...](-123, twos_complement=True)  !! error: can't fit inside `...` unsized
+
+# If bit_length was always a parameter, would this solve everything?
+# Mem("asdf")  <- Is this ASCII or unicode? Does it matter?

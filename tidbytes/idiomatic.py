@@ -120,6 +120,7 @@ class Mem:
         bit and byte order is always left to right.
         """
         self.rgn = self.from_(init)
+        self.validate()
 
         # All codec methods treat input values as left to right big and byte
         # order so transforming according to the input bit and byte order always
@@ -232,6 +233,14 @@ class Mem:
             return from_byte_u8(init)
         elif isinstance(init, u16):
             return from_bytes_u16(init)
+
+        elif isinstance(init, str):
+            return from_utf8(init.encode())
+        elif isinstance(init, bytes):
+            return from_bytes(init)
+        elif isinstance(init, bytearray):
+            return from_bytes(bytes(init))
+
         else:
             raise MemException('Invalid initializer')
 
@@ -239,6 +248,8 @@ class Mem:
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
             return into_byte_u8(self.rgn)
+        if target_type == str:
+            "return into_utf8(self.rgn)"
         else:
             raise MemException('Invalid type')
 
