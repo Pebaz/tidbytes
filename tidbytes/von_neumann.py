@@ -3,6 +3,25 @@ from .mem_types import *
 from enum import Enum, auto
 
 
+# Putting this first and foremost to declare the opportunity to refactor all
+# operations to use a more efficient backing store for bits and bytes. One idea
+# is to use actual bytes, although there may still be better options. Rust BitVec?
+LogicalMemory = list[list[int]]
+
+
+# TODO(pbz): Use this in op_extend/op_truncate/etc.
+def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
+    bytes = []
+    byte = []
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    bytes.append((byte + [None] * 8)[:8])
+    return bytes
+
+
 class MemRgn:
     """
     Von Neumann root backing store type for bits. Language specific.
@@ -15,7 +34,7 @@ class MemRgn:
     # TODO(pbz): Over-fetching partial bytes are well-defined so a bit mask will
     # TODO(pbz): ignore extra bits.
     def __init__(self):
-        self.bytes: list[list[int]] = []
+        self.bytes: LogicalMemory = []
 
 
 # ------------------------------------------------------------------------------
@@ -311,14 +330,16 @@ def op_truncate(mem: MemRgn, length: int) -> MemRgn:
 
     bits = [bit for byte in mem.bytes for bit in byte][:length]
     out = MemRgn()
-    byte = []
 
-    for i, bit in enumerate(bits):
-        if byte and i % 8 == 0:
-            out.bytes.append(byte[:])
-            byte.clear()
-        byte.append(bit)
-    out.bytes.append((byte + [None] * 8)[:8])
+    # TODO(pbz): Test this worked:
+    out.bytes = group_bits_into_bytes(bits)
+    # byte = []
+    # for i, bit in enumerate(bits):
+    #     if byte and i % 8 == 0:
+    #         out.bytes.append(byte[:])
+    #         byte.clear()
+    #     byte.append(bit)
+    # out.bytes.append((byte + [None] * 8)[:8])
 
     return out
 
@@ -333,14 +354,16 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     length = mem_len + amount
     bits = [bit for byte in mem.bytes for bit in byte] + [0] * length - mem_len
     out = MemRgn()
-    byte = []
 
-    for i, bit in enumerate(bits):
-        if byte and i % 8 == 0:
-            out.bytes.append(byte[:])
-            byte.clear()
-        byte.append(bit)
-    out.bytes.append((byte + [None] * 8)[:8])
+    # TODO(pbz): Test this worked:
+    out.bytes = group_bits_into_bytes(bits)
+    # byte = []
+    # for i, bit in enumerate(bits):
+    #     if byte and i % 8 == 0:
+    #         out.bytes.append(byte[:])
+    #         byte.clear()
+    #     byte.append(bit)
+    # out.bytes.append((byte + [None] * 8)[:8])
 
     return out
 
@@ -401,14 +424,16 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     ]
 
     out = MemRgn()
-    byte = []
 
-    for i, bit in enumerate(bits):
-        if byte and i % 8 == 0:
-            out.bytes.append(byte[:])
-            byte.clear()
-        byte.append(bit)
-    out.bytes.append((byte + [None] * 8)[:8])
+    # TODO(pbz): Test this worked:
+    out.bytes = group_bits_into_bytes(bits)
+    # byte = []
+    # for i, bit in enumerate(bits):
+    #     if byte and i % 8 == 0:
+    #         out.bytes.append(byte[:])
+    #         byte.clear()
+    #     byte.append(bit)
+    # out.bytes.append((byte + [None] * 8)[:8])
 
     validate_memory(out)
 

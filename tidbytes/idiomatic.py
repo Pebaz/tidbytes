@@ -312,6 +312,20 @@ class Mem:
         # ? bytes (str.encode('ascii'), hash())
         # ? bytearray
 
+        '''
+        match type(init):
+            case MemRgn():
+                return init
+            case int():
+                return from_big_integer(init)
+            case u8():
+                return from_byte_u8(init)
+            case u16():
+                return from_bytes_u16(init)
+            case _:
+                raise MemException('Invalid initializer')
+        '''
+
         if isinstance(init, MemRgn):
             return init
         elif isinstance(init, int):
