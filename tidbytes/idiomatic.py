@@ -225,7 +225,9 @@ class Mem:
                 raise MemException('Invalid initializer')
         '''
 
-        if isinstance(init, MemRgn):
+        if isinstance(init, type(None)):
+            return MemRgn()
+        elif isinstance(init, MemRgn):
             return init
         elif isinstance(init, int):
             return from_big_integer(init)
@@ -263,16 +265,27 @@ class Mem:
 
 
 
+# TODO(pbz): Indexing is backwards
 class Num(Mem):
     "Assumes numeric data"
 
     # ! -> Num::from <-
     @classmethod
     def from_(cls, init: T) -> 'Num':
-        if isinstance(init, u8):
+        if init is None:
+            return MemRgn()
+
+        elif isinstance(init, int):
+            return from_numeric_big_integer(init)
+        elif isinstance(init, u8):
             return from_numeric_u8(init)
         elif isinstance(init, u16):
             return from_numeric_u16(init)
+        elif isinstance(init, u32):
+            return from_numeric_u32(init)
+        elif isinstance(init, u64):
+            return from_numeric_u64(init)
+
         else:
             raise MemException('Invalid initializer')
 
@@ -281,10 +294,13 @@ class Num(Mem):
         if target_type == u8:
             return into_byte_u8(self.rgn)
 
-
+# TODO(pbz): Do NOT implement __add__ and other common ops. Is not the purpose.
 class I32(Num):
     "Specializes even further with From & Into"
 
+
+# TODO(pbz): Should probably subclass Struct to have [sign, exp, mantissa] but
+# TODO(pbz): should fully support indexing like Mem
 class F32(Mem):
     pass
 

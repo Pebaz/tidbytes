@@ -617,12 +617,11 @@ def into_byte_u8(value) -> u8:
     pass
 
 
-
+# TODO(pbz): Interface boundaries have configuration:
 # twos_complement(bit_length)
 # allow_negative
 # Mem[bit_length]
 #
-
 # Mem[...](-123, twos_complement=True)  !! error: can't fit inside `...` unsized
 
 # If bit_length was always a parameter, would this solve everything?
