@@ -566,7 +566,7 @@ def from_byte_i8(value: i8) -> MemRgn:
     return op_identity(mem)
 
 
-def from_byte_i16(value: i16) -> MemRgn:
+def from_bytes_i16(value: i16) -> MemRgn:
     """
     This is different from `from_byte_i16()` because it assumes the provided i16
     value is numeric data with the least significant bit on the right. This
@@ -582,7 +582,7 @@ def from_byte_i16(value: i16) -> MemRgn:
     return op_identity(mem)
 
 
-def from_byte_i32(value: i32) -> MemRgn:
+def from_bytes_i32(value: i32) -> MemRgn:
     """
     This is different from `from_byte_i32()` because it assumes the provided i32
     value is numeric data with the least significant bit on the right. This
@@ -598,7 +598,7 @@ def from_byte_i32(value: i32) -> MemRgn:
     return op_identity(mem)
 
 
-def from_byte_i64(value: i64) -> MemRgn:
+def from_bytes_i64(value: i64) -> MemRgn:
     """
     This is different from `from_byte_i64()` because it assumes the provided i64
     value is numeric data with the least significant bit on the right. This
@@ -614,12 +614,72 @@ def from_byte_i64(value: i64) -> MemRgn:
     return op_identity(mem)
 
 
+def from_numeric_i8(value: i8) -> MemRgn:
+    """
+    This is different from `from_byte_i8()` because it assumes the provided i8
+    value is numeric data with the least significant bit on the right. This
+    means bit order is from right to left always.
+
+    For instance, 0b00010011 will be turned into: [00010011]. It appears
+    the same as written because it is treated as a numeric value.
+
+    Negative numbers are twos-complement encoded:
+
+        -1 turns into [11111111]
+        -2 turns into [11111110]
+        -10 turns into [11110110]
+    """
+    mem = MemRgn()
+    mem.bytes = identity_bits_from_struct_field('<b', value.value)
+    return op_reverse(mem)
 
 
+def from_numeric_i16(value: i16) -> MemRgn:
+    """
+    This is different from `from_byte_i16()` because it assumes the provided i16
+    value is numeric data with the least significant bit on the right. This
+    means bit order is from right to left always.
+
+    For instance, 0b00010011 will be turned into: [00010011]. It appears
+    the same as written because it is treated as a numeric value.
+
+    Negative numbers are twos-complement encoded.
+    """
+    mem = MemRgn()
+    mem.bytes = identity_bits_from_struct_field('<h', value.value)
+    return op_reverse(mem)
 
 
+def from_numeric_i32(value: i32) -> MemRgn:
+    """
+    This is different from `from_byte_i32()` because it assumes the provided i32
+    value is numeric data with the least significant bit on the right. This
+    means bit order is from right to left always.
+
+    For instance, 0b00010011 will be turned into: [00010011]. It appears
+    the same as written because it is treated as a numeric value.
+
+    Negative numbers are twos-complement encoded.
+    """
+    mem = MemRgn()
+    mem.bytes = identity_bits_from_struct_field('<l', value.value)
+    return op_reverse(mem)
 
 
+def from_numeric_i64(value: i64) -> MemRgn:
+    """
+    This is different from `from_byte_i64()` because it assumes the provided i64
+    value is numeric data with the least significant bit on the right. This
+    means bit order is from right to left always.
+
+    For instance, 0b00010011 will be turned into: [00010011]. It appears
+    the same as written because it is treated as a numeric value.
+
+    Negative numbers are twos-complement encoded.
+    """
+    mem = MemRgn()
+    mem.bytes = identity_bits_from_struct_field('<q', value.value)
+    return op_reverse(mem)
 
 
 def from_f32(value: f32) -> MemRgn:

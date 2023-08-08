@@ -239,6 +239,16 @@ class Mem:
             return from_bytes_u32(init)
         elif isinstance(init, u64):
             return from_bytes_u64(init)
+
+        elif isinstance(init, i8):
+            return from_byte_i8(init)
+        elif isinstance(init, i16):
+            return from_bytes_i16(init)
+        elif isinstance(init, i32):
+            return from_bytes_i32(init)
+        elif isinstance(init, i64):
+            return from_bytes_i64(init)
+
         elif isinstance(init, f32):
             return from_f32(init)
         elif isinstance(init, f64):
@@ -285,6 +295,15 @@ class Num(Mem):
             return from_numeric_u32(init)
         elif isinstance(init, u64):
             return from_numeric_u64(init)
+
+        elif isinstance(init, i8):
+            return from_numeric_i8(init)
+        elif isinstance(init, i16):
+            return from_numeric_i16(init)
+        elif isinstance(init, i32):
+            return from_numeric_i32(init)
+        elif isinstance(init, i64):
+            return from_numeric_i64(init)
 
         else:
             raise MemException('Invalid initializer')
