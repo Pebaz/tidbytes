@@ -233,6 +233,14 @@ class Mem:
             return from_byte_u8(init)
         elif isinstance(init, u16):
             return from_bytes_u16(init)
+        elif isinstance(init, u32):
+            return from_bytes_u32(init)
+        elif isinstance(init, u64):
+            return from_bytes_u64(init)
+        elif isinstance(init, f32):
+            return from_f32(init)
+        elif isinstance(init, f64):
+            return from_f64(init)
 
         elif isinstance(init, str):
             return from_utf8(init.encode())

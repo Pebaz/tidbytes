@@ -459,7 +459,7 @@ def from_bytes_u32(value: u32) -> MemRgn:
     return op_identity(mem)
 
 
-def from_bytes_u64(value):
+def from_bytes_u64(value: u64) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u64 value as a
     memory region with padding bits on the right and the resulting region
@@ -512,7 +512,7 @@ def from_numeric_u16(value: u16) -> MemRgn:
 
 
 
-def from_numeric_u32(value):
+def from_numeric_u32(value: u32) -> MemRgn:
     """
     Numeric bit order is always right to left. Treat a u32 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -527,7 +527,7 @@ def from_numeric_u32(value):
     return op_reverse(from_bytes_u32(value))
 
 
-def from_numeric_u64(value):
+def from_numeric_u64(value: u64) -> MemRgn:
     """
     Numeric bit order is always right to left. Treat a u64 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -543,14 +543,6 @@ def from_numeric_u64(value):
     It appears the same as written because it is treated as a numeric value.
     """
     return op_reverse(from_bytes_u64(value))
-
-
-
-
-
-
-
-
 
 
 def from_f32(value: f32) -> MemRgn:
