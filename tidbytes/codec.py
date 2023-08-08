@@ -395,58 +395,6 @@ def identity_bits_from_struct_field(specifier: str, value: int) -> list[int]:
         for byte in little_endian_bytes
     ]
 
-
-def identity_bytes_u8(value: u8) -> list[int]:
-    "Get the raw memory of a u8 in bit & byte order left-to-right"
-    little_endian_u8 = '<B'
-    little_endian_bytes = struct.pack(little_endian_u8, value.value)
-
-    # At this point bytes are in correct numeric right-to-left order but the
-    # bits are in left to right order. Whether or not they are numeric is
-    # another story. Return the bits in identity order
-    return [
-        identity_bits_from_numeric_byte(byte)
-        for byte in little_endian_bytes
-    ]
-
-
-def identity_bytes_u16(value: u16) -> list[int]:
-    "Get the raw memory of a u16 in bit & byte order left-to-right"
-    little_endian_u16 = '<H'
-    little_endian_bytes = struct.pack(little_endian_u16, value.value)
-    return [
-        identity_bits_from_numeric_byte(byte)
-        for byte in little_endian_bytes
-    ]
-
-
-def identity_bytes_u32(value: u32) -> list[int]:
-    "Get the raw memory of a u32 in bit & byte order left-to-right"
-    little_endian_u32 = '<L'
-    little_endian_bytes = struct.pack(little_endian_u32, value.value)
-    return [
-        identity_bits_from_numeric_byte(byte)
-        for byte in little_endian_bytes
-    ]
-
-
-def identity_bytes_u64(value: u64) -> list[int]:
-    "Get the raw memory of a u64 in bit & byte order left-to-right"
-    little_endian_u64 = '<Q'
-    little_endian_bytes = struct.pack(little_endian_u64, value.value)
-    return [
-        identity_bits_from_numeric_byte(byte)
-        for byte in little_endian_bytes
-    ]
-
-
-
-
-
-
-
-
-
 # MemRgn from primitive idiomatic types
 
 # TODO(pbz): Rename "bytes" to "logical" or "natural"?
@@ -511,7 +459,7 @@ def from_bytes_u32(value: u32) -> MemRgn:
     return op_identity(mem)
 
 
-def from_bytes_u64(cls, value, bit_length=64):
+def from_bytes_u64(value):
     """
     Non-numeric bit order is always left to right. Treat a u64 value as a
     memory region with padding bits on the right and the resulting region
@@ -546,9 +494,7 @@ def from_numeric_u8(value: u8) -> MemRgn:
     For instance, 0b00010011 will be turned into: [00010011]. It appears
     the same as written because it is treated as a numeric value.
     """
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u8(value)
-    return op_reverse(mem)
+    return op_reverse(from_byte_u8(value))
 
 
 def from_numeric_u16(value: u16) -> MemRgn:
@@ -562,13 +508,11 @@ def from_numeric_u16(value: u16) -> MemRgn:
     For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
     appears the same as written because it is treated as a numeric value.
     """
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u16(value)
-    return op_reverse(mem)
+    return op_reverse(from_bytes_u16(value))
 
 
 
-def from_numeric_u32(cls, value, bit_length=32):
+def from_numeric_u32(value):
     """
     Numeric bit order is always right to left. Treat a u32 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -580,12 +524,10 @@ def from_numeric_u32(cls, value, bit_length=32):
     [00000000 00000000 00000001 00010011]. It appears the same as written
     because it is treated as a numeric value.
     """
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u32(value)
-    return op_reverse(mem)
+    return op_reverse(from_bytes_u32(value))
 
 
-def from_numeric_u64(cls, value, bit_length=64):
+def from_numeric_u64(value):
     """
     Numeric bit order is always right to left. Treat a u64 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -600,9 +542,7 @@ def from_numeric_u64(cls, value, bit_length=64):
 
     It appears the same as written because it is treated as a numeric value.
     """
-    mem = MemRgn()
-    mem.bytes = identity_bytes_u64(value)
-    return op_reverse(mem)
+    return op_reverse(from_bytes_u64(value))
 
 
 
