@@ -99,54 +99,11 @@ F32.from & F32.into are different
 # Sensible defaults: assume literals are numeric data not memory.
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+# TODO(pbz): 8/4/23
 class Mem:
-    # This is static so that it can be dynamically added to at runtime
-    SUPPORTED_CODECS = {
-        int: None,
-        float: None,
-        str: None,
-        bytes: None,
-        bytearray: None,
-        list: None,
-        u8: from_byte_u8,
-        u16: None,
-        u32: None,
-        u64: None,
-        i8: None,
-        i16: None,
-        i32: None,
-        i64: None,
-        f32: None,
-        f64: None,
-    }
-
-    # !-------------------------------------------------------------------------
-    # TODO(pbz): 7/28/23
-    # TODO(pbz): This is the most important function in the whole library. It
-    # TODO(pbz): allows any Python primitive type to be converted into Mem.
-    # TODO(pbz): In Rust, From & Into traits allow this (sometimes
-    # TODO(pbz): automatically). Here, the Constructor acts like an entrypoint
-    # TODO(pbz): to the data by initializing it appropriately using codecs.
-    # TODO(pbz): Since most users will want precise semantics, they will use the
-    # TODO(pbz): types from C/Rust (u8, f64). However, idiomatic types work too.
-    # !-------------------------------------------------------------------------
     def __init__(
         self,
-        init: object = None,
-        numeric: bool = True,
+        init: T = None,
         in_bit_order=Order.LeftToRight,
         in_byte_order=Order.LeftToRight
     ):
@@ -162,13 +119,7 @@ class Mem:
         explicit control, the other codec methods are a solid choice. The output
         bit and byte order is always left to right.
         """
-        self.rgn = MemRgn()
-
-        # TODO(pbz): Inspect `init` and call the right codec method
-        if type(init) in Mem.SUPPORTED_CODECS:
-            self.rgn = Mem.SUPPORTED_CODECS[type(init)](init)
-        else:
-            raise MemException(f'Ambiguous memory initializer: {init_type}')
+        self.rgn = self.from_(init)
 
         # All codec methods treat input values as left to right big and byte
         # order so transforming according to the input bit and byte order always
@@ -179,6 +130,12 @@ class Mem:
         payload = MemRgn()
         payload.bytes = [[value] + [None] * 7]
         op_set_bit(self.rgn, key, payload)
+
+    def __iter__(self):
+        "TODO(pbz): Should this iter bits or bytes?"
+
+    def __reversed__(self):
+        "This might cause more harm than good as the bits will also be reversed"
 
     def __str__(self):  # Display
         """
@@ -191,9 +148,6 @@ class Mem:
             )
             for byte in self.rgn.bytes
         )
-
-    def __reversed__(self):
-        "This might cause more harm than good as the bits will also be reversed"
 
     def __repr__(self):  # Debug
         bits = str(self)
@@ -225,6 +179,7 @@ class Mem:
                 return str(self)
 
     def __len__(self):
+        # TODO(pbz): It seems like most of these built-ins work with bits...?
         return op_bit_length(self.rgn)
 
     def __bool__(self):
@@ -246,63 +201,6 @@ class Mem:
     def truncate(self, bit_length: int):
         "Useful for setting values in structs that are shorter than a byte."
         self.rgn = op_truncate(self.rgn, bit_length)
-
-
-# TODO(pbz): 8/4/23
-class Mem:
-    def __init__(
-        self,
-        init: T = None,
-        in_bit_order=Order.LeftToRight,
-        in_byte_order=Order.LeftToRight
-    ):
-        self.rgn = self.from_(init)
-
-        # All codec methods treat input values as left to right big and byte
-        # order so transforming according to the input bit and byte order always
-        # results in left to right bit and byte order.
-        op_transform(self.rgn, in_bit_order, in_byte_order)
-
-    def __str__(self):  # Display
-        """
-        Displays all bits up to bit length 64, then displays bit length.
-        """
-        return ' '.join(
-            ''.join(
-                str(bit) if bit != None else ''  # ? '▫'
-                for bit in byte
-            )
-            for byte in self.rgn.bytes
-        )
-
-    def __repr__(self):  # Debug
-        bits = str(self)
-
-        # More than 8 bytes is getting long
-        if bits.count(' ') > 7:
-            bits = f'{len(self)} bits'
-
-            # TODO(pbz): Use __int__(self)
-            # hex_bits = hex(int(''.join(bits.split()), base=2))[2:]
-
-            # length_of_8_bytes = 71
-            # if len(hex_bits) > length_of_8_bytes:
-            #     pass
-            # else:
-            #     pass
-
-        return f'<Mem [{bits}]>'
-
-    def __format__(self, specifier: str) -> str:
-        match specifier:
-            case 'bits':
-                return str(self)
-            case 'hex' | 'x':
-                return hex(int(''.join(str(self).split()), base=2))[2:]
-            case 'X':
-                return format(self, 'x').upper()
-            case _:
-                return str(self)
 
     # ! -> Mem::from <-
     @classmethod
@@ -370,3 +268,17 @@ class I32(Num):
 
 class F32(Mem):
     pass
+
+
+class Struct:
+    foo: Num
+    bar: I32
+    baz: F32
+    pbz: 'Struct'
+
+    def __init__(self):
+        self.regions = {}  # Tracks multiple regions or nested Structs
+
+    def __getattribute__(self, attribute: str) -> Any:
+        # TODO(pbz): Access nested attributes
+        return super().__getattribute__(attribute)
