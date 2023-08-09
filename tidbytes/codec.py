@@ -25,28 +25,6 @@ from .von_neumann import *
 
 T = TypeVar('T')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # From
 from_arr = ...
 from_u8 = ...
@@ -54,78 +32,6 @@ from_int = ...
 from_str = ...
 from_struct = ...
 from_hex_string = ...
-
-
-# TODO(pbz): Both C language codec functions and also Python
-
-# ! Codecs can never start with `op_` since that would mean they are part of an
-# ! algebra. This is fine, but they are not compatible with the Von Neumann API.
-
-
-
-
-# TODO(pbz): 7/28/23 -> Current:
-# TODO(pbz): Need from_float, from_int, from_bool, from_etc because those are
-# TODO(pbz): the actual idiomatic types. All the other ones are from C. In the
-# TODO(pbz): `Mem` constructor, just match the type and call the correct
-# TODO(pbz): initializer.
-
-# TODO(pbz): What would make this project complete?
-# TODO(pbz): A Mem type that can support indexing and all other operations.
-# TODO(pbz): A Struct type that could support nested types, offset, and
-# TODO(pbz): alignment.
-
-
-def get_identity_bytes_float(value: float) -> bytearray:
-    return bytearray(struct.unpack('d', value))
-
-
-class Int:
-    u8 = ctypes.c_uint8
-    u16 = ctypes.c_uint16
-    u32 = ctypes.c_uint32
-    u64 = ctypes.c_uint64
-    i8 = ctypes.c_int8
-    i16 = ctypes.c_int16
-    i32 = ctypes.c_int32
-    i64 = ctypes.c_int64
-
-    @classmethod
-    def variants(cls):
-        return [
-            cls.u8,
-            cls.u16,
-            cls.u32,
-            cls.u64,
-            cls.i8,
-            cls.i16,
-            cls.i32,
-            cls.i64,
-        ]
-
-    @classmethod
-    def bit_list(cls, instance, bit_order, byte_order):
-        "Returns the given instance as a list of bits"
-        match type(instance):
-            case cls.u8:
-                pass
-            case cls.u16:
-                pass
-            case cls.u32:
-                pass
-            case cls.u64:
-                pass
-            case cls.i8:
-                pass
-            case cls.i16:
-                pass
-            case cls.i32:
-                pass
-            case cls.i64:
-                pass
-
-
-# TODO(pbz): Codec operations
 
 def get_identity_bytes(value: Primitive) -> bytes:
     """
@@ -745,9 +651,38 @@ def from_big_integer(value: int, bit_length=64) -> MemRgn:
     return mem
 
 
-def from_numeric_big_integer(value, bit_length=64) -> MemRgn:
+def from_numeric_big_integer(value: int, bit_length=64) -> MemRgn:
     mem = from_big_integer(value, bit_length)
     return op_reverse(mem)
+
+
+def from_float(value: float) -> MemRgn:
+    ieee754_64_bit_mantissa = sys.float_info.mant_dig == 53
+
+    if ieee754_64_bit_mantissa:
+        return from_f64(f64(value))
+    else:
+        return from_f32(f32(value))
+
+
+def from_bool(value: bool) -> MemRgn:
+    "Converts a boolean value to a single bit"
+    mem = MemRgn()
+    mem.bytes = [[1 if value else 0]] + [None] * 7
+    return mem
+
+
+def from_bit_list(value: list[int]) -> MemRgn:
+    "Memory region from flat array of ints being either 0 or 1"
+    ensure(all(bit == 0 or bit == 1 for bit in value))
+
+def from_grouped_bits(value: list[list[int]]) -> MemRgn:
+    "Memory region from list of list of 8 bits being either 0 or 1"
+    ensure(all(len(byte) == 8 for byte in value))
+    ensure(all(all(bit == 0 or bit == 1 for bit in byte) for byte in value))
+
+def from_bytes(value: list[int]) -> MemRgn:
+    ensure(all(0 <= byte <= 0xFF for byte in value))
 
 
 def into_byte_u8(value) -> u8:
@@ -763,3 +698,14 @@ def into_byte_u8(value) -> u8:
 
 # If bit_length was always a parameter, would this solve everything?
 # Mem("asdf")  <- Is this ASCII or unicode? Does it matter?
+
+
+# meta, intra, extra, pub, pri, extern, intern
+
+# TODO(pbz): What would make this project complete?
+# TODO(pbz): A Mem type that can support indexing and all other operations.
+# TODO(pbz): A Struct type that could support nested types, offset, and
+# TODO(pbz): alignment.
+
+
+

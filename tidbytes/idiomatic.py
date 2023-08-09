@@ -104,6 +104,7 @@ class Mem:
     def __init__(
         self,
         init: T = None,
+        # TODO(pbz): bit_length: int = None
         in_bit_order=Order.LeftToRight,
         in_byte_order=Order.LeftToRight
     ):
@@ -287,6 +288,22 @@ class Num(Mem):
 
         elif isinstance(init, int):
             return from_numeric_big_integer(init)
+        elif isinstance(init, float):
+            return from_float(init)
+        elif isinstance(init, bool):
+            return from_bool(init)
+        elif isinstance(init, list):
+            if not init:
+                return MemRgn()
+            elif init and isinstance(init[0], (list, tuple)):
+                return from_grouped_bits(value)
+            elif init and isinstance(init[0], int):
+                return from_bit_list(value)
+            else:
+                raise MemException("Invalid initializer: Can't deduce codec")
+        elif isinstance(init, tuple):
+            return from_bytes(init)
+
         elif isinstance(init, u8):
             return from_numeric_u8(init)
         elif isinstance(init, u16):
