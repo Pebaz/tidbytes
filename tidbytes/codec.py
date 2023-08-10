@@ -685,6 +685,9 @@ def from_bytes(value: list[int]) -> MemRgn:
     ensure(all(0 <= byte <= 0xFF for byte in value))
 
 
+
+
+
 def into_byte_u8(value) -> u8:
     pass
 
@@ -702,10 +705,7 @@ def into_byte_u8(value) -> u8:
 
 # meta, intra, extra, pub, pri, extern, intern
 
-# TODO(pbz): What would make this project complete?
-# TODO(pbz): A Mem type that can support indexing and all other operations.
-# TODO(pbz): A Struct type that could support nested types, offset, and
-# TODO(pbz): alignment.
+
 
 
 

@@ -330,9 +330,16 @@ class Num(Mem):
         if target_type == u8:
             return into_byte_u8(self.rgn)
 
+
+
+# class U32(Num[32]):
+#     "Does not support signed"
+
+
+
 # TODO(pbz): Do NOT implement __add__ and other common ops. Is not the purpose.
 class I32(Num):
-    "Specializes even further with From & Into"
+    "Specializes even further with From & Into. Twos-complement for signed"
 
 
 # TODO(pbz): Should probably subclass Struct to have [sign, exp, mantissa] but
@@ -341,15 +348,53 @@ class F32(Mem):
     pass
 
 
+
+# TODO(pbz): What would make this project complete?
+# TODO(pbz): A Mem type that can support indexing and all other operations.
+
+
 class Struct:
+    """
     foo: Num
     bar: I32
     baz: F32
     pbz: 'Struct'
+    """
+    # TODO(pzb): Support nested types
+    # TODO(pzb): Support offset
+    # TODO(pzb): Support padding
+    # TODO(pzb): Support alignment
 
     def __init__(self):
         self.regions = {}  # Tracks multiple regions or nested Structs
 
+        bit_ranges = self.__annotations__
+        default_values = {
+            i: getattr(type(self), i)
+            for i in self.__annotations__
+            if hasattr(type(self), i)
+        }
+
+        print('ℹ️', bit_ranges)
+        print('ℹ️', default_values)
+
+        self.bit_ranges = {i: Mem() for i in self.__annotations__}
+
+    def __getattr__(self, name):
+        pass
+
+    def __setattr__(self, name, value):
+        "Call the appropriate set() method on the memory region"
+        assert type(value) in Int.variants(), (
+            f'Invalid data type for assignment: {type(value)}'
+        )
+
     def __getattribute__(self, attribute: str) -> Any:
         # TODO(pbz): Access nested attributes
         return super().__getattribute__(attribute)
+
+
+class addi32le(Struct):
+    sign: Mem[1]
+    exponent: Num[12] = 123
+    mantissa: Num[19]
