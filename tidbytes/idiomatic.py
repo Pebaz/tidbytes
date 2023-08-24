@@ -1,4 +1,5 @@
 from typing import Any, Generic, TypeVar
+from indexed_meta import IndexedClass
 from .mem_types import *
 from .von_neumann import *
 from .codec import *
@@ -9,98 +10,46 @@ T = TypeVar('T')
 # ! Idiomatic API
 # ! ----------------------------------------------------------------------------
 
-# TODO(pbz): 7/28/23
-# TODO(pbz): Remove all the Mem.from_x() and just use decentralized codec funcs
+# ! These are solutions for handling codecs that take parameters. Codecs are
+# ! like twos-complement. Without a destination bit length, they are undefined.
+'''
+# Factory Pattern:
+class MemFactory:
+    def __call__(self, *args, **kwargs):
+        pass
 
+    def register_codec(self, codec):
+        pass
 
-# TODO(pbz): 8/2/23
-# TODO(pbz): Is it truly that there cannot be one data entry point since there
-# TODO(pbz): are things like `is_numeric`, `ascii`, and other metadata?
+Mem = MemFactory()
+Mem.register_codec(...)
 
+# Parameterized Constructor:
+Mem(123)
+Mem('asdf', ascii=True)
 
-# class MemFactory:
-#     def __call__(self, *args, **kwargs):
-#         pass
+# Builder Pattern:
+class MemBuilder:
+    def __call__(self, *args, **kwargs):
+        pass
 
-#     def register_codec(self, codec):
-#         pass
+    def __getattribute__(self, attribute: str):
+        return lambda: self
 
-# Mem = MemFactory()
-# Mem.register_codec(...)
-
-# Mem(123)
-# Mem('asdf', ascii=True)
-
-
-# class MemBuilder:
-#     def __call__(self, *args, **kwargs):
-#         pass
-
-#     def __getattribute__(self, attribute: str):
-#         return lambda: self
-
-# Mem = MemBuilder().foo().bar().baz()
-
-
-
-
-
-
-# Mem.from_x()
-# Mem.from_y()
-# Mem.from_z()
-
-# Flip on it's head!
-# MemX()
-# MemY()
-# MemZ()
-
+Mem = MemBuilder().foo().bar().baz()
+'''
 
 """
-Mem assumes non-numeric bytes data
-Num assumes numeric data
-F32 assumes non-numeric bytes data or floats
-
-Mem.from & Mem.into
-Num.from & Num.into are different
-F32.from & F32.into are different
+class Mem: ...         # Assumes non-numeric bytes data
+class Num(Mem): ...    # Assumes numeric data, indexing is reversed
+class Struct: ...      # Allows free and structured indexing
+class Float(Mem): ...  # Actually a type of struct. Indexing should work.
+class I32(Num): ...    # From/Into codecs are different (int value is negative)
+class U32(Num): ...    # From/Into codecs are different
 """
-
-
-# class Mem: ...
-# class Num(Mem): ...  # Indexing is different
-# class Float(Mem): ...  # Indexing is same, but contains Num exp and mantissa
-# class I32(Num): ...  # Operations are different
-# class U32(Num): ...  # Operations are different
-
-
-# ! Mem is for memory regions. NumericMem is for numeric memory
-
-
-# ! A::from<B> is the same as B::into<A>
-
-
-# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
-# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
-# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
-# TODO(pbz):
-# TODO(pbz):
-# TODO(pbz):
-# TODO(pbz): mem = Mem(123)
-# TODO(pbz): mem = tidbytes.codecs.from_ascii("Hello World!")
-# TODO(pbz):
-# TODO(pbz): But what about legit memory regions?
-# TODO(pbz): mem = Mem("Hello World!".encode())
-# TODO(pbz):
-# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
-# TODO(pbz): Assume numeric and allow users to call free-floating codecs:
-
-# It's not common to use an integer as a memory region.
-# Sensible defaults: assume literals are numeric data not memory.
-
 
 # TODO(pbz): 8/4/23
-class Mem:
+class Mem(IndexedClass):
     def __init__(
         self,
         init: T = None,
