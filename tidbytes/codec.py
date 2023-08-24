@@ -616,6 +616,10 @@ def from_f64(value: f64) -> MemRgn:
 # TODO(pbz): I wonder if this is applicable beyond negative numbers?
 # TODO(pbz): from_bit_length() would just use __param__
 # TODO(pbz): It might just be better to do: Mem(-123, bit_length=16): **kwargs
+# * Technically, negative numbers are twos-complement encoded which makes them
+# * a data format, not a primitive. Encoded data naturally needs destination
+# * info in order to unpack it usually (AV1 video frames).
+# * So how are codecs handled? They need input parameters right?
 # ??????????????????????????????????????????????????????????????????????????????
 def from_big_integer(value: int, bit_length=64) -> MemRgn:
     """
@@ -656,13 +660,27 @@ def from_numeric_big_integer(value: int, bit_length=64) -> MemRgn:
     return op_reverse(mem)
 
 
-def from_float(value: float) -> MemRgn:
+def from_bytes_float(value: float) -> MemRgn:
+    """
+    Converts a float value to 32 or 64 identity bits depending on host CPU.
+    Treats it as a numeric value rather than sequence of bytes.
+    """
+    # Possibly useful: https://evanw.github.io/float-toy/
     ieee754_64_bit_mantissa = sys.float_info.mant_dig == 53
 
     if ieee754_64_bit_mantissa:
         return from_f64(f64(value))
     else:
         return from_f32(f32(value))
+
+
+def from_numeric_float(value: float) -> MemRgn:
+    """
+    Converts a float value to 32 or 64 bits depending on host CPU while exactly
+    matching in-memory representation. Not identity.
+    """
+    mem = from_bytes_float(value)
+    return op_reverse(mem)
 
 
 def from_bool(value: bool) -> MemRgn:
@@ -696,6 +714,8 @@ def from_bytes(value: list[int]) -> MemRgn:
     mem = MemRgn()
     mem.bytes = [bits[i:i + 8] for i in range(0, len(bits), 8)]
     return mem
+
+
 
 
 

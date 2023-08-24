@@ -230,8 +230,14 @@ class Mem:
             return MemRgn()
         elif isinstance(init, MemRgn):
             return init
+
         elif isinstance(init, int):
             return from_big_integer(init)
+        elif isinstance(init, float):
+            return from_bytes_float(init)
+        elif isinstance(init, bool):
+            return from_bool(init)
+
         elif isinstance(init, u8):
             return from_byte_u8(init)
         elif isinstance(init, u16):
@@ -298,7 +304,7 @@ class Num(Mem):
         elif isinstance(init, int):
             return from_numeric_big_integer(init)
         elif isinstance(init, float):
-            return from_float(init)
+            return from_numeric_float(init)
         elif isinstance(init, bool):
             return from_bool(init)
         elif isinstance(init, list):
@@ -339,7 +345,7 @@ class Num(Mem):
         if target_type == u8:
             return into_byte_u8(self.rgn)
 
-
+'''
 
 # class U32(Num[32]):
 #     "Does not support signed"
@@ -407,3 +413,4 @@ class addi32le(Struct):
     sign: Mem[1]
     exponent: Num[12] = 123
     mantissa: Num[19]
+'''
