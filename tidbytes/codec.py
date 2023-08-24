@@ -675,16 +675,27 @@ def from_bool(value: bool) -> MemRgn:
 def from_bit_list(value: list[int]) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
     ensure(all(bit == 0 or bit == 1 for bit in value))
+    mem = MemRgn()
+    mem.bytes = [value[i:i + 8] for i in range(0, len(value), 8)]
+    return mem
+
 
 def from_grouped_bits(value: list[list[int]]) -> MemRgn:
     "Memory region from list of list of 8 bits being either 0 or 1"
     ensure(all(len(byte) == 8 for byte in value))
     ensure(all(all(bit == 0 or bit == 1 for bit in byte) for byte in value))
+    mem = MemRgn()
+    mem.bytes = [byte[:] for byte in value]
+    return mem
+
 
 def from_bytes(value: list[int]) -> MemRgn:
+    "Memory region from list of unsigned integers in range 0x00 to 0xFF."
     ensure(all(0 <= byte <= 0xFF for byte in value))
-
-
+    bits = list(reversed(identity_bits_from_numeric_byte(value)))
+    mem = MemRgn()
+    mem.bytes = [bits[i:i + 8] for i in range(0, len(bits), 8)]
+    return mem
 
 
 

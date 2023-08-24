@@ -255,6 +255,16 @@ class Mem:
         elif isinstance(init, f64):
             return from_f64(init)
 
+        elif isinstance(init, list):
+            if not init:
+                return MemRgn()
+            elif init and isinstance(init[0], (list, tuple)):
+                return from_grouped_bits(value)
+            elif init and isinstance(init[0], int):
+                return from_bit_list(value)
+            else:
+                raise MemException("Invalid initializer: Can't deduce codec")
+
         elif isinstance(init, str):
             return from_utf8(init.encode())
         elif isinstance(init, bytes):
@@ -283,9 +293,8 @@ class Num(Mem):
     # ! -> Num::from <-
     @classmethod
     def from_(cls, init: T) -> 'Num':
-        if init is None:
+        if isinstance(init, type(None)):
             return MemRgn()
-
         elif isinstance(init, int):
             return from_numeric_big_integer(init)
         elif isinstance(init, float):
