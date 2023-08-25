@@ -1,5 +1,5 @@
+import indexed_meta
 from typing import Any, Generic, TypeVar
-from indexed_meta import IndexedClass
 from .mem_types import *
 from .von_neumann import *
 from .codec import *
@@ -49,11 +49,10 @@ class U32(Num): ...    # From/Into codecs are different
 """
 
 # TODO(pbz): 8/4/23
-class Mem(IndexedClass):
+class Mem(metaclass=indexed_meta.IndexedMetaclass):
     def __init__(
         self,
         init: T = None,
-        # TODO(pbz): bit_length: int = None
         in_bit_order=Order.LeftToRight,
         in_byte_order=Order.LeftToRight
     ):
@@ -69,7 +68,7 @@ class Mem(IndexedClass):
         explicit control, the other codec methods are a solid choice. The output
         bit and byte order is always left to right.
         """
-        self.rgn = self.from_(init)
+        self.rgn = self.from_(init, bit_length=indexed_meta.get_param(self))
         self.validate()
 
         # All codec methods treat input values as left to right big and byte
@@ -129,6 +128,9 @@ class Mem(IndexedClass):
             case _:
                 return str(self)
 
+    def __eq__(self, that):
+        return self.rgn.bytes == that.rgn.bytes
+
     def __len__(self):
         # TODO(pbz): It seems like most of these built-ins work with bits...?
         return op_bit_length(self.rgn)
@@ -146,7 +148,8 @@ class Mem(IndexedClass):
         print('here')
 
     def validate(self):
-        validate_memory(self.rgn)
+        if self.rgn.bytes:
+            validate_memory(self.rgn)
         return self
 
     def truncate(self, bit_length: int):
@@ -155,7 +158,7 @@ class Mem(IndexedClass):
 
     # ! -> Mem::from <-
     @classmethod
-    def from_(cls, init: T) -> 'Mem':
+    def from_(cls, init: T, bit_length: int) -> 'Mem':
         # ? ctypes
         # ? strings are always UTF8
         # ? bytes (str.encode('ascii'), hash())
@@ -175,13 +178,33 @@ class Mem(IndexedClass):
                 raise MemException('Invalid initializer')
         '''
 
+        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
+        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+        # TODO(pbz): fail, etc.
+
+        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
+        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+        # TODO(pbz): fail, etc.
+
+        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
+        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+        # TODO(pbz): fail, etc.
+
+        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
+        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+        # TODO(pbz): fail, etc.
+
+        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
+        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+        # TODO(pbz): fail, etc.
+
         if isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, MemRgn):
             return init
 
         elif isinstance(init, int):
-            return from_big_integer(init)
+            return from_big_integer(init, bit_length)
         elif isinstance(init, float):
             return from_bytes_float(init)
         elif isinstance(init, bool):
@@ -238,6 +261,9 @@ class Mem(IndexedClass):
             "return into_utf8(self.rgn)"
         else:
             raise MemException('Invalid type')
+
+
+NullMem = Mem()
 
 
 

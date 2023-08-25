@@ -621,7 +621,7 @@ def from_f64(value: f64) -> MemRgn:
 # * info in order to unpack it usually (AV1 video frames).
 # * So how are codecs handled? They need input parameters right?
 # ??????????????????????????????????????????????????????????????????????????????
-def from_big_integer(value: int, bit_length=64) -> MemRgn:
+def from_big_integer(value: int, bit_length: int) -> MemRgn:
     """
     Initializes a memory region from a big integer, assuming a bit length for
     negative numbers to allow for twos-complement encoding. Big integers that
@@ -630,6 +630,13 @@ def from_big_integer(value: int, bit_length=64) -> MemRgn:
     their bits flipped which means all available bits are flipped. That wouldn't
     work if there wasn't a max storage size, resulting in infinite bits flipped.
     """
+    ensure(
+        bit_length is not None if value < 0 else True,
+        'Must provide bit length for negative numbers due to '
+        'twos-complement encoding'
+    )
+
+    bit_length = bit_length if bit_length is not None else value.bit_length()
 
     # TODO(pbz): Keep this around for the tests
     #   0000000000001010  10
