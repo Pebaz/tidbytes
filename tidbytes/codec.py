@@ -306,7 +306,7 @@ def identity_bits_from_struct_field(specifier: str, value: int) -> list[int]:
 
 # TODO(pbz): Rename "bytes" to "logical" or "natural"?
 
-def from_byte_u8(value: u8) -> MemRgn:
+def from_byte_u8(value: u8, bit_length: int) -> MemRgn:
     """
     This is different from `from_numeric_u8()` because it assumes that the
     provided u8 value is not numeric data but a slice of memory 1-byte long.
@@ -317,12 +317,13 @@ def from_byte_u8(value: u8) -> MemRgn:
     For instance, 0b00010011 will be turned into: [11001000]. It appears
     backwards because it is treated as a memory region not a numeric value.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<B', value.value)
     return op_identity(mem)
 
 
-def from_bytes_u16(value: u16) -> MemRgn:
+def from_bytes_u16(value: u16, bit_length: int) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u16 value as a
     memory region with padding bits on the right and the resulting region
@@ -339,12 +340,13 @@ def from_bytes_u16(value: u16) -> MemRgn:
     appears backwards because it is treated as a memory region not a numeric
     value.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<H', value.value)
     return op_identity(mem)
 
 
-def from_bytes_u32(value: u32) -> MemRgn:
+def from_bytes_u32(value: u32, bit_length: int) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u32 value as a
     memory region with padding bits on the right and the resulting region
@@ -361,12 +363,13 @@ def from_bytes_u32(value: u32) -> MemRgn:
     [11001000 10000000 00000000 00000000]. It appears backwards because it
     is treated as a memory region not a numeric value.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<L', value.value)
     return op_identity(mem)
 
 
-def from_bytes_u64(value: u64) -> MemRgn:
+def from_bytes_u64(value: u64, bit_length: int) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u64 value as a
     memory region with padding bits on the right and the resulting region
@@ -387,12 +390,13 @@ def from_bytes_u64(value: u64) -> MemRgn:
     It appears backwards because it is treated as a memory region not a
     numeric value.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<Q', value.value)
     return op_identity(mem)
 
 
-def from_numeric_u8(value: u8) -> MemRgn:
+def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_u8()` because it assumes the provided
     u8 value is numeric data with the least significant bit on the right.
@@ -401,10 +405,11 @@ def from_numeric_u8(value: u8) -> MemRgn:
     For instance, 0b00010011 will be turned into: [00010011]. It appears
     the same as written because it is treated as a numeric value.
     """
-    return op_reverse(from_byte_u8(value))
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    return op_reverse(from_byte_u8(value, bit_length))
 
 
-def from_numeric_u16(value: u16) -> MemRgn:
+def from_numeric_u16(value: u16, bit_length: int) -> MemRgn:
     """
     Numeric bit order is always right to left. Treat a u16 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -415,11 +420,12 @@ def from_numeric_u16(value: u16) -> MemRgn:
     For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
     appears the same as written because it is treated as a numeric value.
     """
-    return op_reverse(from_bytes_u16(value))
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    return op_reverse(from_bytes_u16(value, bit_length))
 
 
 
-def from_numeric_u32(value: u32) -> MemRgn:
+def from_numeric_u32(value: u32, bit_length: int) -> MemRgn:
     """
     Numeric bit order is always right to left. Treat a u32 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -431,10 +437,11 @@ def from_numeric_u32(value: u32) -> MemRgn:
     [00000000 00000000 00000001 00010011]. It appears the same as written
     because it is treated as a numeric value.
     """
-    return op_reverse(from_bytes_u32(value))
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    return op_reverse(from_bytes_u32(value, bit_length))
 
 
-def from_numeric_u64(value: u64) -> MemRgn:
+def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
     """
     Numeric bit order is always right to left. Treat a u64 value as a memory
     region with padding bits on the left but the resulting region will have
@@ -449,10 +456,11 @@ def from_numeric_u64(value: u64) -> MemRgn:
 
     It appears the same as written because it is treated as a numeric value.
     """
-    return op_reverse(from_bytes_u64(value))
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    return op_reverse(from_bytes_u64(value, bit_length))
 
 
-def from_byte_i8(value: i8) -> MemRgn:
+def from_byte_i8(value: i8, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i8()` because it assumes the provided i8
     value is numeric data with the least significant bit on the right. This
@@ -467,12 +475,13 @@ def from_byte_i8(value: i8) -> MemRgn:
         -2 turns into [11111110]
         -10 turns into [11110110]
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<b', value.value)
     return op_identity(mem)
 
 
-def from_bytes_i16(value: i16) -> MemRgn:
+def from_bytes_i16(value: i16, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i16()` because it assumes the provided i16
     value is numeric data with the least significant bit on the right. This
@@ -483,12 +492,13 @@ def from_bytes_i16(value: i16) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<h', value.value)
     return op_identity(mem)
 
 
-def from_bytes_i32(value: i32) -> MemRgn:
+def from_bytes_i32(value: i32, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i32()` because it assumes the provided i32
     value is numeric data with the least significant bit on the right. This
@@ -499,12 +509,13 @@ def from_bytes_i32(value: i32) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<l', value.value)
     return op_identity(mem)
 
 
-def from_bytes_i64(value: i64) -> MemRgn:
+def from_bytes_i64(value: i64, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i64()` because it assumes the provided i64
     value is numeric data with the least significant bit on the right. This
@@ -515,12 +526,13 @@ def from_bytes_i64(value: i64) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<q', value.value)
     return op_identity(mem)
 
 
-def from_numeric_i8(value: i8) -> MemRgn:
+def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i8()` because it assumes the provided i8
     value is numeric data with the least significant bit on the right. This
@@ -535,12 +547,13 @@ def from_numeric_i8(value: i8) -> MemRgn:
         -2 turns into [11111110]
         -10 turns into [11110110]
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<b', value.value)
     return op_reverse(mem)
 
 
-def from_numeric_i16(value: i16) -> MemRgn:
+def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i16()` because it assumes the provided i16
     value is numeric data with the least significant bit on the right. This
@@ -551,12 +564,13 @@ def from_numeric_i16(value: i16) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<h', value.value)
     return op_reverse(mem)
 
 
-def from_numeric_i32(value: i32) -> MemRgn:
+def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i32()` because it assumes the provided i32
     value is numeric data with the least significant bit on the right. This
@@ -567,12 +581,13 @@ def from_numeric_i32(value: i32) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<l', value.value)
     return op_reverse(mem)
 
 
-def from_numeric_i64(value: i64) -> MemRgn:
+def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i64()` because it assumes the provided i64
     value is numeric data with the least significant bit on the right. This
@@ -583,13 +598,15 @@ def from_numeric_i64(value: i64) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
+    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<q', value.value)
     return op_reverse(mem)
 
 
-def from_f32(value: f32) -> MemRgn:
+def from_f32(value: f32, bit_length: int) -> MemRgn:
     "Treats an f32 like a sequence of bytes"
+    ensure(bit_length >= 32, "Can't truncate floats meaningfully")
     byte_slice = ctypes.string_at(
         ctypes.byref(value),
         ctypes.sizeof(type(value))
@@ -604,9 +621,10 @@ def from_f32(value: f32) -> MemRgn:
     return mem
 
 
-def from_f64(value: f64) -> MemRgn:
+def from_f64(value: f64, bit_length: int) -> MemRgn:
     "Treats an f64 like a sequence of bytes"
-    return from_f32(value)
+    ensure(bit_length >= 64, "Can't truncate floats meaningfully")
+    return from_f32(value, bit_length)
 
 
 # ??????????????????????????????????????????????????????????????????????????????
@@ -662,12 +680,12 @@ def from_big_integer(value: int, bit_length: int) -> MemRgn:
     return mem
 
 
-def from_numeric_big_integer(value: int, bit_length=64) -> MemRgn:
+def from_numeric_big_integer(value: int, bit_length: int) -> MemRgn:
     mem = from_big_integer(value, bit_length)
     return op_reverse(mem)
 
 
-def from_bytes_float(value: float) -> MemRgn:
+def from_bytes_float(value: float, bit_length: int) -> MemRgn:
     """
     Converts a float value to 32 or 64 identity bits depending on host CPU.
     Treats it as a numeric value rather than sequence of bytes.
@@ -676,28 +694,28 @@ def from_bytes_float(value: float) -> MemRgn:
     ieee754_64_bit_mantissa = sys.float_info.mant_dig == 53
 
     if ieee754_64_bit_mantissa:
-        return from_f64(f64(value))
+        return from_f64(f64(value), bit_length)
     else:
-        return from_f32(f32(value))
+        return from_f32(f32(value), bit_length)
 
 
-def from_numeric_float(value: float) -> MemRgn:
+def from_numeric_float(value: float, bit_length: int) -> MemRgn:
     """
     Converts a float value to 32 or 64 bits depending on host CPU while exactly
     matching in-memory representation. Not identity.
     """
-    mem = from_bytes_float(value)
+    mem = from_bytes_float(value, bit_length)
     return op_reverse(mem)
 
 
-def from_bool(value: bool) -> MemRgn:
+def from_bool(value: bool, bit_length: int) -> MemRgn:
     "Converts a boolean value to a single bit"
     mem = MemRgn()
     mem.bytes = [[1 if value else 0]] + [None] * 7
     return mem
 
 
-def from_bit_list(value: list[int]) -> MemRgn:
+def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
     ensure(all(bit == 0 or bit == 1 for bit in value))
     mem = MemRgn()
@@ -705,7 +723,7 @@ def from_bit_list(value: list[int]) -> MemRgn:
     return mem
 
 
-def from_grouped_bits(value: list[list[int]]) -> MemRgn:
+def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
     "Memory region from list of list of 8 bits being either 0 or 1"
     ensure(all(len(byte) == 8 for byte in value))
     ensure(all(all(bit == 0 or bit == 1 for bit in byte) for byte in value))
@@ -714,7 +732,7 @@ def from_grouped_bits(value: list[list[int]]) -> MemRgn:
     return mem
 
 
-def from_bytes(value: list[int]) -> MemRgn:
+def from_bytes(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from list of unsigned integers in range 0x00 to 0xFF."
     ensure(all(0 <= byte <= 0xFF for byte in value))
     bits = list(reversed(identity_bits_from_numeric_byte(value)))
