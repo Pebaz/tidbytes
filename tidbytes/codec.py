@@ -322,6 +322,8 @@ def from_byte_u8(value: u8, bit_length: int) -> MemRgn:
     mem.bytes = identity_bits_from_struct_field('<B', value.value)
     return op_identity(mem)
 
+    # !!!!!!!!! Truncate the bits here
+
 
 def from_bytes_u16(value: u16, bit_length: int) -> MemRgn:
     """

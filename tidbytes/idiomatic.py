@@ -50,6 +50,13 @@ class U32(Num): ...    # From/Into codecs are different
 
 # TODO(pbz): 8/4/23
 class Mem(metaclass=indexed_meta.IndexedMetaclass):
+    """
+    The associated indexed meta parameter for Mem is a limit describing the
+    desired size of the memory region. If initializer values are smaller than
+    the requested size, the excess is padded with zeros. If they are larger than
+    would fit in the requested size, they are truncated or an error is thrown if
+    that would violate a logical/semantic contract/validation boundary.
+    """
     def __init__(
         self,
         init: T = None,
@@ -208,49 +215,49 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         elif isinstance(init, int):
             return from_big_integer(init, bit_length)
         elif isinstance(init, float):
-            return from_bytes_float(init)
+            return from_bytes_float(init, bit_length)
         elif isinstance(init, bool):
-            return from_bool(init)
+            return from_bool(init, bit_length)
 
         elif isinstance(init, u8):
-            return from_byte_u8(init)
+            return from_byte_u8(init, bit_length)
         elif isinstance(init, u16):
-            return from_bytes_u16(init)
+            return from_bytes_u16(init, bit_length)
         elif isinstance(init, u32):
-            return from_bytes_u32(init)
+            return from_bytes_u32(init, bit_length)
         elif isinstance(init, u64):
-            return from_bytes_u64(init)
+            return from_bytes_u64(init, bit_length)
 
         elif isinstance(init, i8):
-            return from_byte_i8(init)
+            return from_byte_i8(init, bit_length)
         elif isinstance(init, i16):
-            return from_bytes_i16(init)
+            return from_bytes_i16(init, bit_length)
         elif isinstance(init, i32):
-            return from_bytes_i32(init)
+            return from_bytes_i32(init, bit_length)
         elif isinstance(init, i64):
-            return from_bytes_i64(init)
+            return from_bytes_i64(init, bit_length)
 
         elif isinstance(init, f32):
-            return from_f32(init)
+            return from_f32(init, bit_length)
         elif isinstance(init, f64):
-            return from_f64(init)
+            return from_f64(init, bit_length)
 
         elif isinstance(init, list):
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], (list, tuple)):
-                return from_grouped_bits(value)
+                return from_grouped_bits(value, bit_length)
             elif init and isinstance(init[0], int):
-                return from_bit_list(value)
+                return from_bit_list(value, bit_length)
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
 
         elif isinstance(init, str):
-            return from_utf8(init.encode())
+            return from_utf8(init.encode(), bit_length)
         elif isinstance(init, bytes):
-            return from_bytes(init)
+            return from_bytes(init, bit_length)
         elif isinstance(init, bytearray):
-            return from_bytes(bytes(init))
+            return from_bytes(bytes(init), bit_length)
 
         else:
             raise MemException('Invalid initializer')
