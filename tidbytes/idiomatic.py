@@ -48,6 +48,17 @@ class I32(Num): ...    # From/Into codecs are different (int value is negative)
 class U32(Num): ...    # From/Into codecs are different
 """
 
+
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# There may be a problem: does Num convert to identity, perform op, and then go
+# back? If all operations assume identity, how was this going to work?
+
+
+
+
+
+
 # TODO(pbz): 8/4/23
 class Mem(metaclass=indexed_meta.IndexedMetaclass):
     """

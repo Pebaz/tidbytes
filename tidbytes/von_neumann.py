@@ -5,7 +5,8 @@ from enum import Enum, auto
 
 # Putting this first and foremost to declare the opportunity to refactor all
 # operations to use a more efficient backing store for bits and bytes. One idea
-# is to use actual bytes, although there may still be better options. Rust BitVec?
+# is to use actual bytes, although there may still be better options. Rust
+# BitVec?
 LogicalMemory = list[list[int]]
 
 
@@ -45,7 +46,6 @@ class MemRgn:
 # also be added as a universe boundary. All memory is eventually mapped to
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
-# TODO(pbz): Call validate_memory() each time?
 def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
     bit_direction = iter if bit_order == Order.LeftToRight else reversed
@@ -56,25 +56,23 @@ def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
         for byte in byte_direction(mem.bytes)
     ]
 
+    validate_memory(out)
+
     return out
 
 
-# TODO(pbz): Call validate_memory() each time?
 def op_identity(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.LeftToRight, Order.LeftToRight)
 
 
-# TODO(pbz): Call validate_memory() each time?
 def op_reverse(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.RightToLeft, Order.RightToLeft)
 
 
-# TODO(pbz): Call validate_memory() each time?
 def op_reverse_bytes(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.RightToLeft, Order.LeftToRight)
 
 
-# TODO(pbz): Call validate_memory() each time?
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
     return op_transform(mem, Order.LeftToRight, Order.RightToLeft)
 
@@ -97,12 +95,17 @@ def validate_memory(mem: MemRgn):
         all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes),
         f'Some bytes do not contain 0, 1, or None: {mem.bytes}'
     )
-    ensure(
-        any(any(i in {0, 1} for i in byte) for byte in mem.bytes),
-        f'No bits set: {mem.bytes}'
-    )
+
+    if mem.bytes:
+        ensure(
+            any(any(i in {0, 1} for i in byte) for byte in mem.bytes),
+            f'No bits set: {mem.bytes}'
+        )
 
     all_bits = list(iterate_logical_bits(mem))
+
+    # This reconstructs the memory by hand to make sure it's valid but it
+    # assumes that it's in identity format. Does that work with the algebra?
 
     if len(all_bits) % 8 > 0:
         all_bits += [None] * (8 - len(all_bits) % 8)
