@@ -56,6 +56,9 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
     the requested size, the excess is padded with zeros. If they are larger than
     would fit in the requested size, they are truncated or an error is thrown if
     that would violate a logical/semantic contract/validation boundary.
+
+    Said another way: bit_length is metadata about the memory region itself, not
+    metadata from the codec like `len(str)`.
     """
     def __init__(
         self,
@@ -282,13 +285,13 @@ class Num(Mem):
 
     # ! -> Num::from <-
     @classmethod
-    def from_(cls, init: T) -> 'Num':
+    def from_(cls, init: T, bit_length: int) -> 'Num':
         if isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, int):
-            return from_numeric_big_integer(init)
+            return from_numeric_big_integer(init, bit_length)
         elif isinstance(init, float):
-            return from_numeric_float(init)
+            return from_numeric_float(init, bit_length)
         elif isinstance(init, bool):
             return from_bool(init)
         elif isinstance(init, list):
@@ -304,22 +307,22 @@ class Num(Mem):
             return from_bytes(init)
 
         elif isinstance(init, u8):
-            return from_numeric_u8(init)
+            return from_numeric_u8(init, bit_length)
         elif isinstance(init, u16):
-            return from_numeric_u16(init)
+            return from_numeric_u16(init, bit_length)
         elif isinstance(init, u32):
-            return from_numeric_u32(init)
+            return from_numeric_u32(init, bit_length)
         elif isinstance(init, u64):
-            return from_numeric_u64(init)
+            return from_numeric_u64(init, bit_length)
 
         elif isinstance(init, i8):
-            return from_numeric_i8(init)
+            return from_numeric_i8(init, bit_length)
         elif isinstance(init, i16):
-            return from_numeric_i16(init)
+            return from_numeric_i16(init, bit_length)
         elif isinstance(init, i32):
-            return from_numeric_i32(init)
+            return from_numeric_i32(init, bit_length)
         elif isinstance(init, i64):
-            return from_numeric_i64(init)
+            return from_numeric_i64(init, bit_length)
 
         else:
             raise MemException('Invalid initializer')

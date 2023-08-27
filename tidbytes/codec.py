@@ -305,7 +305,6 @@ def identity_bits_from_struct_field(specifier: str, value: int) -> list[int]:
 # MemRgn from primitive idiomatic types
 
 # TODO(pbz): Rename "bytes" to "logical" or "natural"?
-
 def from_byte_u8(value: u8, bit_length: int) -> MemRgn:
     """
     This is different from `from_numeric_u8()` because it assumes that the
@@ -317,12 +316,10 @@ def from_byte_u8(value: u8, bit_length: int) -> MemRgn:
     For instance, 0b00010011 will be turned into: [11001000]. It appears
     backwards because it is treated as a memory region not a numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 8 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<B', value.value)
-    return op_identity(mem)
-
-    # !!!!!!!!! Truncate the bits here
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_bytes_u16(value: u16, bit_length: int) -> MemRgn:
@@ -342,10 +339,10 @@ def from_bytes_u16(value: u16, bit_length: int) -> MemRgn:
     appears backwards because it is treated as a memory region not a numeric
     value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 16 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<H', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_bytes_u32(value: u32, bit_length: int) -> MemRgn:
@@ -365,10 +362,10 @@ def from_bytes_u32(value: u32, bit_length: int) -> MemRgn:
     [11001000 10000000 00000000 00000000]. It appears backwards because it
     is treated as a memory region not a numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 32 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<L', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_bytes_u64(value: u64, bit_length: int) -> MemRgn:
@@ -392,10 +389,10 @@ def from_bytes_u64(value: u64, bit_length: int) -> MemRgn:
     It appears backwards because it is treated as a memory region not a
     numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 64 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<Q', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
@@ -407,8 +404,11 @@ def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
     For instance, 0b00010011 will be turned into: [00010011]. It appears
     the same as written because it is treated as a numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
-    return op_reverse(from_byte_u8(value, bit_length))
+    bit_length = 8 if bit_length is None else bit_length
+    return op_ensure_bit_length(
+        op_reverse(from_byte_u8(value, bit_length)),
+        bit_length
+    )
 
 
 def from_numeric_u16(value: u16, bit_length: int) -> MemRgn:
@@ -422,9 +422,11 @@ def from_numeric_u16(value: u16, bit_length: int) -> MemRgn:
     For instance, 0b1_00010011 will be turned into: [00000001 00010011]. It
     appears the same as written because it is treated as a numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
-    return op_reverse(from_bytes_u16(value, bit_length))
-
+    bit_length = 16 if bit_length is None else bit_length
+    return op_ensure_bit_length(
+        op_reverse(from_bytes_u16(value, bit_length)),
+        bit_length
+    )
 
 
 def from_numeric_u32(value: u32, bit_length: int) -> MemRgn:
@@ -439,8 +441,11 @@ def from_numeric_u32(value: u32, bit_length: int) -> MemRgn:
     [00000000 00000000 00000001 00010011]. It appears the same as written
     because it is treated as a numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
-    return op_reverse(from_bytes_u32(value, bit_length))
+    bit_length = 32 if bit_length is None else bit_length
+    return op_ensure_bit_length(
+        op_reverse(from_bytes_u32(value, bit_length)),
+        bit_length
+    )
 
 
 def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
@@ -458,8 +463,11 @@ def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
 
     It appears the same as written because it is treated as a numeric value.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
-    return op_reverse(from_bytes_u64(value, bit_length))
+    bit_length = 64 if bit_length is None else bit_length
+    return op_ensure_bit_length(
+        op_reverse(from_bytes_u64(value, bit_length)),
+        bit_length
+    )
 
 
 def from_byte_i8(value: i8, bit_length: int) -> MemRgn:
@@ -477,10 +485,10 @@ def from_byte_i8(value: i8, bit_length: int) -> MemRgn:
         -2 turns into [11111110]
         -10 turns into [11110110]
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 8 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<b', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_bytes_i16(value: i16, bit_length: int) -> MemRgn:
@@ -494,10 +502,10 @@ def from_bytes_i16(value: i16, bit_length: int) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 16 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<h', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_bytes_i32(value: i32, bit_length: int) -> MemRgn:
@@ -511,10 +519,10 @@ def from_bytes_i32(value: i32, bit_length: int) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 32 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<l', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_bytes_i64(value: i64, bit_length: int) -> MemRgn:
@@ -528,10 +536,10 @@ def from_bytes_i64(value: i64, bit_length: int) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 64 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<q', value.value)
-    return op_identity(mem)
+    return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
 def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
@@ -549,10 +557,10 @@ def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
         -2 turns into [11111110]
         -10 turns into [11110110]
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 8 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<b', value.value)
-    return op_reverse(mem)
+    return op_ensure_bit_length(op_reverse(mem), bit_length)
 
 
 def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
@@ -566,10 +574,10 @@ def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 16 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<h', value.value)
-    return op_reverse(mem)
+    return op_ensure_bit_length(op_reverse(mem), bit_length)
 
 
 def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
@@ -583,10 +591,10 @@ def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 32 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<l', value.value)
-    return op_reverse(mem)
+    return op_ensure_bit_length(op_reverse(mem), bit_length)
 
 
 def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
@@ -600,15 +608,18 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
 
     Negative numbers are twos-complement encoded.
     """
-    # TODO(pbz): If bit_length is less than 64, try to truncate if it fits
+    bit_length = 64 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<q', value.value)
-    return op_reverse(mem)
+    return op_ensure_bit_length(op_reverse(mem), bit_length)
 
 
 def from_f32(value: f32, bit_length: int) -> MemRgn:
     "Treats an f32 like a sequence of bytes"
-    ensure(bit_length >= 32, "Can't truncate floats meaningfully")
+    ensure(
+        bit_length >= 32 if bit_length is not None else True,
+        "Can't truncate floats meaningfully"
+    )
     byte_slice = ctypes.string_at(
         ctypes.byref(value),
         ctypes.sizeof(type(value))
@@ -620,12 +631,17 @@ def from_f32(value: f32, bit_length: int) -> MemRgn:
             bits.append(int(bool(byte & (1 << i))))
         mem.bytes.append(bits[:])
         bits.clear()
-    return mem
+
+    # Only pad. Semantic error to truncate float.
+    return op_ensure_bit_length(mem, bit_length)
 
 
 def from_f64(value: f64, bit_length: int) -> MemRgn:
     "Treats an f64 like a sequence of bytes"
-    ensure(bit_length >= 64, "Can't truncate floats meaningfully")
+    ensure(
+        bit_length >= 64 if bit_length is not None else True,
+        "Can't truncate floats meaningfully"
+    )
     return from_f32(value, bit_length)
 
 
