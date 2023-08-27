@@ -218,27 +218,27 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         elif isinstance(init, int):
             return from_big_integer(init, bit_length)
         elif isinstance(init, float):
-            return from_bytes_float(init, bit_length)
+            return from_natural_float(init, bit_length)
         elif isinstance(init, bool):
             return from_bool(init, bit_length)
 
         elif isinstance(init, u8):
-            return from_byte_u8(init, bit_length)
+            return from_natural_u8(init, bit_length)
         elif isinstance(init, u16):
-            return from_bytes_u16(init, bit_length)
+            return from_natural_u16(init, bit_length)
         elif isinstance(init, u32):
-            return from_bytes_u32(init, bit_length)
+            return from_natural_u32(init, bit_length)
         elif isinstance(init, u64):
-            return from_bytes_u64(init, bit_length)
+            return from_natural_u64(init, bit_length)
 
         elif isinstance(init, i8):
             return from_byte_i8(init, bit_length)
         elif isinstance(init, i16):
-            return from_bytes_i16(init, bit_length)
+            return from_natural_i16(init, bit_length)
         elif isinstance(init, i32):
-            return from_bytes_i32(init, bit_length)
+            return from_natural_i32(init, bit_length)
         elif isinstance(init, i64):
-            return from_bytes_i64(init, bit_length)
+            return from_natural_i64(init, bit_length)
 
         elif isinstance(init, f32):
             return from_f32(init, bit_length)

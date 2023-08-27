@@ -15,6 +15,20 @@ leftmost bit plus one.
 Identity bytes operations always assume the input number is raw memory and not
 numeric data. Transformation operations can be performed after initialization if
 numeric logic is relevant.
+
+The nomenclature in this file was meticulously chosen to reflect the boundary
+between the logical universe of the program (host language) and the physical
+universe of the computer. "Natural" in this context refers to what is natural to
+the computer: bytes. "Numeric" in this context refers to the base of all data in
+a program: numbers. It's literally not possible for there to be non-numeric data
+in a program. All data is numeric, even if it is structured because the nested
+data will always eventually come down to primitive numbers.
+
+When transforming a numeric value into a memory region of a given size, there
+are two ways to go about it. The value can be treated as numeric data or raw
+memory. There are multitudinous applications of both such as logical data such
+as strings or physical data such as the contents of one memory page. Being able
+to effectively slice and transform each is useful and Tidbytes can do them all.
 """
 
 import ctypes, sys, struct
@@ -305,7 +319,7 @@ def identity_bits_from_struct_field(specifier: str, value: int) -> list[int]:
 # MemRgn from primitive idiomatic types
 
 # TODO(pbz): Rename "bytes" to "logical" or "natural"?
-def from_byte_u8(value: u8, bit_length: int) -> MemRgn:
+def from_natural_u8(value: u8, bit_length: int) -> MemRgn:
     """
     This is different from `from_numeric_u8()` because it assumes that the
     provided u8 value is not numeric data but a slice of memory 1-byte long.
@@ -322,7 +336,7 @@ def from_byte_u8(value: u8, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
-def from_bytes_u16(value: u16, bit_length: int) -> MemRgn:
+def from_natural_u16(value: u16, bit_length: int) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u16 value as a
     memory region with padding bits on the right and the resulting region
@@ -345,7 +359,7 @@ def from_bytes_u16(value: u16, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
-def from_bytes_u32(value: u32, bit_length: int) -> MemRgn:
+def from_natural_u32(value: u32, bit_length: int) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u32 value as a
     memory region with padding bits on the right and the resulting region
@@ -368,7 +382,7 @@ def from_bytes_u32(value: u32, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
-def from_bytes_u64(value: u64, bit_length: int) -> MemRgn:
+def from_natural_u64(value: u64, bit_length: int) -> MemRgn:
     """
     Non-numeric bit order is always left to right. Treat a u64 value as a
     memory region with padding bits on the right and the resulting region
@@ -397,7 +411,7 @@ def from_bytes_u64(value: u64, bit_length: int) -> MemRgn:
 
 def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_u8()` because it assumes the provided
+    This is different from `from_natural_u8()` because it assumes the provided
     u8 value is numeric data with the least significant bit on the right.
     This means bit order is from right to left always.
 
@@ -406,7 +420,7 @@ def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
     """
     bit_length = 8 if bit_length is None else bit_length
     return op_ensure_bit_length(
-        op_reverse(from_byte_u8(value, bit_length)),
+        op_reverse(from_natural_u8(value, bit_length)),
         bit_length
     )
 
@@ -424,7 +438,7 @@ def from_numeric_u16(value: u16, bit_length: int) -> MemRgn:
     """
     bit_length = 16 if bit_length is None else bit_length
     return op_ensure_bit_length(
-        op_reverse(from_bytes_u16(value, bit_length)),
+        op_reverse(from_natural_u16(value, bit_length)),
         bit_length
     )
 
@@ -443,7 +457,7 @@ def from_numeric_u32(value: u32, bit_length: int) -> MemRgn:
     """
     bit_length = 32 if bit_length is None else bit_length
     return op_ensure_bit_length(
-        op_reverse(from_bytes_u32(value, bit_length)),
+        op_reverse(from_natural_u32(value, bit_length)),
         bit_length
     )
 
@@ -465,7 +479,7 @@ def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
     """
     bit_length = 64 if bit_length is None else bit_length
     return op_ensure_bit_length(
-        op_reverse(from_bytes_u64(value, bit_length)),
+        op_reverse(from_natural_u64(value, bit_length)),
         bit_length
     )
 
@@ -491,7 +505,7 @@ def from_byte_i8(value: i8, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
-def from_bytes_i16(value: i16, bit_length: int) -> MemRgn:
+def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i16()` because it assumes the provided i16
     value is numeric data with the least significant bit on the right. This
@@ -508,7 +522,7 @@ def from_bytes_i16(value: i16, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
-def from_bytes_i32(value: i32, bit_length: int) -> MemRgn:
+def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i32()` because it assumes the provided i32
     value is numeric data with the least significant bit on the right. This
@@ -525,7 +539,7 @@ def from_bytes_i32(value: i32, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
-def from_bytes_i64(value: i64, bit_length: int) -> MemRgn:
+def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i64()` because it assumes the provided i64
     value is numeric data with the least significant bit on the right. This
@@ -703,7 +717,7 @@ def from_numeric_big_integer(value: int, bit_length: int) -> MemRgn:
     return op_reverse(mem)
 
 
-def from_bytes_float(value: float, bit_length: int) -> MemRgn:
+def from_natural_float(value: float, bit_length: int) -> MemRgn:
     """
     Converts a float value to 32 or 64 identity bits depending on host CPU.
     Treats it as a numeric value rather than sequence of bytes.
@@ -722,7 +736,7 @@ def from_numeric_float(value: float, bit_length: int) -> MemRgn:
     Converts a float value to 32 or 64 bits depending on host CPU while exactly
     matching in-memory representation. Not identity.
     """
-    mem = from_bytes_float(value, bit_length)
+    mem = from_natural_float(value, bit_length)
     return op_reverse(mem)
 
 
