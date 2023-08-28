@@ -207,9 +207,32 @@ def test_op_set_bytes(init, offset, payload, expect, msg):
     out = op_set_bytes(mem, offset, payload_mem)
     assert out.bytes == expect, msg
 
+# ------------------------------------------------------------------------------
+# TODO(pbz): Organize and perhaps parametrize these:
 
 def test_op_truncate():
     mem = memory(8)
     out = op_truncate(mem, 4)
     assert op_bit_length(out) == 4
     assert out.bytes == [[0, 0, 0, 0, None, None, None, None]]
+
+
+def test_op_transform():
+    ...
+
+def test_op_identity():
+    mem = memory([1, 1, 0])
+    out = op_identity(mem)
+    assert out.bytes == [[1, 1, 0, None, None, None, None, None]]
+
+
+def test_op_reverse():
+    mem = memory([1, 1, 0])
+    out = op_reverse(mem)
+    assert out.bytes == [[0, 1, 1, None, None, None, None, None]]
+
+
+def test_op_reverse_bits():
+    mem = memory([1, 1, 0])
+    out = op_reverse_bits(mem)
+    assert out.bytes == [[0, 1, 1, None, None, None, None, None]]

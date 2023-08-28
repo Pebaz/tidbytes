@@ -10,19 +10,6 @@ from enum import Enum, auto
 LogicalMemory = list[list[int]]
 
 
-# TODO(pbz): Use this in op_extend/op_truncate/etc.
-def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
-    bytes = []
-    byte = []
-    for i, bit in enumerate(bits):
-        if byte and i % 8 == 0:
-            bytes.append(byte[:])
-            byte.clear()
-        byte.append(bit)
-    bytes.append((byte + [None] * 8)[:8])
-    return bytes
-
-
 class MemRgn:
     """
     Von Neumann root backing store type for bits. Language specific.
@@ -47,14 +34,20 @@ class MemRgn:
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
 def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
+    if not mem.bytes:  # Handle null
+        return mem
+
     byte_direction = iter if byte_order == Order.LeftToRight else reversed
     bit_direction = iter if bit_order == Order.LeftToRight else reversed
 
-    out = MemRgn()
-    out.bytes = [
+    transformed_bytes = [
         [bit for bit in bit_direction(byte)]
         for byte in byte_direction(mem.bytes)
     ]
+
+    # Slide down if reversed and regroup into bytes
+    out = MemRgn()
+    out.bytes = group_bits_into_bytes(iterate_logical_bits(transformed_bytes))
 
     validate_memory(out)
 
@@ -81,11 +74,25 @@ def op_reverse_bits(mem: MemRgn) -> MemRgn:
 # Host language specific meta operations for memory regions
 # ------------------------------------------------------------------------------
 
+# TODO(pbz): Use this in op_extend/op_truncate/etc.
+def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
+    bytes = []
+    byte = []
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    bytes.append((byte + [None] * 8)[:8])
+    return bytes
+
+
 # TODO(pbz): Call validate_memory() each time?
-def iterate_logical_bits(mem: MemRgn):
-    return (bit for byte in mem.bytes for bit in byte if bit != None)
+def iterate_logical_bits(bytes_: LogicalMemory) -> list[int]:
+    return (bit for byte in bytes_ for bit in byte if bit != None)
 
 
+# Contract to uphold invariant in a decentralized way
 def validate_memory(mem: MemRgn):
     ensure(
         all(len(byte) == 8 for byte in mem.bytes),
@@ -102,7 +109,7 @@ def validate_memory(mem: MemRgn):
             f'No bits set: {mem.bytes}'
         )
 
-    all_bits = list(iterate_logical_bits(mem))
+    all_bits = list(iterate_logical_bits(mem.bytes))
 
     # This reconstructs the memory by hand to make sure it's valid but it
     # assumes that it's in identity format. Does that work with the algebra?
@@ -132,7 +139,7 @@ def op_bit_length(mem: MemRgn) -> int:
 
     Invariant: input memory must be valid and mapped to program's universe.
     """
-    return len(list(iterate_logical_bits(mem)))
+    return len(list(iterate_logical_bits(mem.bytes)))
 
 
 # TODO(pbz): Call validate_memory() each time?
@@ -355,7 +362,8 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     ensure(mem_len == 1, 'Fill payload must be 0 or 1')
 
     length = mem_len + amount
-    bits = [bit for byte in mem.bytes for bit in byte] + [0] * length - mem_len
+    padding = ([0] * (length - mem_len))
+    bits = [bit for byte in mem.bytes for bit in byte] + padding
     out = MemRgn()
 
     # TODO(pbz): Test this worked:
