@@ -33,12 +33,12 @@ class MemRgn:
 # also be added as a universe boundary. All memory is eventually mapped to
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
-def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
+def op_transform(mem: MemRgn, *, bit_order: Order, byte_order: Order) -> MemRgn:
     if not mem.bytes:  # Handle null
         return mem
 
-    byte_direction = iter if byte_order == Order.LeftToRight else reversed
-    bit_direction = iter if bit_order == Order.LeftToRight else reversed
+    bit_direction = iter if bit_order == L2R else reversed
+    byte_direction = iter if byte_order == L2R else reversed
 
     transformed_bytes = [
         [bit for bit in bit_direction(byte)]
@@ -55,19 +55,23 @@ def op_transform(mem: MemRgn, bit_order: Order, byte_order: Order) -> MemRgn:
 
 
 def op_identity(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.LeftToRight, Order.LeftToRight)
+    "Maps a memory region to itself."
+    return op_transform(mem, bit_order=L2R, byte_order=L2R)
 
 
 def op_reverse(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.RightToLeft, Order.RightToLeft)
+    "Reverse both the bits and bytes for a full reversal."
+    return op_transform(mem, bit_order=R2L, byte_order=R2L)
 
 
 def op_reverse_bytes(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.LeftToRight, Order.RightToLeft)
+    "Reverse the bytes but maintain bit order."
+    return op_transform(mem, bit_order=L2R, byte_order=R2L)
 
 
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.RightToLeft, Order.LeftToRight)
+    "Reverse the bits in every byte but maintain byte order."
+    return op_transform(mem, bit_order=R2L, byte_order=L2R)
 
 
 # ------------------------------------------------------------------------------

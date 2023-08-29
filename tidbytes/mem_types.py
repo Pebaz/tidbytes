@@ -24,6 +24,10 @@ class Order(Enum):
     RightToLeft = auto()  # First element is on far right
 
 
+L2R = Order.LeftToRight
+R2L = Order.RightToLeft
+
+
 u8 = ctypes.c_ubyte
 u16 = ctypes.c_uint16
 u32 = ctypes.c_uint32

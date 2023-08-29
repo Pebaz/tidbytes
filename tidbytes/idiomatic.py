@@ -95,7 +95,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         # All codec methods treat input values as left to right big and byte
         # order so transforming according to the input bit and byte order always
         # results in left to right bit and byte order.
-        op_transform(self.rgn, in_bit_order, in_byte_order)
+        op_transform(self.rgn, bit_order=in_bit_order, byte_order=in_byte_order)
 
     def __setitem__(self, key, value):
         payload = MemRgn()

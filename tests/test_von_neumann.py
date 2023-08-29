@@ -218,7 +218,44 @@ def test_op_truncate():
 
 
 def test_op_transform():
-    ...
+    mem = MemRgn()
+    mem.bytes = [[1, 1] + [0] * 6, [0] * 2 + [None] * 6]
+
+    mem = op_transform(mem, bit_order=L2R, byte_order=L2R)
+
+    assert mem.bytes == [
+        [1, 1, 0, 0, 0, 0, 0, 0],
+        [0, 0, None, None, None, None, None, None]
+    ]
+
+    mem = op_transform(mem, bit_order=L2R, byte_order=R2L)
+
+    assert mem.bytes == [
+        [0, 0, 1, 1, 0, 0, 0, 0],
+        [0, 0, None, None, None, None, None, None]
+    ]
+
+    mem = op_transform(mem, bit_order=R2L, byte_order=L2R)
+
+    assert mem.bytes == [
+        [0, 0, 0, 0, 1, 1, 0, 0],
+        [0, 0, None, None, None, None, None, None]
+    ]
+
+    # Undo last op so that the last check is not symmetrical
+    mem = op_transform(mem, bit_order=R2L, byte_order=L2R)
+
+    assert mem.bytes == [
+        [0, 0, 1, 1, 0, 0, 0, 0],
+        [0, 0, None, None, None, None, None, None]
+    ]
+
+    mem = op_transform(mem, bit_order=R2L, byte_order=R2L)
+
+    assert mem.bytes == [
+        [0, 0, 0, 0, 0, 0, 1, 1],
+        [0, 0, None, None, None, None, None, None]
+    ]
 
 def test_op_identity():
     mem = memory([1, 1, 0])
