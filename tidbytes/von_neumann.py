@@ -63,11 +63,11 @@ def op_reverse(mem: MemRgn) -> MemRgn:
 
 
 def op_reverse_bytes(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.RightToLeft, Order.LeftToRight)
+    return op_transform(mem, Order.LeftToRight, Order.RightToLeft)
 
 
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
-    return op_transform(mem, Order.LeftToRight, Order.RightToLeft)
+    return op_transform(mem, Order.RightToLeft, Order.LeftToRight)
 
 
 # ------------------------------------------------------------------------------
