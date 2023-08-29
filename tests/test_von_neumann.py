@@ -236,3 +236,16 @@ def test_op_reverse_bits():
     mem = memory([1, 1, 0])
     out = op_reverse_bits(mem)
     assert out.bytes == [[0, 1, 1, None, None, None, None, None]]
+
+
+def test_op_reverse_bytes():
+    mem = MemRgn()
+    mem.bytes = [[1, 1] + [0] * 6, [0] * 2 + [None] * 6]
+    print(mem.bytes)
+    out = op_reverse_bytes(mem)
+    print(out.bytes)
+    assert out.bytes == [
+        [0, 0, 1, 1, 0, 0, 0, 0],
+        [0, 0, None, None, None, None, None, None]
+    ]
+
