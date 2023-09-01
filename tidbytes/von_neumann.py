@@ -49,7 +49,7 @@ def op_transform(mem: MemRgn, *, bit_order: Order, byte_order: Order) -> MemRgn:
     out = MemRgn()
     out.bytes = group_bits_into_bytes(iterate_logical_bits(transformed_bytes))
 
-    validate_memory(out)
+    contract_validate_memory(out)
 
     return out
 
@@ -91,13 +91,13 @@ def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
     return bytes
 
 
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def iterate_logical_bits(bytes_: LogicalMemory) -> list[int]:
     return (bit for byte in bytes_ for bit in byte if bit != None)
 
 
 # Contract to uphold invariant in a decentralized way
-def validate_memory(mem: MemRgn):
+def contract_validate_memory(mem: MemRgn):
     ensure(
         all(len(byte) == 8 for byte in mem.bytes),
         f'Some bytes not 8 bits: {mem.bytes}'
@@ -133,8 +133,11 @@ def validate_memory(mem: MemRgn):
     )
 
 
-# TODO(pbz): Call validate_memory() each time?
-def op_bit_length(mem: MemRgn) -> int:
+# TODO(pbz): Call contract_validate_memory() each time?
+# This is a meta-operation that acts as a getter on the data state machine. It
+# does not produce the same type used by the algebra so it is not an operation.
+# It does however retrieve metadata so it is a meta operation.
+def meta_op_bit_length(mem: MemRgn) -> int:
     """
     The number of used bits in the memory region.
 
@@ -146,8 +149,11 @@ def op_bit_length(mem: MemRgn) -> int:
     return len(list(iterate_logical_bits(mem.bytes)))
 
 
-# TODO(pbz): Call validate_memory() each time?
-def op_byte_length(mem: MemRgn) -> int:
+# TODO(pbz): Call contract_validate_memory() each time?
+# This is a meta-operation that acts as a getter on the data state machine. It
+# does not produce the same type used by the algebra so it is not an operation.
+# It does however retrieve metadata so it is a meta operation.
+def meta_op_byte_length(mem: MemRgn) -> int:
     """
     The number of bytes necessary to contain the bits in the memory region.
 
@@ -161,15 +167,15 @@ def op_byte_length(mem: MemRgn) -> int:
 # ------------------------------------------------------------------------------
 # Fundamental memory read and write operations
 # ------------------------------------------------------------------------------
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
-    ensure(0 <= index < op_bit_length(mem), f'Index out of bounds: {index}')
+    ensure(0 <= index < meta_op_bit_length(mem), f'Index out of bounds: {index}')
 
     return op_get_bits(mem, index, index + 1)
 
 
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     """
     Invariant: input memory must be valid and mapped to program's universe.
@@ -186,18 +192,18 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     memory. If 2 bytes is fetched from a 15 bit region, only 15 bits will be
     returned but it will not error out since bits aren't addressable.
     """
-    mem_bits = op_bit_length(mem)
+    mem_bits = meta_op_bit_length(mem)
     ensure(0 <= index < mem_bits, f'Index out of bounds: {index}')
 
     return op_get_bits(mem, index * 8, min(index * 8 + 8, mem_bits))
 
 
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
-    # TODO(pbz): I'm fairly certain this needs to be `stop < op_bit_length(mem)`
+    # TODO(pbz): I'm fairly certain this needs to be `stop < meta_op_bit_length(mem)`
     # TODO(pbz): since I think it should be an exclusive range? Empty ranges?
-    ensure(0 <= start <= stop <= op_bit_length(mem), 'Index out of bounds')
+    ensure(0 <= start <= stop <= meta_op_bit_length(mem), 'Index out of bounds')
 
     out = MemRgn()
     index_counter = 0
@@ -221,11 +227,11 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     return out
 
 
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     ensure(
-        0 <= start <= stop <= op_byte_length(mem),
+        0 <= start <= stop <= meta_op_byte_length(mem),
         'Index out of bounds'
     )
 
@@ -233,26 +239,26 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
-    ensure(op_bit_length(payload) == 1, 'More than one bit supplied')
-    ensure(0 <= offset < op_bit_length(mem), 'Offset out of bounds')
+    ensure(meta_op_bit_length(payload) == 1, 'More than one bit supplied')
+    ensure(0 <= offset < meta_op_bit_length(mem), 'Offset out of bounds')
 
     return op_set_bits(mem, offset, payload)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
-    mem_len = op_bit_length(mem)
-    ending_index = offset + op_bit_length(payload)
+    mem_len = meta_op_bit_length(mem)
+    ending_index = offset + meta_op_bit_length(payload)
     ensure(0 <= offset < mem_len, 'Offset out of bounds')
     ensure(
         ending_index <= mem_len,
         f"Payload can't fit: bit offset ({offset}) with length "
-        f"({op_bit_length(payload)}) is too big for space left after offset "
+        f"({meta_op_bit_length(payload)}) is too big for space left after offset "
         f"({mem_len - offset})"
     )
 
@@ -279,26 +285,26 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
-    payload_bits = op_bit_length(payload)
+    payload_bits = meta_op_bit_length(payload)
     ensure(payload_bits <= 8, f'Bit count greater than 8: {payload_bits}')
     ensure(
-        0 <= offset * 8 < op_bit_length(mem),
-        f"Offset out of bounds: {op_bit_length(mem)=}, {offset=}"
+        0 <= offset * 8 < meta_op_bit_length(mem),
+        f"Offset out of bounds: {meta_op_bit_length(mem)=}, {offset=}"
     )
     ensure(
-        op_bit_length(mem) - offset * 8 + payload_bits >= 0,
+        meta_op_bit_length(mem) - offset * 8 + payload_bits >= 0,
         f"Payload byte doesn't fit within destination: "
-        f"{op_bit_length(mem)=}, {offset=}, {op_bit_length(payload)=}"
+        f"{meta_op_bit_length(mem)=}, {offset=}, {meta_op_bit_length(payload)=}"
     )
 
     return op_set_bits(mem, offset * 8, payload)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     """
     Assumes exact bit length of payload should fit in destination. Does not
@@ -307,11 +313,11 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
     Invariant: input memory must be valid and mapped to program's universe.
     """
-    payload_bits = op_bit_length(payload)
+    payload_bits = meta_op_bit_length(payload)
     ensure(
-        0 <= offset * 8 <= offset * 8 + payload_bits <= op_bit_length(mem),
+        0 <= offset * 8 <= offset * 8 + payload_bits <= meta_op_bit_length(mem),
         f"Payload byte doesn't fit within destination: "
-        f"{op_bit_length(mem)=}, {offset=}, {payload_bits=}"
+        f"{meta_op_bit_length(mem)=}, {offset=}, {payload_bits=}"
     )
 
     return op_set_bits(mem, offset * 8, payload)
@@ -331,10 +337,10 @@ def op_fill_range(): ...
 # ??????????????????????????????????????????????????????????????????????????????
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_truncate(mem: MemRgn, length: int) -> MemRgn:
     "Truncates a memory region to be shorter or equal bit length."
-    mem_len = op_bit_length(mem)
+    mem_len = meta_op_bit_length(mem)
     ensure(
         length <= mem_len,
         f'Truncated length ({length}) is longer than region size ({mem_len}). '
@@ -359,10 +365,10 @@ def op_truncate(mem: MemRgn, length: int) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     "Extends a memory region with 0 or 1 to a given bit length."
-    mem_len = op_bit_length(fill)
+    mem_len = meta_op_bit_length(fill)
     ensure(mem_len == 1, 'Fill payload must be 0 or 1')
 
     length = mem_len + amount
@@ -384,10 +390,10 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
-    mem_len = op_bit_length(mem)
+    mem_len = meta_op_bit_length(mem)
 
     # ensure(
     #     mem_len <= length,
@@ -412,10 +418,10 @@ def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
-    mem_len = op_bit_length(mem)
+    mem_len = meta_op_bit_length(mem)
     ensure(
         mem_len <= length * 8,
         f'Cannot truncate bits from {mem_len} to {length * 8}'
@@ -423,14 +429,14 @@ def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
     return op_ensure_bit_length(mem, length * 8)
 
 
-# TODO(pbz): Call validate_memory() each time?
+# TODO(pbz): Call contract_validate_memory() each time?
 def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     """
     Invariant: memory regions should be from the same universe and valid.
     """
-    # TODO(pbz): Call validate_memory() each time?
-    validate_memory(mem_left)
-    validate_memory(mem_right)
+    # TODO(pbz): Call contract_validate_memory() each time?
+    contract_validate_memory(mem_left)
+    contract_validate_memory(mem_right)
 
     bits = [
         bit for region in [mem_left, mem_right]
@@ -450,6 +456,6 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     #     byte.append(bit)
     # out.bytes.append((byte + [None] * 8)[:8])
 
-    validate_memory(out)
+    contract_validate_memory(out)
 
     return out

@@ -40,7 +40,7 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
                 byte.clear()
             byte.append(bit)
         mem.bytes.append((byte + [None] * 8)[:8])
-    validate_memory(mem)
+    contract_validate_memory(mem)
     return mem
 
 
@@ -50,17 +50,17 @@ def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
 
 def test_bit_length():
     mem = memory(9)
-    assert op_bit_length(mem) == 9
+    assert meta_op_bit_length(mem) == 9
 
 
 def test_byte_length():
     mem = memory(9)
-    assert op_byte_length(mem) == 2
+    assert meta_op_byte_length(mem) == 2
 
 
 def test_get_bit():
     mem = memory(9)
-    for i in range(op_bit_length(mem)):
+    for i in range(meta_op_bit_length(mem)):
         assert op_get_bit(mem, i).bytes == memory(1).bytes
 
 
@@ -68,7 +68,7 @@ def test_get_bits():
     mem = memory([0] * 8 + [1, 0, 1, 0])
     out = op_get_bits(mem, 0, 8)
     assert out.bytes == [[0] * 8]
-    validate_memory(out)
+    contract_validate_memory(out)
 
 
 def test_get_byte():
@@ -82,7 +82,7 @@ def test_set_bit():
     pay.bytes[0][0] = 1
     mem = op_set_bit(mem, 8, pay)
     assert mem.bytes[1][0] == 1
-    validate_memory(mem)
+    contract_validate_memory(mem)
 
 
 def test_set_bits():
@@ -91,7 +91,7 @@ def test_set_bits():
     pay.bytes[0][0] = 1
     mem = op_set_bits(mem, 8, pay)
     assert mem.bytes[1] == pay.bytes[0]
-    validate_memory(mem)
+    contract_validate_memory(mem)
 
 
 # ------------------------------------------------------------------------------
@@ -104,9 +104,9 @@ def test_set_bits():
     (9, 9, '9 set bits, 7 unset bits crossing byte boundary'),
     (16, 16, '2 bytes'),
 ])
-def test_op_bit_length(init, expect, msg):
+def test_meta_op_bit_length(init, expect, msg):
     mem = memory(init)
-    out = op_bit_length(mem)
+    out = meta_op_bit_length(mem)
     assert out == expect, msg
 
 
@@ -116,9 +116,9 @@ def test_op_bit_length(init, expect, msg):
     (9, 2, '9 set bits, 7 unset bits crossing byte boundary'),
     (17, 3, '3 bytes, 7 unset bits'),
 ])
-def test_op_byte_length(init, expect, msg):
+def test_meta_op_byte_length(init, expect, msg):
     mem = memory(init)
-    out = op_byte_length(mem)
+    out = meta_op_byte_length(mem)
     assert out == expect, msg
 
 
@@ -213,7 +213,7 @@ def test_op_set_bytes(init, offset, payload, expect, msg):
 def test_op_truncate():
     mem = memory(8)
     out = op_truncate(mem, 4)
-    assert op_bit_length(out) == 4
+    assert meta_op_bit_length(out) == 4
     assert out.bytes == [[0, 0, 0, 0, None, None, None, None]]
 
 

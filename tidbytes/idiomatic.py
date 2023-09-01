@@ -154,7 +154,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def __len__(self):
         # TODO(pbz): It seems like most of these built-ins work with bits...?
-        return op_bit_length(self.rgn)
+        return meta_op_bit_length(self.rgn)
 
     def __bool__(self):
         "False if Mem is null else True"
@@ -170,7 +170,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def validate(self):
         if self.rgn.bytes:
-            validate_memory(self.rgn)
+            contract_validate_memory(self.rgn)
         return self
 
     def truncate(self, bit_length: int):

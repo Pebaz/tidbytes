@@ -39,8 +39,8 @@ graph TD;
 ```mermaid
 graph TD;
     subgraph Host Language Specific Meta Operations
-        op_bit_length
-        op_byte_length
+        meta_op_bit_length
+        meta_op_byte_length
         validate_memory
         iterate_logical_bits
     end
@@ -194,6 +194,6 @@ mindmap
             op_set_bit
             op_set_byte
             op_set_bytes
-        op_bit_length
-            op_byte_length
+        meta_op_bit_length
+            meta_op_byte_length
 ```

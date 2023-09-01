@@ -708,7 +708,7 @@ def from_big_integer(value: int, bit_length: int) -> MemRgn:
     mem = MemRgn()
     mem.bytes = group_bits_into_bytes(bits)
 
-    # TODO(pbz): return validate_memory(mem)
+    # TODO(pbz): return contract_validate_memory(mem)
     return mem
 
 
