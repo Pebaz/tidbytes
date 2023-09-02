@@ -261,6 +261,27 @@ def memory(init):
 
 
 
+# !!!!!!!!!!!!!!!!! Mem[3](u8(2)) should truncate to 3 bits.
+
+# TODO(pbz): Rework the rest of the codecs to take a bit length even if
+# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+# TODO(pbz): fail, etc.
+
+# TODO(pbz): Rework the rest of the codecs to take a bit length even if
+# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+# TODO(pbz): fail, etc.
+
+# TODO(pbz): Rework the rest of the codecs to take a bit length even if
+# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+# TODO(pbz): fail, etc.
+
+# TODO(pbz): Rework the rest of the codecs to take a bit length even if
+# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+# TODO(pbz): fail, etc.
+
+# TODO(pbz): Rework the rest of the codecs to take a bit length even if
+# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
+# TODO(pbz): fail, etc.
 
 
 
@@ -767,13 +788,14 @@ def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
 def from_bytes(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from list of unsigned integers in range 0x00 to 0xFF."
     ensure(all(0 <= byte <= 0xFF for byte in value))
+    bit_length = bit_length if bit_length is not None else len(value) * 8
     bytes_ = [
         list(reversed(identity_bits_from_numeric_byte(byte)))
         for byte in value
     ]
     mem = MemRgn()
     mem.bytes = bytes_
-    return mem
+    return op_ensure_bit_length(mem, bit_length)
 
 
 

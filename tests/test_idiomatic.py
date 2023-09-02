@@ -3,21 +3,24 @@ import pytest
 from typing import *
 from tidbytes import *
 
+UN = None  # Unsized
 
-@pytest.mark.parametrize('init,expect,msg', [
-    (b'\x00', '00000000', 'Single byte'),
-    (b'\x00\x01', '00000000 00000001', '2 bytes 1 bit'),
-    (b'\x00\x02', '00000000 00000010', '2 bytes 2 bits'),
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, b'\x00', '00000000', 'Single byte'),
+    (UN, b'\x00\x01', '00000000 00000001', '2 bytes 1 bit'),
+    (UN, b'\x00\x02', '00000000 00000010', '2 bytes 2 bits'),
+    (8, b'\x00\x02', '00000000', 'Truncation'),
 ])
-def test_from_bytes(init, expect, msg):
-    assert str(Mem(init)) == expect, msg
+def test_from_bytes(bits, init, expect, msg):
+    assert str(Mem[bits](init)) == expect, msg
 
-@pytest.mark.parametrize('init,expect,msg', [
-    (0b1011, '11010000', 'Single byte'),
-    (0b100000101, '10100000', 'Single byte out of 2 bytes'),
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1011, '11010000', 'Single byte'),
+    (UN, 0b100000101, '10100000', 'Single byte out of 2 bytes'),
+    (4, 0b1011, '1101', 'Truncation'),
 ])
-def test_from_natural_u8(init, expect, msg):
-    assert str(Mem(u8(init))) == expect, msg
+def test_from_natural_u8(bits, init, expect, msg):
+    assert str(Mem[bits](u8(init))) == expect, msg
 
 
 @pytest.mark.parametrize('init,expect,msg', [

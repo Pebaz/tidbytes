@@ -199,28 +199,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise MemException('Invalid initializer')
         '''
 
-        # !!!!!!!!!!!!!!!!! Should Mem[3](u8(2)) truncate to 3 bits?
-
-        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
-        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-        # TODO(pbz): fail, etc.
-
-        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
-        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-        # TODO(pbz): fail, etc.
-
-        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
-        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-        # TODO(pbz): fail, etc.
-
-        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
-        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-        # TODO(pbz): fail, etc.
-
-        # TODO(pbz): Rework the rest of the codecs to take a bit length even if
-        # TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-        # TODO(pbz): fail, etc.
-
         if isinstance(init, type(None)):
             if bit_length is None:
                 return MemRgn()
