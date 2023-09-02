@@ -222,7 +222,12 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         # TODO(pbz): fail, etc.
 
         if isinstance(init, type(None)):
-            return MemRgn()
+            if bit_length is None:
+                return MemRgn()
+            else:
+                rgn = MemRgn()
+                rgn.bytes = group_bits_into_bytes([0] * bit_length)
+                return rgn
         elif isinstance(init, MemRgn):
             return init
 
