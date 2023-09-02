@@ -1,6 +1,4 @@
-import math
 from .mem_types import *
-from enum import Enum, auto
 
 
 # Putting this first and foremost to declare the opportunity to refactor all
@@ -72,96 +70,6 @@ def op_reverse_bytes(mem: MemRgn) -> MemRgn:
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
     "Reverse the bits in every byte but maintain byte order."
     return op_transform(mem, bit_order=R2L, byte_order=L2R)
-
-
-# ------------------------------------------------------------------------------
-# Host language specific meta operations for memory regions
-# ------------------------------------------------------------------------------
-
-# TODO(pbz): Use this in op_extend/op_truncate/etc.
-def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
-    bytes = []
-    byte = []
-    for i, bit in enumerate(bits):
-        if byte and i % 8 == 0:
-            bytes.append(byte[:])
-            byte.clear()
-        byte.append(bit)
-    bytes.append((byte + [None] * 8)[:8])
-    return bytes
-
-
-# TODO(pbz): Call contract_validate_memory() each time?
-def iterate_logical_bits(bytes_: LogicalMemory) -> list[int]:
-    return (bit for byte in bytes_ for bit in byte if bit != None)
-
-
-# Contract to uphold invariant in a decentralized way
-def contract_validate_memory(mem: MemRgn):
-    ensure(
-        all(len(byte) == 8 for byte in mem.bytes),
-        f'Some bytes not 8 bits: {mem.bytes}'
-    )
-    ensure(
-        all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes),
-        f'Some bytes do not contain 0, 1, or None: {mem.bytes}'
-    )
-
-    if mem.bytes:
-        ensure(
-            any(any(i in {0, 1} for i in byte) for byte in mem.bytes),
-            f'No bits set: {mem.bytes}'
-        )
-
-    all_bits = list(iterate_logical_bits(mem.bytes))
-
-    # This reconstructs the memory by hand to make sure it's valid but it
-    # assumes that it's in identity format. Does that work with the algebra?
-
-    if len(all_bits) % 8 > 0:
-        all_bits += [None] * (8 - len(all_bits) % 8)
-    all_bytes = []
-    while all_bits:
-        all_bytes.append(all_bits[:8])
-        all_bits = all_bits[8:]
-    ensure(
-        mem.bytes == all_bytes,
-        (
-            f'Some bytes contained unset bits in the middle: {mem.bytes}.'
-            f'Should be: {all_bytes}'
-        )
-    )
-
-
-# TODO(pbz): Call contract_validate_memory() each time?
-# This is a meta-operation that acts as a getter on the data state machine. It
-# does not produce the same type used by the algebra so it is not an operation.
-# It does however retrieve metadata so it is a meta operation.
-def meta_op_bit_length(mem: MemRgn) -> int:
-    """
-    The number of used bits in the memory region.
-
-    Does not count unset partial bits. For example, the bit length would be 9:
-    [[0, 0, 0, 0, 0, 0, 0, 0], [0, None, None, None, None, None, None, None]]
-
-    Invariant: input memory must be valid and mapped to program's universe.
-    """
-    return len(list(iterate_logical_bits(mem.bytes)))
-
-
-# TODO(pbz): Call contract_validate_memory() each time?
-# This is a meta-operation that acts as a getter on the data state machine. It
-# does not produce the same type used by the algebra so it is not an operation.
-# It does however retrieve metadata so it is a meta operation.
-def meta_op_byte_length(mem: MemRgn) -> int:
-    """
-    The number of bytes necessary to contain the bits in the memory region.
-
-    Relies on the assumption that `MemRgn` always stores a multiple of 8 bits.
-
-    Invariant: input memory must be valid and mapped to program's universe.
-    """
-    return len(mem.bytes)
 
 
 # ------------------------------------------------------------------------------
@@ -459,3 +367,96 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     contract_validate_memory(out)
 
     return out
+
+
+# ------------------------------------------------------------------------------
+# Host language specific meta operations for memory regions
+# ------------------------------------------------------------------------------
+
+# Contract to uphold invariant in a decentralized way
+def contract_validate_memory(mem: MemRgn):
+    ensure(
+        all(len(byte) == 8 for byte in mem.bytes),
+        f'Some bytes not 8 bits: {mem.bytes}'
+    )
+    ensure(
+        all(all(i in {0, 1, None} for i in byte) for byte in mem.bytes),
+        f'Some bytes do not contain 0, 1, or None: {mem.bytes}'
+    )
+
+    if mem.bytes:
+        ensure(
+            any(any(i in {0, 1} for i in byte) for byte in mem.bytes),
+            f'No bits set: {mem.bytes}'
+        )
+
+    all_bits = list(iterate_logical_bits(mem.bytes))
+
+    # This reconstructs the memory by hand to make sure it's valid but it
+    # assumes that it's in identity format. Does that work with the algebra?
+
+    if len(all_bits) % 8 > 0:
+        all_bits += [None] * (8 - len(all_bits) % 8)
+    all_bytes = []
+    while all_bits:
+        all_bytes.append(all_bits[:8])
+        all_bits = all_bits[8:]
+    ensure(
+        mem.bytes == all_bytes,
+        (
+            f'Some bytes contained unset bits in the middle: {mem.bytes}.'
+            f'Should be: {all_bytes}'
+        )
+    )
+
+
+# TODO(pbz): Call contract_validate_memory() each time?
+# This is a meta-operation that acts as a getter on the data state machine. It
+# does not produce the same type used by the algebra so it is not an operation.
+# It does however retrieve metadata so it is a meta operation.
+def meta_op_bit_length(mem: MemRgn) -> int:
+    """
+    The number of used bits in the memory region.
+
+    Does not count unset partial bits. For example, the bit length would be 9:
+    [[0, 0, 0, 0, 0, 0, 0, 0], [0, None, None, None, None, None, None, None]]
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
+    return len(list(iterate_logical_bits(mem.bytes)))
+
+
+# TODO(pbz): Call contract_validate_memory() each time?
+# This is a meta-operation that acts as a getter on the data state machine. It
+# does not produce the same type used by the algebra so it is not an operation.
+# It does however retrieve metadata so it is a meta operation.
+def meta_op_byte_length(mem: MemRgn) -> int:
+    """
+    The number of bytes necessary to contain the bits in the memory region.
+
+    Relies on the assumption that `MemRgn` always stores a multiple of 8 bits.
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
+    return len(mem.bytes)
+
+
+# ------------------------------------------------------------------------------
+# Internal Utility Functions
+# ------------------------------------------------------------------------------
+
+def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
+    bytes = []
+    byte = []
+    for i, bit in enumerate(bits):
+        if byte and i % 8 == 0:
+            bytes.append(byte[:])
+            byte.clear()
+        byte.append(bit)
+    bytes.append((byte + [None] * 8)[:8])
+    return bytes
+
+
+# TODO(pbz): Call contract_validate_memory() each time?
+def iterate_logical_bits(bytes_: LogicalMemory) -> list[int]:
+    return (bit for byte in bytes_ for bit in byte if bit != None)
