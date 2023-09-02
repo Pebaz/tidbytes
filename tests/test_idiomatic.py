@@ -82,7 +82,6 @@ def test_from_natural_u64(init, expect, msg):
     assert str(Mem(u64(init))) == expect, msg
 
 
-'''
 @pytest.mark.parametrize('init,expect,msg', [
     (
         0b1011,
@@ -98,9 +97,10 @@ def test_from_natural_u64(init, expect, msg):
     ),
 ])
 def test_from_numeric_u64(init, expect, msg):
-    assert str(Mem.from_numeric_u64(init)) == expect, msg
+    assert str(Num(u64(init))) == expect, msg
 
 
+'''
 def test_from_bit_length():
     mem = Mem.from_bit_length(1)
     assert str(mem) == '0', 'Invalid!'
