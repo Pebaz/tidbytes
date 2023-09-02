@@ -33,12 +33,13 @@ def test_from_numeric_u8(bits, init, expect, msg):
     assert str(Num[bits](u8(init))) == expect, msg
 
 
-@pytest.mark.parametrize('init,expect,msg', [
-    (0b1011, '11010000 00000000', 'Single byte'),
-    (0b100000101, '10100000 10000000', '2 bytes'),
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1011, '11010000 00000000', 'Single byte'),
+    (UN, 0b100000101, '10100000 10000000', '2 bytes'),
+    (8, 0b100000101, '10100000', 'Truncation'),
 ])
-def test_from_natural_u16(init, expect, msg):
-    assert str(Mem(u16(init))) == expect, msg
+def test_from_natural_u16(bits, init, expect, msg):
+    assert str(Mem[bits](u16(init))) == expect, msg
 
 
 @pytest.mark.parametrize('init,expect,msg', [
