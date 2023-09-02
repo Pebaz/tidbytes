@@ -767,9 +767,12 @@ def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
 def from_bytes(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from list of unsigned integers in range 0x00 to 0xFF."
     ensure(all(0 <= byte <= 0xFF for byte in value))
-    bits = list(reversed(identity_bits_from_numeric_byte(value)))
+    bytes_ = [
+        list(reversed(identity_bits_from_numeric_byte(byte)))
+        for byte in value
+    ]
     mem = MemRgn()
-    mem.bytes = [bits[i:i + 8] for i in range(0, len(bits), 8)]
+    mem.bytes = bytes_
     return mem
 
 
