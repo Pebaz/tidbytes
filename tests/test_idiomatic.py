@@ -20,15 +20,15 @@ def test_from_natural_u8(init, expect, msg):
     assert str(Mem(u8(init))) == expect, msg
 
 
-'''
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '00001011', 'Single byte'),
     (0b100000101, '00000101', 'Single byte out of 2 bytes'),
 ])
 def test_from_numeric_u8(init, expect, msg):
-    assert str(Mem.from_numeric_u8(init)) == expect, msg
+    assert str(Num(u8(init))) == expect, msg
 
 
+'''
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '11010000 00000000', 'Single byte'),
     (0b100000101, '10100000 10000000', '2 bytes'),
