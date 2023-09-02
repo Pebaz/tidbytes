@@ -64,7 +64,6 @@ def test_from_numeric_u32(init, expect, msg):
     assert str(Num(u32(init))) == expect, msg
 
 
-'''
 @pytest.mark.parametrize('init,expect,msg', [
     (
         0b1011,
@@ -79,10 +78,11 @@ def test_from_numeric_u32(init, expect, msg):
         '8 bytes'
     ),
 ])
-def test_from_bytes_u64(init, expect, msg):
-    assert str(Mem.from_bytes_u64(init)) == expect, msg
+def test_from_natural_u64(init, expect, msg):
+    assert str(Mem(u64(init))) == expect, msg
 
 
+'''
 @pytest.mark.parametrize('init,expect,msg', [
     (
         0b1011,
