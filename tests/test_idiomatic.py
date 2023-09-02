@@ -12,15 +12,15 @@ from tidbytes import *
 def test_from_bytes(init, expect, msg):
     assert str(Mem(init)) == expect, msg
 
-'''
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '11010000', 'Single byte'),
     (0b100000101, '10100000', 'Single byte out of 2 bytes'),
 ])
-def test_from_byte_u8(init, expect, msg):
-    assert str(Mem.from_byte_u8(init)) == expect, msg
+def test_from_natural_u8(init, expect, msg):
+    assert str(Mem(u8(init))) == expect, msg
 
 
+'''
 @pytest.mark.parametrize('init,expect,msg', [
     (0b1011, '00001011', 'Single byte'),
     (0b100000101, '00000101', 'Single byte out of 2 bytes'),
