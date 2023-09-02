@@ -14,6 +14,7 @@ UN = None  # Unsized
 def test_from_bytes(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
+
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (UN, 0b1011, '11010000', 'Single byte'),
     (UN, 0b100000101, '10100000', 'Single byte out of 2 bytes'),
@@ -23,12 +24,13 @@ def test_from_natural_u8(bits, init, expect, msg):
     assert str(Mem[bits](u8(init))) == expect, msg
 
 
-@pytest.mark.parametrize('init,expect,msg', [
-    (0b1011, '00001011', 'Single byte'),
-    (0b100000101, '00000101', 'Single byte out of 2 bytes'),
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1011, '00001011', 'Single byte'),
+    (UN, 0b100000101, '00000101', 'Single byte out of 2 bytes'),
+    (7, 0b100000101, '0000101', 'Truncation'),
 ])
-def test_from_numeric_u8(init, expect, msg):
-    assert str(Num(u8(init))) == expect, msg
+def test_from_numeric_u8(bits, init, expect, msg):
+    assert str(Num[bits](u8(init))) == expect, msg
 
 
 @pytest.mark.parametrize('init,expect,msg', [
