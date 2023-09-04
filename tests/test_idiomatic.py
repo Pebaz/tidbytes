@@ -186,22 +186,30 @@ def test_from_natural_u64(bits, init, expect, msg):
     assert str(Mem[bits](u64(init))) == expect, msg
 
 
-@pytest.mark.parametrize('init,expect,msg', [
+@pytest.mark.parametrize('bits,init,expect,msg', [
     (
+        UN,
         0b1011,
         '00000000 00000000 00000000 00000000 '
         '00000000 00000000 00000000 00001011',
         'Single byte'
     ),
     (
+        UN,
         0b0000000100000101000000010000010100000001000001010000000100000101,
         '00000001 00000101 00000001 00000101 '
         '00000001 00000101 00000001 00000101',
         '8 bytes'
     ),
+    (
+        32,
+        0b0000000100000101000000010000010100000001000001010000000100000101,
+        '00000001 00000101 00000001 00000101',
+        'Truncate'
+    ),
 ])
-def test_from_numeric_u64(init, expect, msg):
-    assert str(Num(u64(init))) == expect, msg
+def test_from_numeric_u64(bits, init, expect, msg):
+    assert str(Num[bits](u64(init))) == expect, msg
 
 
 def test_from_bit_length():
