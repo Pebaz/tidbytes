@@ -226,7 +226,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_natural_u64(init, bit_length)
 
         elif isinstance(init, i8):
-            return from_byte_i8(init, bit_length)
+            return from_natural_i8(init, bit_length)
         elif isinstance(init, i16):
             return from_natural_i16(init, bit_length)
         elif isinstance(init, i32):

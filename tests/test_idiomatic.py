@@ -14,7 +14,7 @@ UN = None  # Unsized
 def test_from_bytes(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
-
+# TODO(pbz): Careful, ctypes u8(0b100000101) truncates to 5, not Tidbytes...
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (UN, 0b1011, '11010000', 'Single byte'),
     (UN, 0b100000101, '10100000', 'Single byte out of 2 bytes'),
@@ -157,8 +157,26 @@ def test_from_numeric_u64(bits, init, expect, msg):
 # TODO(pbz): Test signed integers!
 # TODO(pbz): Test signed integers!
 # TODO(pbz): Test signed integers!
-def test_from_numeric_i8():
-    pass
+
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1, '10000000', 'Positive'),
+    (UN, -0b1, '11111111', 'Negative'),
+    (UN, 0b10, '01000000', 'Positive'),
+    (UN, -0b10, '01111111', 'Negative'),
+    (4, 0b10, '0100', 'Truncation positive'),
+    (4, -0b10, '0111', 'Truncation negative'),
+])
+def test_from_natural_i8(bits, init, expect, msg):
+    assert str(Mem[bits](i8(init))) == expect, msg
+
+# @pytest.mark.parametrize('bits,init,expect,msg', [
+#     (UN, 0b1011, '11010000', 'Single byte'),
+#     (UN, 0b100000101, '10100000', 'Single byte out of 2 bytes'),
+#     (4, 0b1011, '1101', 'Truncation'),
+# ])
+# def test_from_numeric_i8(bits, init, expect, msg):
+#     assert str(Mem[bits](u8(init))) == expect, msg
+
 # TODO(pbz): Test signed integers!
 # TODO(pbz): Test signed integers!
 # TODO(pbz): Test signed integers!

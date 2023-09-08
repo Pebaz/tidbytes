@@ -505,7 +505,7 @@ def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
     )
 
 
-def from_byte_i8(value: i8, bit_length: int) -> MemRgn:
+def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
     """
     This is different from `from_byte_i8()` because it assumes the provided i8
     value is numeric data with the least significant bit on the right. This
@@ -523,6 +523,7 @@ def from_byte_i8(value: i8, bit_length: int) -> MemRgn:
     bit_length = 8 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<b', value.value)
+    print(value.value, '<-')
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
