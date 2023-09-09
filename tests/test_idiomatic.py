@@ -182,6 +182,30 @@ def test_from_numeric_i8(bits, init, expect, msg):
     assert str(Num[bits](i8(init))) == expect, msg
 
 
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1, '10000000 00000000', 'Positive'),
+    (UN, -0b1, '11111111 11111111', 'Negative'),
+    (UN, 0b10, '01000000 00000000', 'Positive'),
+    (UN, -0b10, '01111111 11111111', 'Negative'),
+    (8, 0b10, '01000000', 'Truncation positive'),
+    (8, -0b10, '01111111', 'Truncation negative'),
+])
+def test_from_natural_i16(bits, init, expect, msg):
+    assert str(Mem[bits](i16(init))) == expect, msg
+
+
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1, '00000000 00000001', 'Positive'),
+    (UN, -0b1, '11111111 11111111', 'Negative'),
+    (UN, 0b10, '00000000 00000010', 'Positive'),
+    (UN, -0b10, '11111111 11111110', 'Negative'),
+    (8, 0b10, '00000000', 'Truncation positive'),
+    (8, -0b10, '11111111', 'Truncation negative'),
+])
+def test_from_numeric_i16(bits, init, expect, msg):
+    assert str(Num[bits](i16(init))) == expect, msg
+
+
 # TODO(pbz): Test signed integers!
 # TODO(pbz): Test signed integers!
 # TODO(pbz): Test signed integers!
