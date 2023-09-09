@@ -650,7 +650,7 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(op_reverse(mem), bit_length)
 
 
-def from_f32(value: f32, bit_length: int) -> MemRgn:
+def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
     "Treats an f32 like a sequence of bytes"
     ensure(
         bit_length >= 32 if bit_length is not None else True,
@@ -672,13 +672,21 @@ def from_f32(value: f32, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(mem, bit_length)
 
 
-def from_f64(value: f64, bit_length: int) -> MemRgn:
+def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
     "Treats an f64 like a sequence of bytes"
     ensure(
         bit_length >= 64 if bit_length is not None else True,
         "Can't truncate floats meaningfully"
     )
-    return from_f32(value, bit_length)
+    return from_natural_f32(value, bit_length)
+
+
+def from_numeric_f32(value: f32, bit_length: int) -> MemRgn:
+    return op_reverse(from_natural_f32(value, bit_length))
+
+
+def from_numeric_f64(value: f64, bit_length: int) -> MemRgn:
+    return op_reverse(from_natural_f64(value, bit_length))
 
 
 # ??????????????????????????????????????????????????????????????????????????????
@@ -748,9 +756,9 @@ def from_natural_float(value: float, bit_length: int) -> MemRgn:
     ieee754_64_bit_mantissa = sys.float_info.mant_dig == 53
 
     if ieee754_64_bit_mantissa:
-        return from_f64(f64(value), bit_length)
+        return from_natural_f64(f64(value), bit_length)
     else:
-        return from_f32(f32(value), bit_length)
+        return from_natural_f32(f32(value), bit_length)
 
 
 def from_numeric_float(value: float, bit_length: int) -> MemRgn:

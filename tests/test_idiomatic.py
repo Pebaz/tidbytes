@@ -131,33 +131,6 @@ def test_from_numeric_u64(bits, init, expect, msg):
     assert str(Num[bits](u64(init))) == expect, msg
 
 
-
-
-
-
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (UN, 0b1, '10000000', 'Positive'),
     (UN, -0b1, '11111111', 'Negative'),
@@ -303,21 +276,30 @@ def test_from_numeric_i64(bits, init, expect, msg):
 
 
 
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b1, '10000000', 'Positive'),
+    (UN, -0b1, '11111111', 'Negative'),
+    (UN, 0b10, '01000000', 'Positive'),
+    (UN, -0b10, '01111111', 'Negative'),
+    (4, 0b10, '0100', 'Truncation positive'),
+    (4, -0b10, '0111', 'Truncation negative'),
+])
+def test_from_natural_f32(bits, init, expect, msg):
+    assert str(Mem[bits](i64(init))) == expect, msg
 
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
-# TODO(pbz): Test signed integers!
 
+def test_from_natural_f64(): ...
+def test_from_numeric_f32(): ...
+def test_from_numeric_f64(): ...
+def test_from_big_integer(): ...
+def test_from_numeric_big_integer(): ...
+def test_from_natural_float(): ...
+def test_from_numeric_float(): ...
+def test_from_bool(): ...
+def test_from_bit_list(): ...
+def test_from_grouped_bits(): ...
+def test_from_bytes(): ...
+def test_from_str(): ...
 
 
 

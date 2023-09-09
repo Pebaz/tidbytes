@@ -235,9 +235,9 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_natural_i64(init, bit_length)
 
         elif isinstance(init, f32):
-            return from_f32(init, bit_length)
+            return from_natural_f32(init, bit_length)
         elif isinstance(init, f64):
-            return from_f64(init, bit_length)
+            return from_natural_f64(init, bit_length)
 
         elif isinstance(init, list):
             if not init:
@@ -250,7 +250,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise MemException("Invalid initializer: Can't deduce codec")
 
         elif isinstance(init, str):
-            return from_utf8(init.encode(), bit_length)
+            return from_bytes(init.encode(), bit_length)
         elif isinstance(init, bytes):
             return from_bytes(init, bit_length)
         elif isinstance(init, bytearray):
@@ -317,6 +317,11 @@ class Num(Mem):
             return from_numeric_i32(init, bit_length)
         elif isinstance(init, i64):
             return from_numeric_i64(init, bit_length)
+
+        elif isinstance(init, f32):
+            return from_numeric_f32(init, bit_length)
+        elif isinstance(init, f64):
+            return from_numeric_f64(init, bit_length)
 
         else:
             raise MemException('Invalid initializer')
