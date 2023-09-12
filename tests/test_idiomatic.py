@@ -289,7 +289,31 @@ def test_from_natural_f32(bits, init, expect, exc, msg):
 
 
 
-def test_from_natural_f64(): ...
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (
+        UN,
+        1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111100',
+        None,
+        'Positive'
+    ),
+    (
+        UN,
+        -1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111101',
+        None,
+        'Negative'
+    ),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_natural_f64(bits, init, expect, exc, msg):
+    with raises_exception(exc):
+        assert str(Mem[bits](f64(init))) == expect, msg
+
+
 def test_from_numeric_f32(): ...
 def test_from_numeric_f64(): ...
 def test_from_big_integer(): ...
