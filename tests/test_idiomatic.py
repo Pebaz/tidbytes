@@ -280,13 +280,13 @@ def test_from_numeric_i64(bits, init, expect, msg):
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
     (UN, 1.0, '00000000 00000000 00000001 11111100', None, 'Positive'),
     (UN, -1.0, '00000000 00000000 00000001 11111101', None, 'Negative'),
+    # TODO(pbz): bigger than 32 bits
     (4, 1.0, (), MemException, 'Truncation positive'),
     (4, -1.0, (), MemException, 'Truncation negative'),
 ])
 def test_from_natural_f32(bits, init, expect, exc, msg):
     with raises_exception(exc):
         assert str(Mem[bits](f32(init))) == expect, msg
-
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
@@ -314,8 +314,42 @@ def test_from_natural_f64(bits, init, expect, exc, msg):
         assert str(Mem[bits](f64(init))) == expect, msg
 
 
-def test_from_numeric_f32(): ...
-def test_from_numeric_f64(): ...
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
+    (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_numeric_f32(bits, init, expect, exc, msg):
+    with raises_exception(exc):
+        assert str(Num[bits](f32(init))) == expect, msg
+
+
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (
+        UN,
+        1.0,
+        '00111111 11110000 00000000 00000000 '
+        '00000000 00000000 00000000 00000000',
+        None,
+        'Positive'
+    ),
+    (
+        UN,
+        -1.0,
+        '10111111 11110000 00000000 00000000 '
+        '00000000 00000000 00000000 00000000',
+        None,
+        'Negative'
+    ),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_numeric_f64(bits, init, expect, exc, msg):
+    with raises_exception(exc):
+        assert str(Num[bits](f64(init))) == expect, msg
+
+
 def test_from_big_integer(): ...
 def test_from_numeric_big_integer(): ...
 def test_from_natural_float(): ...
