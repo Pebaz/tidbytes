@@ -367,7 +367,7 @@ def test_from_numeric_f32(bits, init, expect, exc, msg):
         '00011111 11111000 00000000 00000000 0'
         '0000000 00000000 00000000 00000000 0',
         None,
-        'Positive'
+        'Pad positive'
     ),
     (
         65,
@@ -375,7 +375,7 @@ def test_from_numeric_f32(bits, init, expect, exc, msg):
         '01011111 11111000 00000000 00000000 0'
         '0000000 00000000 00000000 00000000 0',
         None,
-        'Negative'
+        'Pad negative'
     ),
     (4, 1.0, (), MemException, 'Truncation positive'),
     (4, -1.0, (), MemException, 'Truncation negative'),
