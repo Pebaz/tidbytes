@@ -38,8 +38,11 @@ from .mem_types import *
 from .von_neumann import *
 
 T = TypeVar('T')
+X64_MANTISSA = 53
+X32_MANTISSA = 23
+PYTHON_X64_FLOATS = sys.float_info.mant_dig == X64_MANTISSA
 
-# From
+# TODO(pbz): From
 from_arr = ...
 from_u8 = ...
 from_int = ...
@@ -774,11 +777,13 @@ def from_natural_float(value: float, bit_length: int) -> MemRgn:
     Treats it as a numeric value rather than sequence of bytes.
     """
     # Possibly useful: https://evanw.github.io/float-toy/
-    ieee754_64_bit_mantissa = sys.float_info.mant_dig == 53
+    assert sys.float_info.mant_dig in (X64_MANTISSA, X32_MANTISSA)
 
-    if ieee754_64_bit_mantissa:
+    if PYTHON_X64_FLOATS:
+        print('🔰 1')
         return from_natural_f64(f64(value), bit_length)
     else:
+        print('🔰 2')
         return from_natural_f32(f32(value), bit_length)
 
 

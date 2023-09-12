@@ -1,5 +1,5 @@
-import sys
 import pytest
+from types import SimpleNamespace
 from typing import *
 from tidbytes import *
 from . import raises_exception
@@ -385,8 +385,61 @@ def test_from_numeric_f64(bits, init, expect, exc, msg):
         assert str(Num[bits](f64(init))) == expect, msg
 
 
-def test_from_natural_float(): ...
-def test_from_numeric_float(): ...
+# @pytest.mark.parametrize('bits,init,expect,exc,msg', [
+#     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
+#     # (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
+#     # (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
+#     # (33, -1.0, '01011111 11000000 00000000 00000000 0', None, 'Pad negative'),
+#     # (4, 1.0, (), MemException, 'Truncation positive'),
+#     # (4, -1.0, (), MemException, 'Truncation negative'),
+# ])
+# def test_from_natural_float(bits, init, expect, exc, msg):
+    # # with raises_exception(exc):
+    # #     assert str(Mem[bits](init)) == expect, msg
+    # import sys as old_sys
+    # old_mant_dig = old_sys.float_info.mant_dig
+    # import sys
+    # sys.modules.pop('sys')
+
+    # ieee754_64_bit_mantissa = 53
+    # ieee754_32_bit_mantissa = 23
+
+    # try:
+    #     assert sys.float_info.mant_dig == old_mant_dig
+    #     sys.modules['sys'] = SimpleNamespace(
+    #         float_info=SimpleNamespace(mant_dig=None)
+    #     )
+    #     sys.float_info.mant_dig = ieee754_64_bit_mantissa
+    #     assert sys.float_info.mant_dig == ieee754_64_bit_mantissa
+
+    #     assert str(Mem[bits](1.0)) == ''
+    # finally:
+    #     sys.modules['sys'] = old_sys
+
+    # assert sys.float_info.mant_dig == old_mant_dig
+
+def test_from_natural_float():
+    import tidbytes.codec
+    tidbytes.codec.PYTHON_X64_FLOATS = False
+    Mem(1.0)
+    tidbytes.codec.PYTHON_X64_FLOATS = True
+    Mem(1.0)
+    assert False
+
+
+# @pytest.mark.parametrize('bits,init,expect,exc,msg', [
+#     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
+#     (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
+#     (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
+#     (33, -1.0, '01011111 11000000 00000000 00000000 0', None, 'Pad negative'),
+#     (4, 1.0, (), MemException, 'Truncation positive'),
+#     (4, -1.0, (), MemException, 'Truncation negative'),
+# ])
+# def test_from_numeric_float(bits, init, expect, exc, msg):
+#     with raises_exception(exc):
+#         assert str(Num[bits](init)) == expect, msg
+
+
 
 
 def test_from_big_integer(): ...
