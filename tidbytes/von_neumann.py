@@ -317,7 +317,7 @@ def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
 
         return op_extend(
             mem,
-            mem_len - length,
+            length - mem_len,
             fill
         )
 

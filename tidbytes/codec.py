@@ -674,6 +674,7 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
         bits.clear()
 
     # Only pad. Semantic error to truncate float.
+    print("BIT LENGTH:", bit_length)
     return op_ensure_bit_length(mem, bit_length)
 
 
