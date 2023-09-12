@@ -303,11 +303,6 @@ def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
     mem_len = meta_op_bit_length(mem)
 
-    # ensure(
-    #     mem_len <= length,
-    #     f'Cannot truncate bits from {mem_len} to {length}'
-    # )
-
     if mem_len > length:
         return op_truncate(mem, length)
 

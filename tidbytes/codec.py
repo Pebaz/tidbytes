@@ -523,7 +523,6 @@ def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
     bit_length = 8 if bit_length is None else bit_length
     mem = MemRgn()
     mem.bytes = identity_bits_from_struct_field('<b', value.value)
-    print(value.value, '<-')
     return op_ensure_bit_length(op_identity(mem), bit_length)
 
 
@@ -674,7 +673,6 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
         bits.clear()
 
     # Only pad. Semantic error to truncate float.
-    print("BIT LENGTH:", bit_length)
     return op_ensure_bit_length(mem, bit_length)
 
 
@@ -700,7 +698,8 @@ def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
             bits.append(int(bool(byte & (1 << i))))
         mem.bytes.append(bits[:])
         bits.clear()
-    return mem
+
+    return op_ensure_bit_length(mem, bit_length)
 
 
 def from_numeric_f32(value: f32, bit_length: int) -> MemRgn:

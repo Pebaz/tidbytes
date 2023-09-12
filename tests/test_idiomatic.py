@@ -307,6 +307,22 @@ def test_from_natural_f32(bits, init, expect, exc, msg):
         None,
         'Negative'
     ),
+    (
+        65,
+        1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111100 0',
+        None,
+        'Pad positive'
+    ),
+    (
+        65,
+        -1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111101 0',
+        None,
+        'Pad negative'
+    ),
     (4, 1.0, (), MemException, 'Truncation positive'),
     (4, -1.0, (), MemException, 'Truncation negative'),
 ])
@@ -318,6 +334,8 @@ def test_from_natural_f64(bits, init, expect, exc, msg):
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
     (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
+    (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
+    (33, -1.0, '01011111 11000000 00000000 00000000 0', None, 'Pad negative'),
     (4, 1.0, (), MemException, 'Truncation positive'),
     (4, -1.0, (), MemException, 'Truncation negative'),
 ])
@@ -340,6 +358,22 @@ def test_from_numeric_f32(bits, init, expect, exc, msg):
         -1.0,
         '10111111 11110000 00000000 00000000 '
         '00000000 00000000 00000000 00000000',
+        None,
+        'Negative'
+    ),
+    (
+        65,
+        1.0,
+        '00011111 11111000 00000000 00000000 0'
+        '0000000 00000000 00000000 00000000 0',
+        None,
+        'Positive'
+    ),
+    (
+        65,
+        -1.0,
+        '01011111 11111000 00000000 00000000 0'
+        '0000000 00000000 00000000 00000000 0',
         None,
         'Negative'
     ),
