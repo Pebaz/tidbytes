@@ -652,6 +652,8 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
 
 def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
     "Treats an f32 like a sequence of bytes"
+    bit_length = 32 if bit_length is None else bit_length
+
     ensure(
         bit_length >= 32 if bit_length is not None else True,
         "Can't truncate floats meaningfully"
@@ -660,6 +662,9 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
         ctypes.byref(value),
         ctypes.sizeof(type(value))
     )
+
+    assert len(byte_slice) == 32 // 8, 'Not 32 bits long'
+
     mem = MemRgn()
     for byte in byte_slice:
         bits = []
@@ -674,11 +679,27 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
 
 def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
     "Treats an f64 like a sequence of bytes"
+    bit_length = 64 if bit_length is None else bit_length
+
     ensure(
         bit_length >= 64 if bit_length is not None else True,
         "Can't truncate floats meaningfully"
     )
-    return from_natural_f32(value, bit_length)
+    byte_slice = ctypes.string_at(
+        ctypes.byref(value),
+        ctypes.sizeof(type(value))
+    )
+
+    assert len(byte_slice) == 64 // 8, 'Not 64 bits long'
+
+    mem = MemRgn()
+    for byte in byte_slice:
+        bits = []
+        for i in range(8):
+            bits.append(int(bool(byte & (1 << i))))
+        mem.bytes.append(bits[:])
+        bits.clear()
+    return mem
 
 
 def from_numeric_f32(value: f32, bit_length: int) -> MemRgn:

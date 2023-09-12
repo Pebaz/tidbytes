@@ -2,6 +2,7 @@ import sys
 import pytest
 from typing import *
 from tidbytes import *
+from . import raises_exception
 
 UN = None  # Unsized
 
@@ -276,16 +277,16 @@ def test_from_numeric_i64(bits, init, expect, msg):
 
 
 
-@pytest.mark.parametrize('bits,init,expect,msg', [
-    (UN, 0b1, '10000000', 'Positive'),
-    (UN, -0b1, '11111111', 'Negative'),
-    (UN, 0b10, '01000000', 'Positive'),
-    (UN, -0b10, '01111111', 'Negative'),
-    (4, 0b10, '0100', 'Truncation positive'),
-    (4, -0b10, '0111', 'Truncation negative'),
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (UN, 1.0, '00000000 00000000 00000001 11111100', None, 'Positive'),
+    (UN, -1.0, '00000000 00000000 00000001 11111101', None, 'Negative'),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
 ])
-def test_from_natural_f32(bits, init, expect, msg):
-    assert str(Mem[bits](i64(init))) == expect, msg
+def test_from_natural_f32(bits, init, expect, exc, msg):
+    with raises_exception(exc):
+        assert str(Mem[bits](f32(init))) == expect, msg
+
 
 
 def test_from_natural_f64(): ...
