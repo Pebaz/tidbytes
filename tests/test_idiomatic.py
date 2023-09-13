@@ -1,4 +1,5 @@
 import pytest
+import tidbytes.codec
 from types import SimpleNamespace
 from typing import *
 from tidbytes import *
@@ -385,61 +386,131 @@ def test_from_numeric_f64(bits, init, expect, exc, msg):
         assert str(Num[bits](f64(init))) == expect, msg
 
 
-# @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-#     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
-#     # (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
-#     # (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
-#     # (33, -1.0, '01011111 11000000 00000000 00000000 0', None, 'Pad negative'),
-#     # (4, 1.0, (), MemException, 'Truncation positive'),
-#     # (4, -1.0, (), MemException, 'Truncation negative'),
-# ])
-# def test_from_natural_float(bits, init, expect, exc, msg):
-    # # with raises_exception(exc):
-    # #     assert str(Mem[bits](init)) == expect, msg
-    # import sys as old_sys
-    # old_mant_dig = old_sys.float_info.mant_dig
-    # import sys
-    # sys.modules.pop('sys')
-
-    # ieee754_64_bit_mantissa = 53
-    # ieee754_32_bit_mantissa = 23
-
-    # try:
-    #     assert sys.float_info.mant_dig == old_mant_dig
-    #     sys.modules['sys'] = SimpleNamespace(
-    #         float_info=SimpleNamespace(mant_dig=None)
-    #     )
-    #     sys.float_info.mant_dig = ieee754_64_bit_mantissa
-    #     assert sys.float_info.mant_dig == ieee754_64_bit_mantissa
-
-    #     assert str(Mem[bits](1.0)) == ''
-    # finally:
-    #     sys.modules['sys'] = old_sys
-
-    # assert sys.float_info.mant_dig == old_mant_dig
-
-def test_from_natural_float():
-    import tidbytes.codec
-    tidbytes.codec.PYTHON_X64_FLOATS = False
-    Mem(1.0)
-    tidbytes.codec.PYTHON_X64_FLOATS = True
-    Mem(1.0)
-    assert False
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (UN, 1.0, '00000000 00000000 00000001 11111100', None, 'Positive'),
+    (UN, -1.0, '00000000 00000000 00000001 11111101', None, 'Negative'),
+    (33, 1.0, '00000000 00000000 00000001 11111100 0', None, 'Pad positive'),
+    (33, -1.0, '00000000 00000000 00000001 11111101 0', None, 'Pad negative'),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_natural_float_python32(bits, init, expect, exc, msg):
+    try:
+        old = tidbytes.codec.PYTHON_X64_FLOATS
+        with raises_exception(exc):
+            tidbytes.codec.PYTHON_X64_FLOATS = False
+            assert str(Mem[bits](init)) == expect, msg
+    finally:
+        tidbytes.codec.PYTHON_X64_FLOATS = old
 
 
-# @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-#     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
-#     (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
-#     (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
-#     (33, -1.0, '01011111 11000000 00000000 00000000 0', None, 'Pad negative'),
-#     (4, 1.0, (), MemException, 'Truncation positive'),
-#     (4, -1.0, (), MemException, 'Truncation negative'),
-# ])
-# def test_from_numeric_float(bits, init, expect, exc, msg):
-#     with raises_exception(exc):
-#         assert str(Num[bits](init)) == expect, msg
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+        (
+        UN,
+        1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111100',
+        None,
+        'Positive'
+    ),
+    (
+        UN,
+        -1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111101',
+        None,
+        'Negative'
+    ),
+    (
+        65,
+        1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111100 0',
+        None,
+        'Pad positive'
+    ),
+    (
+        65,
+        -1.0,
+        '00000000 00000000 00000000 00000000 '
+        '00000000 00000000 00001111 11111101 0',
+        None,
+        'Pad negative'
+    ),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_natural_float_python64(bits, init, expect, exc, msg):
+    try:
+        old = tidbytes.codec.PYTHON_X64_FLOATS
+        with raises_exception(exc):
+            tidbytes.codec.PYTHON_X64_FLOATS = True
+            assert str(Mem[bits](init)) == expect, msg
+    finally:
+        tidbytes.codec.PYTHON_X64_FLOATS = old
 
 
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
+    (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
+    (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
+    (33, -1.0, '01011111 11000000 00000000 00000000 0', None, 'Pad negative'),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_numeric_float_python32(bits, init, expect, exc, msg):
+    try:
+        old = tidbytes.codec.PYTHON_X64_FLOATS
+        with raises_exception(exc):
+            tidbytes.codec.PYTHON_X64_FLOATS = False
+            assert str(Num[bits](init)) == expect, msg
+    finally:
+        tidbytes.codec.PYTHON_X64_FLOATS = old
+
+@pytest.mark.parametrize('bits,init,expect,exc,msg', [
+    (
+        UN,
+        1.0,
+        '00111111 11110000 00000000 00000000 '
+        '00000000 00000000 00000000 00000000',
+        None,
+        'Positive'
+    ),
+    (
+        UN,
+        -1.0,
+        '10111111 11110000 00000000 00000000 '
+        '00000000 00000000 00000000 00000000',
+        None,
+        'Negative'
+    ),
+    (
+        65,
+        1.0,
+        '00011111 11111000 00000000 00000000 0'
+        '0000000 00000000 00000000 00000000 0',
+        None,
+        'Pad positive'
+    ),
+    (
+        65,
+        -1.0,
+        '01011111 11111000 00000000 00000000 0'
+        '0000000 00000000 00000000 00000000 0',
+        None,
+        'Pad negative'
+    ),
+    (4, 1.0, (), MemException, 'Truncation positive'),
+    (4, -1.0, (), MemException, 'Truncation negative'),
+])
+def test_from_numeric_float_python64(bits, init, expect, exc, msg):
+    try:
+        old = tidbytes.codec.PYTHON_X64_FLOATS
+        with raises_exception(exc):
+            tidbytes.codec.PYTHON_X64_FLOATS = True
+            assert str(Num[bits](init)) == expect, msg
+    finally:
+        tidbytes.codec.PYTHON_X64_FLOATS = old
 
 
 def test_from_big_integer(): ...
@@ -449,10 +520,6 @@ def test_from_bit_list(): ...
 def test_from_grouped_bits(): ...
 def test_from_bytes(): ...
 def test_from_str(): ...
-
-
-
-
 
 
 def test_from_bit_length():
