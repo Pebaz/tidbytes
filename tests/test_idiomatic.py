@@ -513,12 +513,19 @@ def test_from_numeric_float_python64(bits, init, expect, exc, msg):
         tidbytes.codec.PYTHON_X64_FLOATS = old
 
 
-def test_from_str():
-    mem = Str[None]('a')
-    assert str(mem) == 'a'
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, '', '', 'Empty'),
+    (UN, 'a', 'a', 'String'),
+    (16, 'a', 'a\x00', 'Pad'),
+    (8, 'ab', 'a', 'Truncate'),
+])
+def test_from_str(bits, init, expect, msg):
+    assert str(Str[bits](init)) == expect, msg
 
 
-def test_from_bytes(): ...
+def test_from_bytes():
+    mem = Mem[None]('a')
+    assert str(mem) == '10000110'
 
 
 def test_from_big_integer(): ...
@@ -526,7 +533,6 @@ def test_from_numeric_big_integer(): ...
 def test_from_bool(): ...
 def test_from_bit_list(): ...
 def test_from_grouped_bits(): ...
-def test_from_bytes(): ...
 
 
 

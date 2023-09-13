@@ -829,7 +829,6 @@ def from_bytes(value: list[int], bit_length: int) -> MemRgn:
     ]
     mem = MemRgn()
     mem.bytes = bytes_
-    print('🔰', mem.bytes)
     return op_ensure_bit_length(mem, bit_length)
 
 
