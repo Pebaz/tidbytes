@@ -780,10 +780,8 @@ def from_natural_float(value: float, bit_length: int) -> MemRgn:
     assert sys.float_info.mant_dig in (X64_MANTISSA, X32_MANTISSA)
 
     if PYTHON_X64_FLOATS:
-        print('🔰 1')
         return from_natural_f64(f64(value), bit_length)
     else:
-        print('🔰 2')
         return from_natural_f32(f32(value), bit_length)
 
 
@@ -822,14 +820,16 @@ def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
 
 def from_bytes(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from list of unsigned integers in range 0x00 to 0xFF."
+    "This is cool"
     ensure(all(0 <= byte <= 0xFF for byte in value))
     bit_length = bit_length if bit_length is not None else len(value) * 8
     bytes_ = [
-        list(reversed(identity_bits_from_numeric_byte(byte)))
+        list(identity_bits_from_numeric_byte(byte))
         for byte in value
     ]
     mem = MemRgn()
     mem.bytes = bytes_
+    print('🔰', mem.bytes)
     return op_ensure_bit_length(mem, bit_length)
 
 

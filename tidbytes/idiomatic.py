@@ -62,6 +62,11 @@ class U32(Num): ...    # From/Into codecs are different
 # TODO(pbz): 8/4/23
 class Mem(metaclass=indexed_meta.IndexedMetaclass):
     """
+    "Pure" memory. Can work with any kind of input data and can perform the most
+    operations because it has no semantic restrictions on the input or output
+    data. Maps all input memory to identity so all bits and bytes are left to
+    right.
+
     The associated indexed meta parameter for Mem is a limit describing the
     desired size of the memory region. If initializer values are smaller than
     the requested size, the excess is padded with zeros. If they are larger than
@@ -275,7 +280,10 @@ NullMem = Mem()
 
 # TODO(pbz): Indexing is backwards
 class Num(Mem):
-    "Assumes numeric data"
+    """
+    Semantically meaningful data representing numeric information. Input types
+    are constrained since the output concept is a quantity and not raw memory.
+    """
 
     # ! -> Num::from <-
     @classmethod
@@ -330,6 +338,42 @@ class Num(Mem):
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
             return into_byte_u8(self.rgn)
+
+
+class Str(Mem):
+    """
+    Semantically meaningful data representing a array of UTF8 code points. Not
+    distinct from an array of unsigned 8 bit integers. Input types are
+    constrained since the output concept is the logical notion of string rather
+    than raw memory.
+    """
+
+    # ! -> Str::from <-
+    @classmethod
+    def from_(cls, init: T, bit_length: int) -> 'Num':
+        if isinstance(init, type(None)):
+            return MemRgn()
+        elif isinstance(init, str):
+            return op_reverse(from_bytes(init.encode(), bit_length))
+        elif isinstance(init, list):
+            if not init:
+                return MemRgn()
+            elif init and isinstance(init[0], int) and 0 <= init[0] <= 255:
+                return op_reverse(from_bytes(bytearray(init)), bit_length)
+            else:
+                raise MemException("Invalid initializer: Can't deduce codec")
+        else:
+            raise MemException('Invalid initializer')
+
+    # ! -> Num::into <-
+    def into(self, target_type: type) -> Generic[T]:
+        if target_type == u8:
+            return into_byte_u8(self.rgn)
+
+    def __str__(self):
+        chars = (int(byte, base=2) for byte in super().__str__().split())
+        return bytearray(chars).decode()
+
 
 '''
 
