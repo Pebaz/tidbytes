@@ -354,12 +354,12 @@ class Str(Mem):
         if isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, str):
-            return op_reverse(from_bytes(init.encode(), bit_length))
+            return from_bytes_utf8(init.encode(), bit_length)
         elif isinstance(init, list):
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], int) and 0 <= init[0] <= 255:
-                return op_reverse(from_bytes(bytearray(init)), bit_length)
+                return from_bytes_utf8(bytearray(init))
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
         else:

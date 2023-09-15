@@ -7,15 +7,6 @@ from . import raises_exception
 
 UN = None  # Unsized
 
-@pytest.mark.parametrize('bits,init,expect,msg', [
-    (UN, b'\x00', '00000000', 'Single byte'),
-    (UN, b'\x00\x01', '00000000 00000001', '2 bytes 1 bit'),
-    (UN, b'\x00\x02', '00000000 00000010', '2 bytes 2 bits'),
-    (8, b'\x00\x02', '00000000', 'Truncation'),
-])
-def test_from_bytes(bits, init, expect, msg):
-    assert str(Mem[bits](init)) == expect, msg
-
 # TODO(pbz): Careful, ctypes u8(0b100000101) truncates to 5, not Tidbytes...
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (UN, 0b1011, '11010000', 'Single byte'),
@@ -523,9 +514,15 @@ def test_from_str(bits, init, expect, msg):
     assert str(Str[bits](init)) == expect, msg
 
 
-def test_from_bytes():
-    mem = Mem[None]('a')
-    assert str(mem) == '10000110'
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, b'\x00', '00000000', 'Single byte'),
+    (UN, b'\x00\x01', '00000000 00000001', '2 bytes 1 bit'),
+    (UN, b'\x00\x02', '00000000 00000010', '2 bytes 2 bits'),
+    (16, b'\x02', '00000010 00000000', 'Pad'),
+    (8, b'\x00\x02', '00000000', 'Truncation'),
+])
+def test_from_bytes(bits, init, expect, msg):
+    assert str(Mem[bits](init)) == expect, msg
 
 
 def test_from_big_integer(): ...
