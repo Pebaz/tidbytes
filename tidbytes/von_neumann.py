@@ -280,8 +280,8 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     ensure(mem_len == 1, 'Fill payload must be 0 or 1')
 
     length = mem_len + amount
-    padding = ([0] * (length - mem_len))
-    bits = [bit for byte in mem.bytes for bit in byte] + padding
+    padding = [fill.bytes[0][0]] * (length - mem_len)
+    bits = list(iterate_logical_bits(mem.bytes)) + padding
     out = MemRgn()
 
     # TODO(pbz): Test this worked:

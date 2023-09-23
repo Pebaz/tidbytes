@@ -796,13 +796,16 @@ def from_numeric_float(value: float, bit_length: int) -> MemRgn:
 
 def from_bool(value: bool, bit_length: int) -> MemRgn:
     "Converts a boolean value to a single bit"
+    # TODO(pbz): ensure(bit_length >= 0)
+    bit_length = bit_length if bit_length is not None else 1
     mem = MemRgn()
-    mem.bytes = [[1 if value else 0]] + [None] * 7
-    return mem
+    mem.bytes = [[1 if value else 0] + [None] * 7]
+    return op_ensure_bit_length(mem, bit_length)
 
 
 def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
+    # TODO(pbz): bit_length = bit_length if bit_length is not None else 1
     ensure(all(bit == 0 or bit == 1 for bit in value))
     mem = MemRgn()
     mem.bytes = [value[i:i + 8] for i in range(0, len(value), 8)]
@@ -811,6 +814,7 @@ def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
 
 def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
     "Memory region from list of list of 8 bits being either 0 or 1"
+    # TODO(pbz): bit_length = bit_length if bit_length is not None else 1
     ensure(all(len(byte) == 8 for byte in value))
     ensure(all(all(bit == 0 or bit == 1 for bit in byte) for byte in value))
     mem = MemRgn()

@@ -525,9 +525,18 @@ def test_from_bytes(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
 
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, True, '1', 'Single bit true'),
+    (UN, False, '0', 'Single bit false'),
+    (3, True, '100', 'Multiple bits true'),
+    (3, False, '000', 'Multiple bits false'),
+])
+def test_from_bool(bits, init, expect, msg):
+    assert str(Mem[bits](init)) == expect, msg
+
+
 def test_from_big_integer(): ...
 def test_from_numeric_big_integer(): ...
-def test_from_bool(): ...
 def test_from_bit_list(): ...
 def test_from_grouped_bits(): ...
 

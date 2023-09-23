@@ -204,6 +204,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise MemException('Invalid initializer')
         '''
 
+
         if isinstance(init, type(None)):
             if bit_length is None:
                 return MemRgn()
@@ -214,12 +215,12 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         elif isinstance(init, MemRgn):
             return init
 
+        elif isinstance(init, bool):  # isinstance(True, int) == True
+            return from_bool(init, bit_length)
         elif isinstance(init, int):
             return from_big_integer(init, bit_length)
         elif isinstance(init, float):
             return from_natural_float(init, bit_length)
-        elif isinstance(init, bool):
-            return from_bool(init, bit_length)
 
         elif isinstance(init, u8):
             return from_natural_u8(init, bit_length)
