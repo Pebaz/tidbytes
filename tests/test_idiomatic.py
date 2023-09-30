@@ -608,7 +608,6 @@ def test_from_numeric_big_integer(bits, init, expect, msg):
     assert str(Num[bits](init)) == expect, msg
 
 
-
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (0, [1], '', 'Trucate to null'),
     (1, [1], '1', 'Single bit'),
@@ -621,9 +620,16 @@ def test_from_bit_list(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
 
-
-def test_from_grouped_bits(): ...
-
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (0, [1], '', 'Trucate to null'),
+    (1, [[1]], '1', 'Single bit'),
+    (UN, [[1]], '1', 'Single bit'),
+    (UN, [[1, 0]], '10', 'Bit ordering'),
+    (UN, [[1, 0, 1, 1, 1, 1, 1, 1], [0]], '10111111 0', 'Byte ordering'),
+    (4, [[1, 0, 1, 1]], '1011', 'Truncation'),
+])
+def test_from_grouped_bits(bits, init, expect, msg):
+    assert str(Mem[bits](init)) == expect, msg
 
 
 def test_from_bit_length():
