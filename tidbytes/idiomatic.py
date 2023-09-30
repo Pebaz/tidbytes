@@ -204,6 +204,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise MemException('Invalid initializer')
         '''
 
+        # TODO(pbz): After ensuring codecs check for zero bit length:
+        # TODO(pbz): if bit_length == 0: return NullMem
 
         if isinstance(init, type(None)):
             if bit_length is None:
@@ -249,9 +251,9 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], (list, tuple)):
-                return from_grouped_bits(value, bit_length)
+                return from_grouped_bits(init, bit_length)
             elif init and isinstance(init[0], int):
-                return from_bit_list(value, bit_length)
+                return from_bit_list(init, bit_length)
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
 

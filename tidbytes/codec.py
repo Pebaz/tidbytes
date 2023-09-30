@@ -113,7 +113,7 @@ import struct
 
 float.hex
 
-value = []
+# value = []
 # isinstance(value, list[int])
 # isinstance(value, [u8, u16, u32, u64, i8, i16, i32, i64, f32, f64])
 # isinstance(value, tuple)
@@ -786,19 +786,37 @@ def from_numeric_float(value: float, bit_length: int) -> MemRgn:
 
 def from_bool(value: bool, bit_length: int) -> MemRgn:
     "Converts a boolean value to a single bit"
-    # TODO(pbz): ensure(bit_length >= 0)
     bit_length = bit_length if bit_length is not None else 1
     mem = MemRgn()
+
+    if bit_length == 0:
+        return mem
+
     mem.bytes = [[1 if value else 0] + [None] * 7]
     return op_ensure_bit_length(mem, bit_length)
 
 
+# TODO(pbz): Audit the code and remove iterators being consumed in ensure()
 def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
-    # TODO(pbz): bit_length = bit_length if bit_length is not None else 1
+    print('🔥', value)
+    value = list(value)  # Preserve iterator by collecting into list
     ensure(all(bit == 0 or bit == 1 for bit in value))
+
+    bit_length = bit_length if bit_length is not None else 1
     mem = MemRgn()
-    mem.bytes = [value[i:i + 8] for i in range(0, len(value), 8)]
+
+    if bit_length == 0:
+        return mem
+
+    null = [None] * 8
+
+    mem.bytes = [
+        (value[i:i + 8] + null)[:8]
+        for i in range(0, len(value), 8)
+    ]
+
+    print('🔥', mem.bytes, list(range(0, len(value), 8)), value)
     return mem
 
 

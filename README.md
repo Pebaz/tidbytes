@@ -197,3 +197,8 @@ mindmap
         meta_op_bit_length
             meta_op_byte_length
 ```
+
+# Operation Notes
+
+* When given a destination bit width of 0, this is like multiplying by 0 in
+    arithmetic and results in truncation to null (no bit width).
