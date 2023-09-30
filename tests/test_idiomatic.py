@@ -1,3 +1,4 @@
+import sys
 import pytest
 import tidbytes.codec
 from types import SimpleNamespace
@@ -9,6 +10,7 @@ UN = None  # Unsized
 
 # TODO(pbz): Careful, ctypes u8(0b100000101) truncates to 5, not Tidbytes...
 @pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b100, '00100000', 'Four'),
     (UN, 0b1011, '11010000', 'Single byte'),
     (UN, 0b100000101, '10100000', 'Single byte out of 2 bytes'),
     (4, 0b1011, '1101', 'Truncation'),
@@ -18,6 +20,7 @@ def test_from_natural_u8(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, 0b100, '00000100', 'Four'),
     (UN, 0b1011, '00001011', 'Single byte'),
     (UN, 0b100000101, '00000101', 'Single byte out of 2 bytes'),
     (7, 0b100000101, '0000101', 'Truncation'),
@@ -535,8 +538,47 @@ def test_from_bool(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
 
-def test_from_big_integer(): ...
-def test_from_numeric_big_integer(): ...
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (None, 1, '1', 'Single bit'),
+    (None, 4, '001', 'Bit ordering'),
+    (1, -1, '1', 'Negative bit'),
+    (4, -2, '0111', 'Bit ordering negative'),
+    (16, -10, '01101111 11111111', 'Byte ordering'),
+    (
+        UN,
+        sys.maxsize,
+        '11111111 11111111 11111111 11111111 '
+        '11111111 11111111 11111111 1111111',
+        'Big integer'
+    ),
+    (UN, sys.maxsize + 1, '00000000 00000000 00000000 00000000 '
+    '00000000 00000000 00000000 00000001', 'Big integer + 1')
+])
+def test_from_natural_big_integer(bits, init, expect, msg):
+    assert str(Mem[bits](init)) == expect, msg
+
+
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (None, 1, '1', 'Single bit'),
+    (None, 4, '100', 'Bit ordering'),
+    (1, -1, '1', 'Negative bit'),
+    (4, -2, '1110', 'Bit ordering negative'),
+    (16, -10, '11111111 11110110', 'Byte ordering'),
+    (
+        UN,
+        sys.maxsize,
+        '11111111 11111111 11111111 11111111 '
+        '11111111 11111111 11111111 1111111',
+        'Big integer'
+    ),
+    (UN, sys.maxsize + 1, '10000000 00000000 00000000 00000000 '
+    '00000000 00000000 00000000 00000000', 'Big integer + 1')
+])
+def test_from_numeric_big_integer(bits, init, expect, msg):
+    assert str(Num[bits](init)) == expect, msg
+
+
+
 def test_from_bit_list(): ...
 def test_from_grouped_bits(): ...
 
@@ -547,12 +589,6 @@ def test_from_bit_length():
     assert str(mem) == '0', 'Invalid!'
 
 
-'''
 # def test_index():
 #     mem = Mem.from_byte_u8(255)
 #     print(repr(mem))
-
-
-# def test_mem_constructor():
-#     mem = Mem.from_ascii('Hello World!')
-'''

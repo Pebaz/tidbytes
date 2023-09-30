@@ -178,7 +178,7 @@ def from_bytes(cls, value):
         mem = mem + mem_byte if mem else mem_byte
     return mem
 
-def __from_big_integer_bytes(
+def __from_natural_big_integer_bytes(
     value: int,
     bit_length: int
 ) -> list[list[int]]:
@@ -713,19 +713,7 @@ def from_numeric_f64(value: f64, bit_length: int) -> MemRgn:
     return op_reverse(from_natural_f64(value, bit_length))
 
 
-# ??????????????????????????????????????????????????????????????????????????????
-# TODO(pbz): This codec requires an input parameter: bit_length due to negatives
-# TODO(pbz): It's possible a bit_length or rgn_width parameter is needed:
-# TODO(pbz): Mem[64](-123)
-# TODO(pbz): I wonder if this is applicable beyond negative numbers?
-# TODO(pbz): from_bit_length() would just use __param__
-# TODO(pbz): It might just be better to do: Mem(-123, bit_length=16): **kwargs
-# * Technically, negative numbers are twos-complement encoded which makes them
-# * a data format, not a primitive. Encoded data naturally needs destination
-# * info in order to unpack it usually (AV1 video frames).
-# * So how are codecs handled? They need input parameters right?
-# ??????????????????????????????????????????????????????????????????????????????
-def from_big_integer(value: int, bit_length: int) -> MemRgn:
+def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     """
     Initializes a memory region from a big integer, assuming a bit length for
     negative numbers to allow for twos-complement encoding. Big integers that
@@ -740,6 +728,8 @@ def from_big_integer(value: int, bit_length: int) -> MemRgn:
         'twos-complement encoding'
     )
 
+    # .bit_length() returns same value for positive as for negative so it can't
+    # be used to tell how large the destination memory is for 2's complement
     bit_length = bit_length if bit_length is not None else value.bit_length()
 
     # TODO(pbz): Keep this around for the tests
@@ -767,7 +757,7 @@ def from_big_integer(value: int, bit_length: int) -> MemRgn:
 
 
 def from_numeric_big_integer(value: int, bit_length: int) -> MemRgn:
-    mem = from_big_integer(value, bit_length)
+    mem = from_natural_big_integer(value, bit_length)
     return op_reverse(mem)
 
 

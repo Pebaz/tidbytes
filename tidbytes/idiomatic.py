@@ -195,7 +195,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             case MemRgn():
                 return init
             case int():
-                return from_big_integer(init)
+                return from_natural_big_integer(init)
             case u8():
                 return from_byte_u8(init)
             case u16():
@@ -218,7 +218,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         elif isinstance(init, bool):  # isinstance(True, int) == True
             return from_bool(init, bit_length)
         elif isinstance(init, int):
-            return from_big_integer(init, bit_length)
+            return from_natural_big_integer(init, bit_length)
         elif isinstance(init, float):
             return from_natural_float(init, bit_length)
 
