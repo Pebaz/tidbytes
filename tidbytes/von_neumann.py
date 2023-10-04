@@ -32,6 +32,8 @@ class MemRgn:
 # identity order which is left to right bit and byte order.
 # ------------------------------------------------------------------------------
 def op_transform(mem: MemRgn, *, bit_order: Order, byte_order: Order) -> MemRgn:
+    contract_validate_memory(mem)
+
     if not mem.bytes:  # Handle null
         return mem
 
@@ -48,42 +50,45 @@ def op_transform(mem: MemRgn, *, bit_order: Order, byte_order: Order) -> MemRgn:
     out.bytes = group_bits_into_bytes(iterate_logical_bits(transformed_bytes))
 
     contract_validate_memory(out)
-
     return out
 
 
 def op_identity(mem: MemRgn) -> MemRgn:
     "Maps a memory region to itself."
+    contract_validate_memory(mem)
     return op_transform(mem, bit_order=L2R, byte_order=L2R)
 
 
 def op_reverse(mem: MemRgn) -> MemRgn:
     "Reverse both the bits and bytes for a full reversal."
+    contract_validate_memory(mem)
     return op_transform(mem, bit_order=R2L, byte_order=R2L)
 
 
 def op_reverse_bytes(mem: MemRgn) -> MemRgn:
     "Reverse the bytes but maintain bit order."
+    contract_validate_memory(mem)
     return op_transform(mem, bit_order=L2R, byte_order=R2L)
 
 
 def op_reverse_bits(mem: MemRgn) -> MemRgn:
     "Reverse the bits in every byte but maintain byte order."
+    contract_validate_memory(mem)
     return op_transform(mem, bit_order=R2L, byte_order=L2R)
 
 
 # ------------------------------------------------------------------------------
 # Fundamental memory read and write operations
 # ------------------------------------------------------------------------------
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
+    contract_validate_memory(mem)
     ensure(0 <= index < meta_op_bit_length(mem), f'Index out of bounds: {index}')
 
-    return op_get_bits(mem, index, index + 1)
+    out = op_get_bits(mem, index, index + 1)
+    return contract_validate_memory(out)
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     """
     Invariant: input memory must be valid and mapped to program's universe.
@@ -100,15 +105,17 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
     memory. If 2 bytes is fetched from a 15 bit region, only 15 bits will be
     returned but it will not error out since bits aren't addressable.
     """
+    contract_validate_memory(mem)
     mem_bits = meta_op_bit_length(mem)
     ensure(0 <= index < mem_bits, f'Index out of bounds: {index}')
 
-    return op_get_bits(mem, index * 8, min(index * 8 + 8, mem_bits))
+    out = op_get_bits(mem, index * 8, min(index * 8 + 8, mem_bits))
+    return contract_validate_memory(out)
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
+    contract_validate_memory(mem)
     # TODO(pbz): I'm fairly certain this needs to be `stop < meta_op_bit_length(mem)`
     # TODO(pbz): since I think it should be an exclusive range? Empty ranges?
     ensure(0 <= start <= stop <= meta_op_bit_length(mem), 'Index out of bounds')
@@ -132,34 +139,36 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     if out.bytes and len(out.bytes[-1]) < 8:
         out.bytes[-1] = (out.bytes[-1] + [None] * 8)[:8]
 
-    return out
+    return contract_validate_memory(out)
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
+    contract_validate_memory(mem)
     ensure(
         0 <= start <= stop <= meta_op_byte_length(mem),
         'Index out of bounds'
     )
 
-    return op_get_bits(mem, start * 8, stop * 8)
+    out = op_get_bits(mem, start * 8, stop * 8)
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
+    contract_validate_memory(mem)
     ensure(meta_op_bit_length(payload) == 1, 'More than one bit supplied')
     ensure(0 <= offset < meta_op_bit_length(mem), 'Offset out of bounds')
 
-    return op_set_bits(mem, offset, payload)
+    out = op_set_bits(mem, offset, payload)
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
+    contract_validate_memory(mem)
     mem_len = meta_op_bit_length(mem)
     ending_index = offset + meta_op_bit_length(payload)
     ensure(0 <= offset < mem_len, 'Offset out of bounds')
@@ -189,13 +198,14 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
         if out_byte:
             out.bytes.append(out_byte[:])
-    return out
+
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
+    contract_validate_memory(mem)
     payload_bits = meta_op_bit_length(payload)
     ensure(payload_bits <= 8, f'Bit count greater than 8: {payload_bits}')
     ensure(
@@ -208,11 +218,11 @@ def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
         f"{meta_op_bit_length(mem)=}, {offset=}, {meta_op_bit_length(payload)=}"
     )
 
-    return op_set_bits(mem, offset * 8, payload)
+    out = op_set_bits(mem, offset * 8, payload)
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     """
     Assumes exact bit length of payload should fit in destination. Does not
@@ -221,6 +231,7 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 
     Invariant: input memory must be valid and mapped to program's universe.
     """
+    contract_validate_memory(mem)
     payload_bits = meta_op_bit_length(payload)
     ensure(
         0 <= offset * 8 <= offset * 8 + payload_bits <= meta_op_bit_length(mem),
@@ -228,7 +239,8 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
         f"{meta_op_bit_length(mem)=}, {offset=}, {payload_bits=}"
     )
 
-    return op_set_bits(mem, offset * 8, payload)
+    out = op_set_bits(mem, offset * 8, payload)
+    return contract_validate_memory(out)
 
 
 # ------------------------------------------------------------------------------
@@ -245,9 +257,9 @@ def op_fill_range(): ...
 # ??????????????????????????????????????????????????????????????????????????????
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_truncate(mem: MemRgn, length: int) -> MemRgn:
     "Truncates a memory region to be shorter or equal bit length."
+    contract_validate_memory(mem)
     mem_len = meta_op_bit_length(mem)
     ensure(
         length <= mem_len,
@@ -269,13 +281,13 @@ def op_truncate(mem: MemRgn, length: int) -> MemRgn:
     #     byte.append(bit)
     # out.bytes.append((byte + [None] * 8)[:8])
 
-    return out
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     "Extends a memory region with 0 or 1 to a given bit length."
+    contract_validate_memory(mem)
     mem_len = meta_op_bit_length(fill)
     ensure(mem_len == 1, 'Fill payload must be 0 or 1')
 
@@ -294,50 +306,52 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     #     byte.append(bit)
     # out.bytes.append((byte + [None] * 8)[:8])
 
-    return out
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
+    contract_validate_memory(mem)
     mem_len = meta_op_bit_length(mem)
 
     if mem_len > length:
-        return op_truncate(mem, length)
+        out = op_truncate(mem, length)
 
     elif mem_len < length:
         fill = MemRgn()
         fill.bytes.append([0] + [None] * 7)
 
-        return op_extend(
+        out = op_extend(
             mem,
             length - mem_len,
             fill
         )
 
     else:
-        return mem
+        out = mem
+
+    return contract_validate_memory(out)
 
 
 # TODO(pbz): Should this be pass by reference?
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
+    contract_validate_memory(mem)
     mem_len = meta_op_bit_length(mem)
     ensure(
         mem_len <= length * 8,
         f'Cannot truncate bits from {mem_len} to {length * 8}'
     )
-    return op_ensure_bit_length(mem, length * 8)
+    out = op_ensure_bit_length(mem, length * 8)
+    return contract_validate_memory(mem)
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     """
     Invariant: memory regions should be from the same universe and valid.
     """
-    # TODO(pbz): Call contract_validate_memory() each time?
+
     contract_validate_memory(mem_left)
     contract_validate_memory(mem_right)
 
@@ -359,9 +373,7 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     #     byte.append(bit)
     # out.bytes.append((byte + [None] * 8)[:8])
 
-    contract_validate_memory(out)
-
-    return out
+    return contract_validate_memory(out)
 
 
 # ------------------------------------------------------------------------------
@@ -369,7 +381,7 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
 # ------------------------------------------------------------------------------
 
 # Contract to uphold invariant in a decentralized way
-def contract_validate_memory(mem: MemRgn):
+def contract_validate_memory(mem: MemRgn) -> MemRgn:
     ensure(
         all(len(byte) == 8 for byte in mem.bytes),
         f'Some bytes not 8 bits: {mem.bytes}'
@@ -403,9 +415,9 @@ def contract_validate_memory(mem: MemRgn):
             f'Should be: {all_bytes}'
         )
     )
+    return mem
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 # This is a meta-operation that acts as a getter on the data state machine. It
 # does not produce the same type used by the algebra so it is not an operation.
 # It does however retrieve metadata so it is a meta operation.
@@ -418,10 +430,10 @@ def meta_op_bit_length(mem: MemRgn) -> int:
 
     Invariant: input memory must be valid and mapped to program's universe.
     """
+    contract_validate_memory(mem)
     return len(list(iterate_logical_bits(mem.bytes)))
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 # This is a meta-operation that acts as a getter on the data state machine. It
 # does not produce the same type used by the algebra so it is not an operation.
 # It does however retrieve metadata so it is a meta operation.
@@ -433,6 +445,7 @@ def meta_op_byte_length(mem: MemRgn) -> int:
 
     Invariant: input memory must be valid and mapped to program's universe.
     """
+    contract_validate_memory(mem)
     return len(mem.bytes)
 
 
@@ -441,17 +454,23 @@ def meta_op_byte_length(mem: MemRgn) -> int:
 # ------------------------------------------------------------------------------
 
 def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
-    bytes = []
+    "Collect flat list of bits into lists of lists of 8 bits (bytes)."
+    if not bits:
+        return bits
+    bytes_ = []
     byte = []
     for i, bit in enumerate(bits):
         if byte and i % 8 == 0:
-            bytes.append(byte[:])
+            bytes_.append(byte[:])
             byte.clear()
         byte.append(bit)
-    bytes.append((byte + [None] * 8)[:8])
-    return bytes
+    bytes_.append((byte + [None] * 8)[:8])
+    return bytes_
 
 
-# TODO(pbz): Call contract_validate_memory() each time?
 def iterate_logical_bits(bytes_: LogicalMemory) -> list[int]:
+    """
+    Iterate over a list of list of 8 bits (bytes) one bit at a time, discarding
+    Nones.
+    """
     return (bit for byte in bytes_ for bit in byte if bit != None)
