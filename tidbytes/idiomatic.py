@@ -303,9 +303,9 @@ class Num(Mem):
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], (list, tuple)):
-                return from_grouped_bits(value)
+                return from_grouped_bits(init)
             elif init and isinstance(init[0], int):
-                return from_bit_list(value)
+                return from_bit_list(init)
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
         elif isinstance(init, tuple):
@@ -353,7 +353,7 @@ class Str(Mem):
 
     # ! -> Str::from <-
     @classmethod
-    def from_(cls, init: T, bit_length: int) -> 'Num':
+    def from_(cls, init: T, bit_length: int) -> 'Str':
         if isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, str):
@@ -368,13 +368,13 @@ class Str(Mem):
         else:
             raise MemException('Invalid initializer')
 
-    # ! -> Num::into <-
+    # ! -> Str::into <-
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
             return into_byte_u8(self.rgn)
 
     def __str__(self):
-        chars = (int(byte, base=2) for byte in super().__str__().split())
+        chars = (int(byte, base=2) for byte in Mem.__str__(self).split())
         return bytearray(chars).decode()
 
 

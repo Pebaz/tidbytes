@@ -654,6 +654,9 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
 
 def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
     "Treats an f32 like a sequence of bytes"
+    if bit_length == 0:
+        return MemRgn()
+
     bit_length = 32 if bit_length is None else bit_length
 
     ensure(
@@ -681,6 +684,9 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
 
 def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
     "Treats an f64 like a sequence of bytes"
+    if bit_length == 0:
+        return MemRgn()
+
     bit_length = 64 if bit_length is None else bit_length
 
     ensure(
@@ -722,6 +728,9 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     their bits flipped which means all available bits are flipped. That wouldn't
     work if there wasn't a max storage size, resulting in infinite bits flipped.
     """
+    if bit_length == 0:
+        return MemRgn()
+
     ensure(
         bit_length is not None if value < 0 else True,
         'Must provide bit length for negative numbers due to '
@@ -864,8 +873,8 @@ def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
     ]
     mem = MemRgn()
     mem.bytes = bytes_
-    a = op_ensure_bit_length(mem, bit_length)
-    return a
+    out = op_ensure_bit_length(mem, bit_length)
+    return out
 
 
 
