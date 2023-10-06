@@ -401,6 +401,8 @@ class F32(Mem):
 # TODO(pbz): A Mem type that can support indexing and all other operations.
 
 
+
+# ! Pass bits as init value to set each inner type
 class Struct:
     """
     foo: Num

@@ -50,6 +50,8 @@ from_str = ...
 from_struct = ...
 from_hex_string = ...
 
+
+'''
 def get_identity_bytes(value: Primitive) -> bytes:
     """
     Returns the bytes of the primitive value with left to right bit and byte
@@ -90,7 +92,7 @@ def get_identity_bytes_numeric(value: Primitive) -> bytes:
         byte_slice = bytes(byte_slice)
 
     return byte_slice
-
+'''
 
 
 # Can control the types passed into it
