@@ -42,14 +42,6 @@ X64_MANTISSA = 53
 X32_MANTISSA = 23
 PYTHON_X64_FLOATS = sys.float_info.mant_dig == X64_MANTISSA
 
-# TODO(pbz): From
-from_arr = ...
-from_u8 = ...
-from_int = ...
-from_str = ...
-from_struct = ...
-from_hex_string = ...
-
 
 '''
 def get_identity_bytes(value: Primitive) -> bytes:
@@ -95,56 +87,22 @@ def get_identity_bytes_numeric(value: Primitive) -> bytes:
 '''
 
 
-# Can control the types passed into it
-
-# Bytes are always identity order
-# List[byte] are always identity order, if not, **transform the Mem after**
-# List[bit] are always identity order, if not, **transform the Mem after**
-# List[u32] are always identity order, if not, **transform the Mem after**
-
-
-# TODO(pbz): Negative Python big integers will always have an extra 1 bit.
-
-# TODO(pbz): int.bit_length() works on any integer negative or positive.
-# TODO(pbz): The idiomatic interface needs to use this.
-
-(3).bit_length()
-
-# TODO(pbz): Use float.hex() and struct.pack/unpack for dealing with bit parsing
-import struct
-
-float.hex
-
-# value = []
-# isinstance(value, list[int])
-# isinstance(value, [u8, u16, u32, u64, i8, i16, i32, i64, f32, f64])
-# isinstance(value, tuple)
-
-
 # * Conversion Operations
-# TODO(pbz): I'd like to point out that I think it would be possible to not
-# TODO(pbz): include these C-ABI-inspired conversion operations but I don't want
-# TODO(pbz): to reduce this API surface as far as possible since it can be seen
-# TODO(pbz): from outside mathematics that doing so is not best for the user.
 
-def op_into_u8_bit_arr(): ...
-def op_into_u8_byte_arr(): ...
-def op_into_u32_arr(): ...
-def op_into_u8(): ...
-def op_into_u16(): ...
-def op_into_u32(): ...
-def op_into_u64(): ...
+def into_u8_bit_arr(): ...
+def into_u8_byte_arr(): ...
+def into_u32_arr(): ...
+def into_u8(): ...
+def into_u16(): ...
+def into_u32(): ...
+def into_u64(): ...
 
-def op_into_i8_arr(): ...
-def op_into_i32_arr(): ...
-def op_into_i8(): ...
-def op_into_i16(): ...
-def op_into_i32(): ...
-def op_into_i64(): ...
-
-def op_from_u8_bit_arr(): ...
-def op_from_u8_byte_arr(): ...
-
+def into_i8_arr(): ...
+def into_i32_arr(): ...
+def into_i8(): ...
+def into_i16(): ...
+def into_i32(): ...
+def into_i64(): ...
 
 # def repr_byte(mem: Mem): ...
 # def repr_byte_in_universe(mem: Mem, bit_order: Order, byte_order: Order): ...
@@ -154,60 +112,6 @@ def op_from_u8_byte_arr(): ...
 # ! fundamental operations like get and set bit. I'm also curious if op_execute
 # ! is a fundamental operation because if it is, compile time code is possible.
 # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-
-
-
-
-# TODO(pbz): 7/28/23
-# TODO(pbz): These definitions are good just convert them to codecs
-
-def from_bytes(cls, value):
-    """
-    Treats a memory region as if it had identity bit and byte order (left
-    to right for both). To transform into another memory universe, use the
-    transformation operations:
-        - identity()
-        - reverse()
-        - reverse_bytes()
-        - reverse_bits()
-    """
-    mem = Mem()
-    for byte in value:
-        mem_byte = cls.from_numeric_u8(byte)
-        mem = mem + mem_byte if mem else mem_byte
-    return mem
-
-def __from_natural_big_integer_bytes(
-    value: int,
-    bit_length: int
-) -> list[list[int]]:
-    """
-    Helper function to convert a Python big integer to a list of lists of
-    bits.
-    """
-    # TODO(pbz): This is a bug!
-    assert False, 'THIS IS A BUG. THIS SHOULD RETURN BYTES NOT BITS!'
-
-    bytes = []
-    byte = []
-
-    for i in range(bit_length):
-        bit = int(bool(value & (1 << i)))
-        byte.append(bit)
-
-        if len(byte) == 8:
-            bytes.append(byte[:])
-            byte.clear()
-
-    if byte:
-        bytes.append((byte + [None] * 8)[:8])
-
-    return bytes
-
-
 
 # TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
 

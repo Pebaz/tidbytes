@@ -8,12 +8,10 @@ from . import raises_exception
 
 UN = None  # Unsized
 
-# TODO(pbz): Careful, ctypes u8(0b100000101) truncates to 5, not Tidbytes...
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (0, 0b100, '', 'Truncate to null'),
     (UN, 0b100, '00100000', 'Four'),
     (UN, 0b1011, '11010000', 'Single byte'),
-    (UN, 0b100000101, '10100000', 'Single byte out of 2 bytes'),
     (4, 0b1011, '1101', 'Truncation'),
 ])
 def test_from_natural_u8(bits, init, expect, msg):
@@ -24,8 +22,7 @@ def test_from_natural_u8(bits, init, expect, msg):
     (0, 0b100, '', 'Truncate to null'),
     (UN, 0b100, '00000100', 'Four'),
     (UN, 0b1011, '00001011', 'Single byte'),
-    (UN, 0b100000101, '00000101', 'Single byte out of 2 bytes'),
-    (7, 0b100000101, '0000101', 'Truncation'),
+    (7, 0b10000101, '0000101', 'Truncation'),
 ])
 def test_from_numeric_u8(bits, init, expect, msg):
     assert str(Num[bits](u8(init))) == expect, msg

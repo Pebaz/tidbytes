@@ -258,6 +258,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise MemException("Invalid initializer: Can't deduce codec")
 
         elif isinstance(init, str):
+            # TODO(pbz): from_hex_str('0xFF')
+            # TODO(pbz): from_bin_str('0b11101001101101101')
             return from_bytes(init.encode(), bit_length)
         elif isinstance(init, bytes):
             return from_bytes(init, bit_length)
