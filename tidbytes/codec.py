@@ -29,11 +29,14 @@ are two ways to go about it. The value can be treated as numeric data or raw
 memory. There are multitudinous applications of both such as logical data such
 as strings or physical data such as the contents of one memory page. Being able
 to effectively slice and transform each is useful and Tidbytes can do them all.
+
+A design note for the codecs in this module: if the result of a Von Neumann
+operation is directly returned, there's no need to validate the returned memory
+because all operations validate memory before returning.
 """
 
 import ctypes, sys, struct
-from array import array
-from typing import List, Generic, TypeVar
+from typing import TypeVar
 from .mem_types import *
 from .von_neumann import *
 
@@ -42,187 +45,9 @@ X64_MANTISSA = 53
 X32_MANTISSA = 23
 PYTHON_X64_FLOATS = sys.float_info.mant_dig == X64_MANTISSA
 
-
-'''
-def get_identity_bytes(value: Primitive) -> bytes:
-    """
-    Returns the bytes of the primitive value with left to right bit and byte
-    order regardless of the system endianness. Treats the input value as a raw
-    memory region rather than a numeric value.
-    """
-    # The slice of memory that the primitive resides in
-    byte_slice = ctypes.string_at(
-        ctypes.byref(value),
-        ctypes.sizeof(type(value))
-    )
-
-    # Little endian is reverse for numeric data but not for raw memory
-    if sys.byteorder == 'big':
-        byte_slice = bytearray(byte_slice)
-        byte_slice.reverse()
-        byte_slice = bytes(byte_slice)
-
-    return byte_slice
-
-
-def get_identity_bytes_numeric(value: Primitive) -> bytes:
-    """
-    Returns the bytes of the primitive value with left to right bit and byte
-    order regardless of the system endianness. Treats the input value as a
-    numeric value rather than a raw memory region.
-    """
-    # The slice of memory that the primitive resides in
-    byte_slice = ctypes.string_at(
-        ctypes.byref(value),
-        ctypes.sizeof(type(value))
-    )
-
-    # Big endian is reverse for raw memory but not for numeric data
-    if sys.byteorder == 'little':
-        byte_slice = bytearray(byte_slice)
-        byte_slice.reverse()
-        byte_slice = bytes(byte_slice)
-
-    return byte_slice
-'''
-
-
-# * Conversion Operations
-
-def into_u8_bit_arr(): ...
-def into_u8_byte_arr(): ...
-def into_u32_arr(): ...
-def into_u8(): ...
-def into_u16(): ...
-def into_u32(): ...
-def into_u64(): ...
-
-def into_i8_arr(): ...
-def into_i32_arr(): ...
-def into_i8(): ...
-def into_i16(): ...
-def into_i32(): ...
-def into_i64(): ...
-
-# def repr_byte(mem: Mem): ...
-# def repr_byte_in_universe(mem: Mem, bit_order: Order, byte_order: Order): ...
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# ! It's time to determine if op_bitwise_or is necessary given the above
-# ! fundamental operations like get and set bit. I'm also curious if op_execute
-# ! is a fundamental operation because if it is, compile time code is possible.
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# TODO(pbz): Could probably parametrize this over enum of u8, u16 with len()
-
-# TODO(pbz): 7/28/23
-# TODO(pbz): These are not codecs because "bit/byte length" is not a type?
-@classmethod
-def from_bit_length(cls, bit_length: int):
-    mem = cls()
-
-    bytes = []
-    byte = []
-
-    for i in range(bit_length):
-        byte.append(0)
-        if len(byte) == 8:
-            bytes.append(byte[:])
-            byte.clear()
-
-    if byte:
-        bytes.append(byte)
-
-    mem.rgn.bytes = bytes
-    return mem
-
-
-# TODO(pbz): 7/28/23
-# TODO(pbz): There should be `Into` codecs as well
-
-
-# Into
-into_i8_list = ...
-into_i8_arr = ...
-
-into_int = ...  # TODO(pbz): Examine host endianness, use struct.unpack
-
-
-
-
-def memory(init):
-    if hasattr(init, '__mem__'):
-        return init.__mem__()
-
-    elif isinstance(init, int):
-        return from_numeric_u64(u64(init))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# !!!!!!!!!!!!!!!!! Mem[3](u8(2)) should truncate to 3 bits.
-
-# TODO(pbz): Rework the rest of the codecs to take a bit length even if
-# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-# TODO(pbz): fail, etc.
-
-# TODO(pbz): Rework the rest of the codecs to take a bit length even if
-# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-# TODO(pbz): fail, etc.
-
-# TODO(pbz): Rework the rest of the codecs to take a bit length even if
-# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-# TODO(pbz): fail, etc.
-
-# TODO(pbz): Rework the rest of the codecs to take a bit length even if
-# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-# TODO(pbz): fail, etc.
-
-# TODO(pbz): Rework the rest of the codecs to take a bit length even if
-# TODO(pbz): they don't use it. Strings need to truncate. Floats need to
-# TODO(pbz): fail, etc.
-
-
-
-
-
 # ! ----------------------------------------------------------------------------
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
-
-# def reverse_byte(byte: int) -> int:
-#     "Reverses the bits of an 8-bit unsigned integer"
-#     ensure(0 <= byte <= 255, 'Only values from 0-255 inclusive supported')
-
-#     new_byte = 0
-#     for bit_index in range(8):  # Iterate from right to left
-#         bit = bool(byte & (1 << bit_index))
-#         if bit:  # Set the opposite bit from left to right
-#             new_byte |= 1 << (8 - bit_index - 1)
-#     return new_byte
-
-
-# TODO(pbz): Is this a good idea?
-'''
-def identity_bytes(value: Primitive, struct_descriptor: str) -> list[int]:
-    little_endian_bytes = struct.pack(struct_descriptor, value.value)
-
-    # At this point bytes are in correct numeric right-to-left order but the
-    # bits are in left to right order. Whether or not they are numeric is
-    # another story. Return the bits in identity order
-    return [reverse_byte(byte) for byte in little_endian_bytes]
-'''
-
 
 # Identity bits & bytes
 
@@ -246,9 +71,8 @@ def identity_bits_from_struct_field(specifier: str, value: int) -> list[int]:
         for byte in little_endian_bytes
     ]
 
-# MemRgn from primitive idiomatic types
+# Deserialize MemRgn from primitive idiomatic types
 
-# TODO(pbz): Rename "bytes" to "logical" or "natural"?
 def from_natural_u8(value: u8, bit_length: int) -> MemRgn:
     """
     This is different from `from_numeric_u8()` because it assumes that the
@@ -782,23 +606,24 @@ def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
     out = op_ensure_bit_length(mem, bit_length)
     return out
 
+# TODO(pbz): Implement serialization
+# Serialize MemRgn from primitive idiomatic types
 
+def into_u8_bit_arr(): ...
+def into_u8_byte_arr(): ...
+def into_u32_arr(): ...
+def into_u8(): ...
+def into_u16(): ...
+def into_u32(): ...
+def into_u64(): ...
 
-
-
-def into_byte_u8(value) -> u8:
-    pass
-
-
-# TODO(pbz): Interface boundaries have configuration:
-# twos_complement(bit_length)
-# allow_negative
-# Mem[bit_length]
-#
-# Mem[...](-123, twos_complement=True)  !! error: can't fit inside `...` unsized
-
-# If bit_length was always a parameter, would this solve everything?
-# Mem("asdf")  <- Is this ASCII or unicode? Does it matter?
-
-
-# meta, intra, extra, pub, pri, extern, intern
+def into_i8_arr(): ...
+def into_i32_arr(): ...
+def into_i8(): ...
+def into_i16(): ...
+def into_i32(): ...
+def into_i64(): ...
+def into_i8_list(): ...
+def into_i8_arr(): ...
+def into_int(): ...  # Examine host endianness, use struct.unpack
+def into_byte_u8(value) -> u8: ...
