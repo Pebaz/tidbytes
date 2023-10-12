@@ -14,11 +14,10 @@ class MemRgn:
 
     Assumes bytes are always length of 8, filling empty spaces with None.
     """
-    # TODO(pbz): Since all memory operations should assume the memory region is
-    # TODO(pbz): mapped into the host CPU's universe, I should be able to
-    # TODO(pbz): re-implement `MemRgn` using integers and bit masks.
-    # TODO(pbz): Over-fetching partial bytes are well-defined so a bit mask will
-    # TODO(pbz): ignore extra bits.
+    # Since all memory operations should assume the memory region is mapped into
+    # the host CPU's universe, I should be able to re-implement `MemRgn` using
+    # integers and bit masks. Over-fetching partial bytes are well-defined so a
+    # bit mask will ignore extra bits.
     def __init__(self):
         self.bytes: LogicalMemory = []
 

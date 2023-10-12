@@ -541,7 +541,6 @@ def from_bool(value: bool, bit_length: int) -> MemRgn:
     return op_ensure_bit_length(out, bit_length)
 
 
-# TODO(pbz): Audit the code and remove iterators being consumed in ensure()
 def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
     # Preserve iterator by collecting into list for ensure()
