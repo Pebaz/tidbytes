@@ -1,9 +1,12 @@
 import sys
 import pytest
 import tidbytes.codec
-from types import SimpleNamespace
-from typing import *
-from tidbytes import *
+
+from tidbytes.mem_types import (
+    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
+)
+from tidbytes.idiomatic import Mem, Num, Str
+
 from . import raises_exception
 
 UN = None  # Unsized
