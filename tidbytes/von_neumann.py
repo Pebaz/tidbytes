@@ -1,4 +1,4 @@
-from .mem_types import *
+from .mem_types import Order, L2R, R2L, ensure
 
 
 # Putting this first and foremost to declare the opportunity to refactor all
@@ -344,7 +344,7 @@ def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
         f'Cannot truncate bits from {mem_len} to {length * 8}'
     )
     out = op_ensure_bit_length(mem, length * 8)
-    return contract_validate_memory(mem)
+    return contract_validate_memory(out)
 
 
 def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
@@ -473,4 +473,4 @@ def iterate_logical_bits(bytes_: LogicalMemory) -> list[int]:
     Iterate over a list of list of 8 bits (bytes) one bit at a time, discarding
     Nones.
     """
-    return (bit for byte in bytes_ for bit in byte if bit != None)
+    return (bit for byte in bytes_ for bit in byte if bit is not None)

@@ -30,20 +30,34 @@ memory. There are multitudinous applications of both such as logical data such
 as strings or physical data such as the contents of one memory page. Being able
 to effectively slice and transform each is useful and Tidbytes can do them all.
 
-A design note for the codecs in this module: if the result of a Von Neumann
-operation is directly returned, there's no need to validate the returned memory
-because all operations validate memory before returning.
+Design notes for this module:
+- If the result of a Von Neumann operation is directly returned, there's no need
+    to validate the returned memory because all operations validate memory
+    before returning.
+- The "op" nomenclature always refers to algebraic operations with Von Neuman
+    inputs and Von Neuman outputs (the Mem type). Think arithmetic: all ops take
+    numbers and return numbers.
+
+
 """
 
-import ctypes, sys, struct
+import ctypes
+import sys
+import struct
 from typing import TypeVar
-from .mem_types import *
-from .von_neumann import *
+from .mem_types import u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure
+from .von_neumann import (
+    MemRgn, op_identity, op_reverse, contract_validate_memory,
+    op_ensure_bit_length, group_bits_into_bytes
+)
 
 T = TypeVar('T')
 X64_MANTISSA = 53
 X32_MANTISSA = 23
 PYTHON_X64_FLOATS = sys.float_info.mant_dig == X64_MANTISSA
+
+# Prevents generators/iterators from being consumed without being processed
+collect_iterator = list
 
 # ! ----------------------------------------------------------------------------
 # ! Codecs (From & Into)
@@ -85,9 +99,9 @@ def from_natural_u8(value: u8, bit_length: int) -> MemRgn:
     backwards because it is treated as a memory region not a numeric value.
     """
     bit_length = 8 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<B', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<B', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_natural_u16(value: u16, bit_length: int) -> MemRgn:
@@ -108,9 +122,9 @@ def from_natural_u16(value: u16, bit_length: int) -> MemRgn:
     value.
     """
     bit_length = 16 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<H', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<H', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_natural_u32(value: u32, bit_length: int) -> MemRgn:
@@ -131,9 +145,9 @@ def from_natural_u32(value: u32, bit_length: int) -> MemRgn:
     is treated as a memory region not a numeric value.
     """
     bit_length = 32 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<L', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<L', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_natural_u64(value: u64, bit_length: int) -> MemRgn:
@@ -158,9 +172,9 @@ def from_natural_u64(value: u64, bit_length: int) -> MemRgn:
     numeric value.
     """
     bit_length = 64 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<Q', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<Q', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
@@ -254,9 +268,9 @@ def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
         -10 turns into [11110110]
     """
     bit_length = 8 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<b', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<b', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
@@ -271,9 +285,9 @@ def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
     Negative numbers are twos-complement encoded.
     """
     bit_length = 16 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<h', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<h', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
@@ -288,9 +302,9 @@ def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
     Negative numbers are twos-complement encoded.
     """
     bit_length = 32 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<l', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<l', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
@@ -305,9 +319,9 @@ def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
     Negative numbers are twos-complement encoded.
     """
     bit_length = 64 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<q', value.value)
-    return op_ensure_bit_length(op_identity(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<q', value.value)
+    return op_ensure_bit_length(op_identity(out), bit_length)
 
 
 def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
@@ -326,9 +340,9 @@ def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
         -10 turns into [11110110]
     """
     bit_length = 8 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<b', value.value)
-    return op_ensure_bit_length(op_reverse(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<b', value.value)
+    return op_ensure_bit_length(op_reverse(out), bit_length)
 
 
 def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
@@ -343,9 +357,9 @@ def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
     Negative numbers are twos-complement encoded.
     """
     bit_length = 16 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<h', value.value)
-    return op_ensure_bit_length(op_reverse(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<h', value.value)
+    return op_ensure_bit_length(op_reverse(out), bit_length)
 
 
 def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
@@ -360,9 +374,9 @@ def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
     Negative numbers are twos-complement encoded.
     """
     bit_length = 32 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<l', value.value)
-    return op_ensure_bit_length(op_reverse(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<l', value.value)
+    return op_ensure_bit_length(op_reverse(out), bit_length)
 
 
 def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
@@ -377,9 +391,9 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
     Negative numbers are twos-complement encoded.
     """
     bit_length = 64 if bit_length is None else bit_length
-    mem = MemRgn()
-    mem.bytes = identity_bits_from_struct_field('<q', value.value)
-    return op_ensure_bit_length(op_reverse(mem), bit_length)
+    out = MemRgn()
+    out.bytes = identity_bits_from_struct_field('<q', value.value)
+    return op_ensure_bit_length(op_reverse(out), bit_length)
 
 
 def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
@@ -400,16 +414,16 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
 
     assert len(byte_slice) == 32 // 8, 'Not 32 bits long'
 
-    mem = MemRgn()
+    out = MemRgn()
     for byte in byte_slice:
         bits = []
         for i in range(8):
             bits.append(int(bool(byte & (1 << i))))
-        mem.bytes.append(bits[:])
+        out.bytes.append(bits[:])
         bits.clear()
 
     # Only pad. Semantic error to truncate float.
-    return op_ensure_bit_length(mem, bit_length)
+    return op_ensure_bit_length(out, bit_length)
 
 
 def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
@@ -430,15 +444,15 @@ def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
 
     assert len(byte_slice) == 64 // 8, 'Not 64 bits long'
 
-    mem = MemRgn()
+    out = MemRgn()
     for byte in byte_slice:
         bits = []
         for i in range(8):
             bits.append(int(bool(byte & (1 << i))))
-        mem.bytes.append(bits[:])
+        out.bytes.append(bits[:])
         bits.clear()
 
-    return op_ensure_bit_length(mem, bit_length)
+    return op_ensure_bit_length(out, bit_length)
 
 
 def from_numeric_f32(value: f32, bit_length: int) -> MemRgn:
@@ -471,13 +485,6 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     # be used to tell how large the destination memory is for 2's complement
     bit_length = bit_length if bit_length is not None else value.bit_length()
 
-    # TODO(pbz): Keep this around for the tests
-    #   0000000000001010  10
-    #   1111111111110101  flip all bits
-    # + 0000000000000001  add 1
-    #   ----------------
-    #   1111111111110110  -10
-
     ensure(
         value.bit_length() <= bit_length,
         f'Big integers must fit in destination bit length: {bit_length}'
@@ -488,11 +495,10 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
         for bit_index in range(bit_length)
     ]
 
-    mem = MemRgn()
-    mem.bytes = group_bits_into_bytes(bits)
+    out = MemRgn()
+    out.bytes = group_bits_into_bytes(bits)
 
-    # TODO(pbz): return contract_validate_memory(mem)
-    return mem
+    return contract_validate_memory(out)
 
 
 def from_numeric_big_integer(value: int, bit_length: int) -> MemRgn:
@@ -526,36 +532,36 @@ def from_numeric_float(value: float, bit_length: int) -> MemRgn:
 def from_bool(value: bool, bit_length: int) -> MemRgn:
     "Converts a boolean value to a single bit"
     bit_length = bit_length if bit_length is not None else 1
-    mem = MemRgn()
+    out = MemRgn()
 
     if bit_length == 0:
-        return mem
+        return out
 
-    mem.bytes = [[1 if value else 0] + [None] * 7]
-    return op_ensure_bit_length(mem, bit_length)
+    out.bytes = [[1 if value else 0] + [None] * 7]
+    return op_ensure_bit_length(out, bit_length)
 
 
 # TODO(pbz): Audit the code and remove iterators being consumed in ensure()
 def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
     # Preserve iterator by collecting into list for ensure()
-    value = list(value)
+    value = collect_iterator(value)
     ensure(all(bit == 0 or bit == 1 for bit in value))
 
     bit_length = bit_length if bit_length is not None else 1
-    mem = MemRgn()
+    out = MemRgn()
 
     if bit_length == 0:
-        return mem
+        return out
 
     null = [None] * 8
 
-    mem.bytes = [
+    out.bytes = [
         (value[i:i + 8] + null)[:8]
         for i in range(0, len(value), 8)
     ]
 
-    return mem
+    return contract_validate_memory(out)
 
 
 def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
@@ -570,14 +576,15 @@ def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
     )
 
     bit_length = bit_length if bit_length is not None else 1
-    mem = MemRgn()
+    out = MemRgn()
 
     if bit_length == 0:
-        return mem
+        return out
 
     null = [None] * 8
-    mem.bytes = [(byte[:] + null)[:8] for byte in value]
-    return mem
+    out.bytes = [(byte[:] + null)[:8] for byte in value]
+
+    return contract_validate_memory(out)
 
 
 def from_bytes(value: list[int], bit_length: int) -> MemRgn:
@@ -588,9 +595,10 @@ def from_bytes(value: list[int], bit_length: int) -> MemRgn:
         list(reversed(identity_bits_from_numeric_byte(byte)))
         for byte in value
     ]
-    mem = MemRgn()
-    mem.bytes = bytes_
-    return op_ensure_bit_length(mem, bit_length)
+    out = MemRgn()
+    out.bytes = bytes_
+
+    return op_ensure_bit_length(out, bit_length)
 
 
 def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
@@ -601,10 +609,10 @@ def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
         list(reversed(identity_bits_from_numeric_byte(byte)))
         for byte in value
     ]
-    mem = MemRgn()
-    mem.bytes = bytes_
-    out = op_ensure_bit_length(mem, bit_length)
-    return out
+    out = MemRgn()
+    out.bytes = bytes_
+
+    return op_ensure_bit_length(out, bit_length)
 
 # TODO(pbz): Implement serialization
 # Serialize MemRgn from primitive idiomatic types
@@ -624,6 +632,6 @@ def into_i16(): ...
 def into_i32(): ...
 def into_i64(): ...
 def into_i8_list(): ...
-def into_i8_arr(): ...
+def into_i8_arr_(): ...
 def into_int(): ...  # Examine host endianness, use struct.unpack
 def into_byte_u8(value) -> u8: ...
