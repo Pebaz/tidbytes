@@ -1,8 +1,22 @@
 import indexed_meta
 from typing import Any, Generic, TypeVar
-from .mem_types import *
-from .von_neumann import *
-from .codec import *
+from .mem_types import (
+    Order, MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
+)
+from .von_neumann import (
+    MemRgn, op_transform, op_set_bit, meta_op_bit_length, op_concatenate,
+    op_truncate, contract_validate_memory, group_bits_into_bytes
+)
+from .codec import (
+    from_natural_u8, from_natural_u16, from_natural_u32, from_natural_u64,
+    from_numeric_u8, from_numeric_u16, from_numeric_u32, from_numeric_u64,
+    from_natural_i8, from_natural_i16, from_natural_i32, from_natural_i64,
+    from_numeric_i8, from_numeric_i16, from_numeric_i32, from_numeric_i64,
+    from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
+    from_natural_big_integer, from_numeric_big_integer, from_natural_float,
+    from_numeric_float, from_bool, from_bit_list, from_grouped_bits, from_bytes,
+    from_bytes_utf8, into_byte_u8
+)
 
 T = TypeVar('T')
 
@@ -119,7 +133,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         """
         return ' '.join(
             ''.join(
-                str(bit) if bit != None else ''  # ? '▫'
+                str(bit) if bit is not None else ''  # ? '▫'
                 for bit in byte
             )
             for byte in self.rgn.bytes
