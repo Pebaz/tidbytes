@@ -27,7 +27,7 @@ BYTE3 = [1, 1, 0, 0, 0, 0, 0, 0]
 BYTE4 = [0, 0, 1, 0, 0, 0, 0, 0]
 
 
-def memory(bit_count_or_init: int | str | list | tuple) -> Mem:
+def memory(bit_count_or_init: int | str | list | tuple) -> MemRgn:
     """
     The Idiomatic interface is for rich memory construction. This is a utility
     function since mixing the Idiomatic and Von Neumann would be no good.
@@ -306,3 +306,28 @@ def test_op_extend():
         [1, 0, 0, 0, 0, 0, 0, 0],
         [0, None, None, None, None, None, None, None],
     ]
+
+
+@pytest.mark.parametrize('init,length,expect,msg', [
+    (memory([1]), 9, [[1] + [0] * 7] + [[0] + [None] * 7], 'Extension'),
+    (memory([1] * 9), 4, [[1] * 4 + [None] * 4], 'Truncation'),
+])
+def test_op_ensure_bit_length(init, length, expect, msg):
+    out = op_ensure_bit_length(init, length)
+    assert out.bytes == expect, msg
+
+
+def test_op_ensure_byte_length():
+    pass
+
+
+def test_op_concatenate():
+    pass
+
+
+def test_op_fill():
+    pass
+
+
+def test_op_fill_range():
+    pass
