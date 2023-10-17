@@ -242,11 +242,6 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 # Memory transformation operations for memory within the program's universe.
 # ------------------------------------------------------------------------------
 
-# TODO(pbz): Need these?
-def op_fill(): ...
-def op_fill_range(): ...
-
-
 def op_truncate(mem: MemRgn, length: int) -> MemRgn:
     "Truncates a memory region to be shorter or equal bit length."
     contract_validate_memory(mem)

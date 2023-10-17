@@ -330,11 +330,3 @@ def test_op_concatenate():
     mem = memory([1] * 4)
     out = op_concatenate(mem, memory(5))
     assert out.bytes == [[1, 1, 1, 1, 0, 0, 0, 0], [0] + [None] * 7]
-
-
-def test_op_fill():
-    pass
-
-
-def test_op_fill_range():
-    pass
