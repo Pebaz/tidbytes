@@ -297,3 +297,12 @@ def test_op_reverse_bytes():
         [0, 0, None, None, None, None, None, None]
     ]
 
+
+def test_op_extend():
+    mem = MemRgn()
+    mem.bytes = [[1] + [None] * 7]
+    out = op_extend(mem, 8, memory([0]))
+    assert out.bytes == [
+        [1, 0, 0, 0, 0, 0, 0, 0],
+        [0, None, None, None, None, None, None, None],
+    ]

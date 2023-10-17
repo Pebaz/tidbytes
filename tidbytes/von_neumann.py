@@ -153,7 +153,6 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     contract_validate_memory(mem)
@@ -164,7 +163,6 @@ def op_set_bit(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     contract_validate_memory(mem)
@@ -201,7 +199,6 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     contract_validate_memory(mem)
@@ -221,7 +218,6 @@ def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     """
     Assumes exact bit length of payload should fit in destination. Does not
@@ -250,12 +246,7 @@ def op_set_bytes(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 def op_fill(): ...
 def op_fill_range(): ...
 
-# ??????????????????????????????????????????????????????????????????????????????
-# TODO(pbz): I don't think it should be pass by reference because arithmetic is
-# TODO(pbz): pass by value
-# ??????????????????????????????????????????????????????????????????????????????
 
-# TODO(pbz): Should this be pass by reference?
 def op_truncate(mem: MemRgn, length: int) -> MemRgn:
     "Truncates a memory region to be shorter or equal bit length."
     contract_validate_memory(mem)
@@ -275,7 +266,6 @@ def op_truncate(mem: MemRgn, length: int) -> MemRgn:
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     "Extends a memory region with 0 or 1 to a given bit length."
     contract_validate_memory(mem)
@@ -286,21 +276,11 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     padding = [fill.bytes[0][0]] * (length - mem_len)
     bits = list(iterate_logical_bits(mem.bytes)) + padding
     out = MemRgn()
-
-    # TODO(pbz): Test this worked:
     out.bytes = group_bits_into_bytes(bits)
-    # byte = []
-    # for i, bit in enumerate(bits):
-    #     if byte and i % 8 == 0:
-    #         out.bytes.append(byte[:])
-    #         byte.clear()
-    #     byte.append(bit)
-    # out.bytes.append((byte + [None] * 8)[:8])
 
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
     contract_validate_memory(mem)
@@ -325,7 +305,6 @@ def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
     return contract_validate_memory(out)
 
 
-# TODO(pbz): Should this be pass by reference?
 def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
     contract_validate_memory(mem)
