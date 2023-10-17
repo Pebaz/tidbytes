@@ -222,10 +222,10 @@ def test_op_set_bytes(init, offset, payload, expect, msg):
 # TODO(pbz): Organize and perhaps parametrize these:
 
 def test_op_truncate():
-    mem = memory(8)
-    out = op_truncate(mem, 4)
-    assert meta_op_bit_length(out) == 4
-    assert out.bytes == [[0, 0, 0, 0, None, None, None, None]]
+    mem = memory(16)
+    out = op_truncate(mem, 12)
+    assert meta_op_bit_length(out) == 12
+    assert out.bytes == [[0] * 8, [0, 0, 0, 0, None, None, None, None]]
 
 
 def test_op_transform():

@@ -145,7 +145,7 @@ graph LR;
 ```mermaid
 %%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
 graph LR;
-    subgraph Many Input Types, Only One Output Type
+    subgraph "Many Input Types, Only One Output Type"
         subgraph Higher Level Types
             _6{{"list[bit]"}}
             _7{{"list[byte]"}}
