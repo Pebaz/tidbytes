@@ -317,8 +317,13 @@ def test_op_ensure_bit_length(init, length, expect, msg):
     assert out.bytes == expect, msg
 
 
-def test_op_ensure_byte_length():
-    pass
+@pytest.mark.parametrize('init,length,expect,msg', [
+    (memory([1] * 16), 2, [[1] * 8] * 2, 'Extension'),
+    (memory([1] * 16), 1, [[1] * 8], 'Truncation'),
+])
+def test_op_ensure_byte_length(init, length, expect, msg):
+    out = op_ensure_byte_length(init, length)
+    assert out.bytes == expect, msg
 
 
 def test_op_concatenate():

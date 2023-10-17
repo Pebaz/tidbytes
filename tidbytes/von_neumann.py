@@ -292,12 +292,7 @@ def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
     elif mem_len < length:
         fill = MemRgn()
         fill.bytes.append([0] + [None] * 7)
-
-        out = op_extend(
-            mem,
-            length - mem_len,
-            fill
-        )
+        out = op_extend(mem, length - mem_len, fill)
 
     else:
         out = mem
@@ -308,11 +303,6 @@ def op_ensure_bit_length(mem: MemRgn, length: int) -> MemRgn:
 def op_ensure_byte_length(mem: MemRgn, length: int) -> MemRgn:
     "Extends with zeros or truncates a memory region to be a specific length."
     contract_validate_memory(mem)
-    mem_len = meta_op_bit_length(mem)
-    ensure(
-        mem_len <= length * 8,
-        f'Cannot truncate bits from {mem_len} to {length * 8}'
-    )
     out = op_ensure_bit_length(mem, length * 8)
     return contract_validate_memory(out)
 
