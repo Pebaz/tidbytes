@@ -322,16 +322,7 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     ]
 
     out = MemRgn()
-
-    # TODO(pbz): Test this worked:
     out.bytes = group_bits_into_bytes(bits)
-    # byte = []
-    # for i, bit in enumerate(bits):
-    #     if byte and i % 8 == 0:
-    #         out.bytes.append(byte[:])
-    #         byte.clear()
-    #     byte.append(bit)
-    # out.bytes.append((byte + [None] * 8)[:8])
 
     return contract_validate_memory(out)
 
