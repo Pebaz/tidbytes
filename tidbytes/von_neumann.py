@@ -115,8 +115,6 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
 def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     contract_validate_memory(mem)
-    # TODO(pbz): I'm fairly certain this needs to be `stop < meta_op_bit_length(mem)`
-    # TODO(pbz): since I think it should be an exclusive range? Empty ranges?
     ensure(0 <= start <= stop <= meta_op_bit_length(mem), 'Index out of bounds')
 
     out = MemRgn()

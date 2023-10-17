@@ -101,6 +101,7 @@ def test_op_get_byte(init, index, expect, msg):
 
 
 @pytest.mark.parametrize('init,start,stop,expect,msg', [
+    (1, 0, 0, [], 'Null memory'),
     (1, 0, 1, [[0] + [None] * 7], 'Get only bit'),
     (2, 0, 1, [[0] + [None] * 7], 'Get first bit'),
 ])
@@ -111,6 +112,7 @@ def test_op_get_bits(init, start, stop, expect, msg):
 
 
 @pytest.mark.parametrize('init,start,stop,expect,msg', [
+    (1, 0, 0, [], 'Null memory'),
     (8, 0, 1, [[0] * 8], 'Get only byte'),
 ])
 def test_op_get_bytes(init, start, stop, expect, msg):
