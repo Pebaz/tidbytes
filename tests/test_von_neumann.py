@@ -1,16 +1,11 @@
 import pytest
 from tidbytes.mem_types import Order
-from tidbytes.idiomatic import Mem
 from tidbytes.von_neumann import (
     MemRgn, op_transform, op_identity, op_reverse, op_reverse_bytes,
     op_reverse_bits, op_get_bit, op_get_byte, op_get_bits, op_get_bytes,
     op_set_bit, op_set_bits, op_set_byte, op_set_bytes, op_truncate,
     contract_validate_memory, meta_op_bit_length, meta_op_byte_length,
-
-    # TODO(pbz): These are not tested here
-    op_extend,
-    op_ensure_bit_length, op_ensure_byte_length, op_concatenate, op_fill,
-    op_fill_range
+    op_extend, op_ensure_bit_length, op_ensure_byte_length, op_concatenate
 )
 
 HALF_BYTE = [0, 1] * 2
@@ -53,57 +48,6 @@ def memory(bit_count_or_init: int | str | list | tuple) -> MemRgn:
         mem.bytes.append((byte + [None] * 8)[:8])
     contract_validate_memory(mem)
     return mem
-
-
-# ------------------------------------------------------------------------------
-# Fail fast tests
-# ------------------------------------------------------------------------------
-
-def test_bit_length():
-    mem = memory(9)
-    assert meta_op_bit_length(mem) == 9
-
-
-def test_byte_length():
-    mem = memory(9)
-    assert meta_op_byte_length(mem) == 2
-
-
-def test_get_bit():
-    mem = memory(9)
-    for i in range(meta_op_bit_length(mem)):
-        assert op_get_bit(mem, i).bytes == memory(1).bytes
-
-
-def test_get_bits():
-    mem = memory([0] * 8 + [1, 0, 1, 0])
-    out = op_get_bits(mem, 0, 8)
-    assert out.bytes == [[0] * 8]
-    contract_validate_memory(out)
-
-
-def test_get_byte():
-    mem = memory(4)
-    assert op_get_byte(mem, 0).bytes == memory(4).bytes
-
-
-def test_set_bit():
-    mem = memory(9)
-    pay = memory(1)
-    pay.bytes[0][0] = 1
-    mem = op_set_bit(mem, 8, pay)
-    assert mem.bytes[1][0] == 1
-    contract_validate_memory(mem)
-
-
-def test_set_bits():
-    mem = memory(12)
-    pay = memory([1, 0, 1, 0])
-    pay.bytes[0][0] = 1
-    mem = op_set_bits(mem, 8, pay)
-    assert mem.bytes[1] == pay.bytes[0]
-    contract_validate_memory(mem)
-
 
 # ------------------------------------------------------------------------------
 # Parametrized tests
@@ -193,7 +137,7 @@ def test_op_set_bit(init, offset, payload, expect, msg):
 def test_op_set_bits(init, offset, payload, expect, msg):
     mem = memory(init)
     payload_mem = memory(payload)
-    out = op_set_bit(mem, offset, payload_mem)
+    out = op_set_bits(mem, offset, payload_mem)
     assert out.bytes == expect, msg
 
 
@@ -309,20 +253,20 @@ def test_op_extend():
 
 
 @pytest.mark.parametrize('init,length,expect,msg', [
-    (memory([1]), 9, [[1] + [0] * 7] + [[0] + [None] * 7], 'Extension'),
-    (memory([1] * 9), 4, [[1] * 4 + [None] * 4], 'Truncation'),
+    ([1], 9, [[1] + [0] * 7] + [[0] + [None] * 7], 'Extension'),
+    ([1] * 9, 4, [[1] * 4 + [None] * 4], 'Truncation'),
 ])
 def test_op_ensure_bit_length(init, length, expect, msg):
-    out = op_ensure_bit_length(init, length)
+    out = op_ensure_bit_length(memory(init), length)
     assert out.bytes == expect, msg
 
 
 @pytest.mark.parametrize('init,length,expect,msg', [
-    (memory([1] * 16), 2, [[1] * 8] * 2, 'Extension'),
-    (memory([1] * 16), 1, [[1] * 8], 'Truncation'),
+    ([1] * 16, 2, [[1] * 8] * 2, 'Extension'),
+    ([1] * 16, 1, [[1] * 8], 'Truncation'),
 ])
 def test_op_ensure_byte_length(init, length, expect, msg):
-    out = op_ensure_byte_length(init, length)
+    out = op_ensure_byte_length(memory(init), length)
     assert out.bytes == expect, msg
 
 
