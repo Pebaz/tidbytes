@@ -1,4 +1,5 @@
 import ctypes
+import inspect
 from enum import Enum, auto
 
 
@@ -14,6 +15,11 @@ def ensure(condition: bool, message=''):
     # TODO(pbz): The higher level layer is just built on top of it.
     # https://registry.khronos.org/vulkan/specs/1.2-extensions/html/chap12.html#VUID-VkBufferCreateInfo-size-00912
 
+    frame = inspect.currentframe().f_back
+    caller_name = frame.f_code.co_name
+    caller_fn = frame.f_globals[caller_name]
+    parameters = inspect.signature(caller_fn).parameters
+
     if not condition:
         raise MemException(message)
 
@@ -27,21 +33,11 @@ L2R = Order.LeftToRight
 R2L = Order.RightToLeft
 
 
-def ensure_predicate(value, predicate):
-    ensure(predicate(value))
-    return value
-
-
-# u8 = ctypes.c_ubyte
-# u16 = ctypes.c_uint16
-# u32 = ctypes.c_uint32
-# u64 = ctypes.c_uint64
-# i8 = ctypes.c_byte
-# i16 = ctypes.c_int16
-# i32 = ctypes.c_int32
-# i64 = ctypes.c_int64
-
 def def_class(type_name, superclass, low, hi):
+    """
+    Ensures that ctypes cannot be created with values that will be interpreted
+    as a numeric range underflow or overflow.
+    """
     return type(
         type_name,
         (superclass,),
