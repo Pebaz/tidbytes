@@ -171,6 +171,15 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "False if Mem is null else True"
         return bool(self.rgn.bytes)
 
+    def __int__(self):
+        "Treats the memory region as an unsigned integer."
+        out = 0
+        for i, bit in enumerate(reversed(list(self))):
+            print(bit)
+            if bit:
+                out |= 1 << i
+        return out
+
     def __add__(self, other):
         mem = Mem()
         mem.rgn = op_concatenate(self.rgn, other.rgn)
@@ -320,7 +329,8 @@ class Num(Mem):
         print(bits)
 
         if bits[0] == '1':  # Negative
-            raw_integer_value = int(bits, base=2)
+            # raw_integer_value = int(bits, base=2)
+            raw_integer_value = super().__int__()
             bits = bin(raw_integer_value - 1)[2:]
             print(bits)
             bits = ''.join('10'[int(i)] for i in bits)
