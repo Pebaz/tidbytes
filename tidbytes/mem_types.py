@@ -1,5 +1,4 @@
 import ctypes
-import inspect
 from enum import Enum, auto
 
 
@@ -8,18 +7,6 @@ class MemException(Exception):
 
 
 def ensure(condition: bool, message=''):
-    # TODO(pbz): In the same way that Vulkan has valid usage checks, it would be
-    # TODO(pbz): amazing to do the same by registering the function name and the
-    # TODO(pbz): check in a table and displaying it in docs. I think this can
-    # TODO(pbz): make sense because the fundamental operations are the system.
-    # TODO(pbz): The higher level layer is just built on top of it.
-    # https://registry.khronos.org/vulkan/specs/1.2-extensions/html/chap12.html#VUID-VkBufferCreateInfo-size-00912
-
-    frame = inspect.currentframe().f_back
-    caller_name = frame.f_code.co_name
-    caller_fn = frame.f_globals[caller_name]
-    parameters = inspect.signature(caller_fn).parameters
-
     if not condition:
         raise MemException(message)
 
