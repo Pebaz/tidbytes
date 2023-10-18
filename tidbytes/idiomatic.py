@@ -1,11 +1,12 @@
 import indexed_meta
 from typing import Any, Generic, TypeVar
 from .mem_types import (
-    Order, MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
+    ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
 )
 from .von_neumann import (
     MemRgn, op_transform, op_set_bit, meta_op_bit_length, op_concatenate,
-    op_truncate, contract_validate_memory, group_bits_into_bytes
+    op_truncate, contract_validate_memory, group_bits_into_bytes,
+    iterate_logical_bits, op_get_bit
 )
 from .codec import (
     from_natural_u8, from_natural_u16, from_natural_u32, from_natural_u64,
@@ -122,7 +123,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         op_set_bit(self.rgn, key, payload)
 
     def __iter__(self):
-        "TODO(pbz): Should this iter bits or bytes?"
+        "Iterator over integer bits containing 0 or 1."
+        return iterate_logical_bits(self.rgn.bytes)
 
     def __reversed__(self):
         "This might cause more harm than good as the bits will also be reversed"
@@ -269,15 +271,73 @@ NullMem = Mem()
 
 
 # TODO(pbz): Indexing is backwards
+class Signed(Mem): ...
+class Number(Mem): ...
+class Integer(Mem): ...
 class Num(Mem):
     """
     Semantically meaningful data representing numeric information. Input types
     are constrained since the output concept is a quantity and not raw memory.
+    Supports positive and negative integers. At least one bit of the memory
+    region must be given to support differentiation of positive and negative
+    values stored in two's-complement encoding. This means the smallest bit
+    length that is supported is 2.
+
+    With bit length of 3:
+        000 = 0
+        001 = 1
+        010 = 2
+        011 = 3
+        100 = -4
+        101 = -3
+        110 = -2
+        111 = -1
+
+    With bit length of 2:
+        00 = 0
+        01 = 1
+        10 = -2
+        11 = -1
     """
+
+    def __iter__(self):
+        "Iterator over integer bits containing 0 or 1."
+        return reversed(list(iterate_logical_bits(self.rgn.bytes)))
+
+    def __bool__(self):
+        "False if Num is null or 0 else True for any non-null, non-zero value."
+        return bool(int(self))
+
+    def __int__(self):
+        # TODO(pbz): Use into_numeric_big_integer()
+
+        # TODO(pbz): have to validate that NUM() checks bit length is big enough to store 3: 2 bits is not enough!
+
+        if not self.rgn.bytes:
+            return 0
+
+        bits = ''.join(str(self).split())
+        print(bits)
+
+        if bits[0] == '1':  # Negative
+            raw_integer_value = int(bits, base=2)
+            bits = bin(raw_integer_value - 1)[2:]
+            print(bits)
+            bits = ''.join('10'[int(i)] for i in bits)
+            print(bits)
+            return -int(bits, base=2)
+        else:
+            return int(bits, base=2)
 
     # ! -> Num::from <-
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Num':
+        ensure(
+            bit_length in (None, 0) or bit_length >= 2,
+            f"Not enough bits to encode both positive and negative numbers: "
+            f"{bit_length}. Two's complement encoding requires at least 2 bits"
+        )
+
         if isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, int):

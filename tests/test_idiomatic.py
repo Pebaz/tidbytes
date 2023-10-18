@@ -591,7 +591,7 @@ def test_from_natural_big_integer(bits, init, expect, msg):
     (0, 1, '', 'Trucate to null'),
     (None, 1, '1', 'Single bit'),
     (None, 4, '100', 'Bit ordering'),
-    (1, -1, '1', 'Negative bit'),
+    (2, -1, '11', 'Negative bits'),
     (4, -2, '1110', 'Bit ordering negative'),
     (16, -10, '11111111 11110110', 'Byte ordering'),
     (
@@ -635,6 +635,30 @@ def test_from_grouped_bits(bits, init, expect, msg):
 def test_from_bit_length():
     mem = Mem[1]()
     assert str(mem) == '0', 'Invalid!'
+
+
+def test_mem___int__(): ...
+
+
+@pytest.mark.parametrize('bits,init,expect', [
+    # (2, 0, '00'),
+    # (2, 1, '01'),
+    # (2, -2, '10'),
+    (2, -1, '11'),
+
+    # (3, 0, '000'),
+    # (3, 1, '001'),
+    # (3, 2, '010'),
+    # (3, 3, '011'),
+    (3, -4, '100'),
+    # (3, -3, '101'),
+    # (3, -2, '110'),
+    # (3, -1, '111'),
+])
+def test_num___int__(bits, init, expect):
+    num = Num[bits](init)
+    assert str(num) == expect, f'Incorrect bits: {init}'
+    assert int(num) == init, f'Incorrect number: {init}'
 
 
 # def test_index():
