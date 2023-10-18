@@ -144,16 +144,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         # More than 8 bytes is getting long
         if bits.count(' ') > 7:
-            bits = f'{len(self)} bits'
-
-            # TODO(pbz): Use __int__(self)
-            # hex_bits = hex(int(''.join(bits.split()), base=2))[2:]
-
-            # length_of_8_bytes = 71
-            # if len(hex_bits) > length_of_8_bytes:
-            #     pass
-            # else:
-            #     pass
+            bits = hex(int(''.join(bits.split()), base=2))[2:]
 
         return f'<Mem [{bits}]>'
 
@@ -172,7 +163,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         return self.rgn.bytes == that.rgn.bytes
 
     def __len__(self):
-        # TODO(pbz): It seems like most of these built-ins work with bits...?
         return meta_op_bit_length(self.rgn)
 
     def __bool__(self):
@@ -185,6 +175,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         return mem.validate()
 
     def __getitem__(self, index: slice) -> Any:
+        # TODO(pbz): Implement indexing operations
         print('here')
 
     def validate(self):
@@ -196,32 +187,12 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "Useful for setting values in structs that are shorter than a byte."
         self.rgn = op_truncate(self.rgn, bit_length)
 
-    # ! -> Mem::from <-
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Mem':
-        # ? ctypes
-        # ? strings are always UTF8
-        # ? bytes (str.encode('ascii'), hash())
-        # ? bytearray
+        if bit_length == 0:
+            return MemRgn()
 
-        '''
-        match type(init):
-            case MemRgn():
-                return init
-            case int():
-                return from_natural_big_integer(init)
-            case u8():
-                return from_byte_u8(init)
-            case u16():
-                return from_bytes_u16(init)
-            case _:
-                raise MemException('Invalid initializer')
-        '''
-
-        # TODO(pbz): After ensuring codecs check for zero bit length:
-        # TODO(pbz): if bit_length == 0: return NullMem
-
-        if isinstance(init, type(None)):
+        elif isinstance(init, type(None)):
             if bit_length is None:
                 return MemRgn()
             else:

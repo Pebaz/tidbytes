@@ -165,7 +165,6 @@ def test_op_set_bytes(init, offset, payload, expect, msg):
     assert out.bytes == expect, msg
 
 # ------------------------------------------------------------------------------
-# TODO(pbz): Organize and perhaps parametrize these:
 
 def test_op_truncate():
     mem = memory(16)
