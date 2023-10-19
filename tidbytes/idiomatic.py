@@ -328,7 +328,10 @@ class Num(Mem):
         bits = ''.join(str(self).split())
         print('🔰', bits)
 
+        bit_len = len(self)
+
         if bits[0] == '1':  # Negative
+            """
             from .von_neumann import op_reverse
             reverse = op_reverse(self.rgn)
             out = 0
@@ -340,16 +343,21 @@ class Num(Mem):
             bits2 = ('0' * len(bits) + bits2)[-len(bits):]
             res = -int(''.join('10'[int(i)] for i in bits2), base=2)
             return res
+            """
+
+            raw_integer_value = int(bits, base=2)
+            ones_complement = bin(raw_integer_value - 1).lstrip('0b')
+
+            if len(ones_complement) < bit_len:  # Preserve bit length for invert
+                ones_complement = '0' + ones_complement
+
+            inverted_bits = ''.join('10'[int(i)] for i in ones_complement)
+            return -int(inverted_bits, base=2)
 
 
 
-            # raw_integer_value = int(bits, base=2)
-            raw_integer_value = Mem[self.__param__].__int__(self)
-            print(raw_integer_value, bin(raw_integer_value))
-            bits = bin(raw_integer_value - 1)[2:]
-            print('🔰', bits)
+            bits = ('0' + bin(raw_integer_value - 1)[2:])[-bit_len:]
             bits = ''.join('10'[int(i)] for i in bits)
-            print('🔰', bits)
             return -int(bits, base=2)
         else:
             return int(bits, base=2)
