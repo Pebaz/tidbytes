@@ -317,6 +317,15 @@ class Num(Mem):
         return bool(int(self))
 
     def __int__(self):
+        """
+        The overall process for negative numbers is:
+            - Interpret the entire memory region as an unsigned integer (it's
+                the negative number stored in two's complement encoding)
+            - Subtract 1 from that value but left-pad with zeroes (to preserve
+                bit length) to get the one's complement
+            - Invert all those bits to get the positive number
+            - Negate that value and return it
+        """
         # TODO(pbz): Use into_numeric_big_integer()
 
         # TODO(pbz): have to validate that NUM() checks bit length is big enough to store 3: 2 bits is not enough!

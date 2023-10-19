@@ -658,7 +658,6 @@ def test_mem___int__(bits, init, out, expect):
     assert int(mem) == out, f'Incorrect number: {init}'
 
 
-
 @pytest.mark.parametrize('bits,init,expect', [
     (2, 0, '00'),
     (2, 1, '01'),
@@ -678,7 +677,6 @@ def test_num___int__(bits, init, expect):
     num = Num[bits](init)
     assert str(num) == expect, f'Incorrect bits: {init}'
     assert int(num) == init, f'Incorrect number: {init}'
-
 
 
 # def test_index():
