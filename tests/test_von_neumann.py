@@ -1,3 +1,5 @@
+# TODO(pbz): Parametrize all "Natural" tests to JSON so C++ and Rust can use.
+
 import pytest
 from tidbytes.mem_types import Order
 from tidbytes.von_neumann import (

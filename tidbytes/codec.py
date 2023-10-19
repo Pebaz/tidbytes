@@ -485,6 +485,16 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     # be used to tell how large the destination memory is for 2's complement
     bit_length = bit_length if bit_length is not None else value.bit_length()
 
+    # TODO(pbz): This is broken. Read the above comment. Should this be + 1?
+    min_signed = -2 ** (bit_length - 1)
+    max_signed = 2 ** (bit_length - 1) - 1
+
+    ensure(
+        min_signed <= value <= max_signed,
+        f"Value {value} doesn't fit into signed range of bit length "
+        f"{bit_length} from {min_signed} to {max_signed}"
+    )
+
     ensure(
         value.bit_length() <= bit_length,
         f'Big integers must fit in destination bit length: {bit_length}'
