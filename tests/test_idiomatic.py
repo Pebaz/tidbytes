@@ -678,9 +678,6 @@ def test_num___int__(bits, init, expect):
     num = Num[bits](init)
     assert str(num) == expect, f'Incorrect bits: {init}'
     assert int(num) == init, f'Incorrect number: {init}'
-    # num = Num[2](-2)
-    # assert str(num) == '10'
-    # assert int(num) == -2
 
 
 
