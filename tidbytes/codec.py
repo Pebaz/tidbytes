@@ -48,7 +48,8 @@ from typing import TypeVar
 from .mem_types import u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure
 from .von_neumann import (
     MemRgn, op_identity, op_reverse, contract_validate_memory,
-    op_ensure_bit_length, group_bits_into_bytes, meta_op_bit_length
+    op_ensure_bit_length, group_bits_into_bytes, meta_op_bit_length,
+    iterate_logical_bits
 )
 
 T = TypeVar('T')
@@ -659,6 +660,16 @@ def into_numeric_big_integer(mem: MemRgn) -> int:
 
     else:
         return int(bits, base=2)
+
+
+def into_natural_big_integer(mem: MemRgn) -> int:
+    out = 0
+    for i, bit in enumerate(reversed(list(iterate_logical_bits(mem.bytes)))):
+        if bit:
+            out |= 1 << i
+    return out
+
+
 
 
 def into_u8_bit_arr(): ...

@@ -16,7 +16,8 @@ from .codec import (
     from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
     from_natural_big_integer, from_numeric_big_integer, from_natural_float,
     from_numeric_float, from_bool, from_bit_list, from_grouped_bits, from_bytes,
-    from_bytes_utf8, into_byte_u8, into_numeric_big_integer
+    from_bytes_utf8, into_byte_u8, into_numeric_big_integer,
+    into_natural_big_integer
 )
 
 T = TypeVar('T')
@@ -173,11 +174,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def __int__(self):
         "Treats the memory region as an unsigned integer."
-        out = 0
-        for i, bit in enumerate(reversed(list(self))):
-            if bit:
-                out |= 1 << i
-        return out
+        return into_natural_big_integer(self.rgn)
 
     def __add__(self, other):
         mem = Mem()
