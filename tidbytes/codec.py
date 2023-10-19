@@ -465,29 +465,51 @@ def from_numeric_f64(value: f64, bit_length: int) -> MemRgn:
 
 def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     """
+    TODO(pbz): Reword this
     Initializes a memory region from a big integer, assuming a bit length for
     negative numbers to allow for twos-complement encoding. Big integers that
     are positive are allowed to be larger than the provided bit length. Negative
     numbers must fit into the provided bit length because they are stored with
     their bits flipped which means all available bits are flipped. That wouldn't
     work if there wasn't a max storage size, resulting in infinite bits flipped.
-    """
-    if bit_length == 0:
-        return MemRgn()
 
-    ensure(
-        bit_length is not None if value < 0 else True,
-        'Must provide bit length for negative numbers due to '
-        'twos-complement encoding'
-    )
+    Since big integers are signed, `int.bit_length()` will return an unusable
+    value because it won't be able to fit the number provided. For example, with
+    a signed single bit number 1, this is not actually possible to store 1
+    because there's no room left for twos-complement encoding. If no bit length
+    is given, an additional bit is used to store the twos-complement encoding.
+    """
+    if bit_length is None:
+        # .bit_length() returns same value for positive as for negative so it can't
+        # be used to tell how large the destination memory is for 2's complement
+        bit_length = value.bit_length() + 1
+    else:
+        if bit_length == 0:
+            return MemRgn()
+
+        ensure(
+            bit_length > 1,
+            'Bit length of 1 is not enough for negative numbers using '
+            'twos-complement encoding'
+        )
+
+    # ensure(
+    #     bit_length is not None if value < 0 else True,
+    #     'Must provide bit length for negative numbers due to '
+    #     'twos-complement encoding'
+    # )
 
     # .bit_length() returns same value for positive as for negative so it can't
     # be used to tell how large the destination memory is for 2's complement
-    bit_length = bit_length if bit_length is not None else value.bit_length()
+    # bit_length = bit_length if bit_length is not None else (
+    #     value.bit_length() + 1
+    # )
 
     # TODO(pbz): This is broken. Read the above comment. Should this be + 1?
     min_signed = -2 ** (bit_length - 1)
     max_signed = 2 ** (bit_length - 1) - 1
+
+    print(min_signed, max_signed)
 
     ensure(
         min_signed <= value <= max_signed,
