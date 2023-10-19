@@ -1,5 +1,6 @@
 from .mem_types import Order, L2R, R2L, ensure
 
+# TODO(pbz): Rename von_neumann to natural
 
 # Putting this first and foremost to declare the opportunity to refactor all
 # operations to use a more efficient backing store for bits and bytes. One idea

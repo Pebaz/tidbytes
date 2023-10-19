@@ -48,7 +48,7 @@ from typing import TypeVar
 from .mem_types import u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure
 from .von_neumann import (
     MemRgn, op_identity, op_reverse, contract_validate_memory,
-    op_ensure_bit_length, group_bits_into_bytes
+    op_ensure_bit_length, group_bits_into_bytes, meta_op_bit_length
 )
 
 T = TypeVar('T')
@@ -465,19 +465,14 @@ def from_numeric_f64(value: f64, bit_length: int) -> MemRgn:
 
 def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     """
-    TODO(pbz): Reword this
     Initializes a memory region from a big integer, assuming a bit length for
-    negative numbers to allow for twos-complement encoding. Big integers that
-    are positive are allowed to be larger than the provided bit length. Negative
-    numbers must fit into the provided bit length because they are stored with
-    their bits flipped which means all available bits are flipped. That wouldn't
-    work if there wasn't a max storage size, resulting in infinite bits flipped.
-
-    Since big integers are signed, `int.bit_length()` will return an unusable
-    value because it won't be able to fit the number provided. For example, with
-    a signed single bit number 1, this is not actually possible to store 1
-    because there's no room left for twos-complement encoding. If no bit length
-    is given, an additional bit is used to store the twos-complement encoding.
+    negative numbers to allow for twos-complement encoding. Since big integers
+    are signed, `int.bit_length()` will return an unusable value because it
+    won't be able to fit the number provided. For example, with a signed single
+    bit number 1, this is not actually possible to store 1 because there's no
+    room left for twos-complement encoding. If no bit length is given, an
+    additional bit is used to store the twos-complement encoding. Treats the
+    returned memory as identity bits and not numeric data.
     """
     if bit_length is None:
         # .bit_length() returns same value for positive as for negative so it can't
@@ -493,33 +488,13 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
             'twos-complement encoding'
         )
 
-    # ensure(
-    #     bit_length is not None if value < 0 else True,
-    #     'Must provide bit length for negative numbers due to '
-    #     'twos-complement encoding'
-    # )
-
-    # .bit_length() returns same value for positive as for negative so it can't
-    # be used to tell how large the destination memory is for 2's complement
-    # bit_length = bit_length if bit_length is not None else (
-    #     value.bit_length() + 1
-    # )
-
-    # TODO(pbz): This is broken. Read the above comment. Should this be + 1?
     min_signed = -2 ** (bit_length - 1)
     max_signed = 2 ** (bit_length - 1) - 1
-
-    print(min_signed, max_signed)
 
     ensure(
         min_signed <= value <= max_signed,
         f"Value {value} doesn't fit into signed range of bit length "
         f"{bit_length} from {min_signed} to {max_signed}"
-    )
-
-    ensure(
-        value.bit_length() <= bit_length,
-        f'Big integers must fit in destination bit length: {bit_length}'
     )
 
     bits = [
@@ -534,6 +509,16 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
 
 
 def from_numeric_big_integer(value: int, bit_length: int) -> MemRgn:
+    """
+    Initializes a memory region from a big integer, assuming a bit length for
+    negative numbers to allow for twos-complement encoding. Since big integers
+    are signed, `int.bit_length()` will return an unusable value because it
+    won't be able to fit the number provided. For example, with a signed single
+    bit number 1, this is not actually possible to store 1 because there's no
+    room left for twos-complement encoding. If no bit length is given, an
+    additional bit is used to store the twos-complement encoding. Treats the
+    returned memory as numeric data and not identity bits.
+    """
     mem = from_natural_big_integer(value, bit_length)
     return op_reverse(mem)
 
@@ -647,6 +632,34 @@ def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
 
 # TODO(pbz): Implement serialization
 # Serialize MemRgn from primitive idiomatic types
+
+def into_numeric_big_integer(mem: MemRgn) -> int:
+    "Treats the memory region as a signed big integer."
+    if not mem.bytes:
+        return 0
+
+    bits = ''.join(
+        ''.join(
+            str(bit) if bit is not None else ''  # ? '▫'
+            for bit in byte
+        )
+        for byte in mem.bytes
+    )
+
+    if bits[0] == '1':  # Negative
+        raw_integer_value = int(bits, base=2)
+        ones_complement = bin(raw_integer_value - 1).lstrip('0b')
+
+        # Preserve bit length for invert
+        if len(ones_complement) < meta_op_bit_length(mem):
+            ones_complement = '0' + ones_complement
+
+        inverted_bits = ''.join('10'[int(i)] for i in ones_complement)
+        return -int(inverted_bits, base=2)
+
+    else:
+        return int(bits, base=2)
+
 
 def into_u8_bit_arr(): ...
 def into_u8_byte_arr(): ...

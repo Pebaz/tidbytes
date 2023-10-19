@@ -6,7 +6,7 @@ from .mem_types import (
 from .von_neumann import (
     MemRgn, op_transform, op_set_bit, meta_op_bit_length, op_concatenate,
     op_truncate, contract_validate_memory, group_bits_into_bytes,
-    iterate_logical_bits, op_get_bit
+    iterate_logical_bits
 )
 from .codec import (
     from_natural_u8, from_natural_u16, from_natural_u32, from_natural_u64,
@@ -16,7 +16,7 @@ from .codec import (
     from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
     from_natural_big_integer, from_numeric_big_integer, from_natural_float,
     from_numeric_float, from_bool, from_bit_list, from_grouped_bits, from_bytes,
-    from_bytes_utf8, into_byte_u8
+    from_bytes_utf8, into_byte_u8, into_numeric_big_integer
 )
 
 T = TypeVar('T')
@@ -326,29 +326,7 @@ class Num(Mem):
             - Invert all those bits to get the positive number
             - Negate that value and return it
         """
-        # TODO(pbz): Use into_numeric_big_integer()
-
-        # TODO(pbz): have to validate that NUM() checks bit length is big enough to store 3: 2 bits is not enough!
-
-        if not self.rgn.bytes:
-            return 0
-
-        # TODO(pbz): Rename von_neumann to natural
-        bits = ''.join(str(self).split())
-
-        if bits[0] == '1':  # Negative
-            raw_integer_value = int(bits, base=2)
-            ones_complement = bin(raw_integer_value - 1).lstrip('0b')
-
-            # Preserve bit length for invert
-            if len(ones_complement) < len(self):
-                ones_complement = '0' + ones_complement
-
-            inverted_bits = ''.join('10'[int(i)] for i in ones_complement)
-            return -int(inverted_bits, base=2)
-
-        else:
-            return int(bits, base=2)
+        return into_numeric_big_integer(self.rgn)
 
     # ! -> Num::from <-
     @classmethod
