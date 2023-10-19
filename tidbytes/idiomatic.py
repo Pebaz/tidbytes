@@ -175,7 +175,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "Treats the memory region as an unsigned integer."
         out = 0
         for i, bit in enumerate(reversed(list(self))):
-            print(bit)
             if bit:
                 out |= 1 << i
         return out
@@ -325,16 +324,32 @@ class Num(Mem):
         if not self.rgn.bytes:
             return 0
 
+        # TODO(pbz): Rename von_neumann to natural
         bits = ''.join(str(self).split())
-        print(bits)
+        print('🔰', bits)
 
         if bits[0] == '1':  # Negative
+            from .von_neumann import op_reverse
+            reverse = op_reverse(self.rgn)
+            out = 0
+            for i, bit in enumerate(iterate_logical_bits(reverse.bytes)):
+                if bit:
+                    out |= 1 << i
+            out -= 1
+            bits2 = bin(out)[2:]
+            bits2 = ('0' * len(bits) + bits2)[-len(bits):]
+            res = -int(''.join('10'[int(i)] for i in bits2), base=2)
+            return res
+
+
+
             # raw_integer_value = int(bits, base=2)
-            raw_integer_value = super().__int__()
+            raw_integer_value = Mem[self.__param__].__int__(self)
+            print(raw_integer_value, bin(raw_integer_value))
             bits = bin(raw_integer_value - 1)[2:]
-            print(bits)
+            print('🔰', bits)
             bits = ''.join('10'[int(i)] for i in bits)
-            print(bits)
+            print('🔰', bits)
             return -int(bits, base=2)
         else:
             return int(bits, base=2)
