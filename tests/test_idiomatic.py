@@ -642,6 +642,19 @@ def test_from_bit_length():
     assert str(mem) == '0', 'Invalid!'
 
 
+@pytest.mark.parametrize('bits,init,expect', [
+    (UN, 0, False),
+    (UN, 1, True),
+    (0, 0, False),
+    (2, 0, False),
+    (0, 1, False),
+    (2, 1, True),
+])
+def test_mem___bool__(bits, init, expect):
+    mem = Mem[bits](init)
+    assert bool(mem) == expect
+
+
 @pytest.mark.parametrize('bits,init,out,expect', [
     (2, 0, 0, '00'),
     (2, 1, 2, '10'),

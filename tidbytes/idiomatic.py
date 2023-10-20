@@ -169,8 +169,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         return meta_op_bit_length(self.rgn)
 
     def __bool__(self):
-        "False if Mem is null else True"
-        return bool(self.rgn.bytes)
+        "False if Mem is null or all zeroes else True"
+        return any(iterate_logical_bits(self.rgn.bytes))
 
     def __int__(self):
         "Treats the memory region as an unsigned integer."
