@@ -183,7 +183,17 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def __getitem__(self, index: slice) -> Any:
         # TODO(pbz): Implement indexing operations
-        print('here')
+        print(index, type(index))
+
+        if isinstance(index, int):
+            index = slice(index)
+
+        index.start, index.stop, index.step
+
+        ensure(
+            index.step == 0 or index.step == 8,
+            'Can only index by bit or byte'
+        )
 
     def validate(self):
         if self.rgn.bytes:
