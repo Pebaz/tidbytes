@@ -125,23 +125,9 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     ensure(0 <= start <= stop <= meta_op_bit_length(mem), 'Index out of bounds')
 
     out = MemRgn()
-    index_counter = 0
-    for byte in mem.bytes:
-        out_byte = []
-        for bit in byte:
-            if start <= index_counter < stop:
-                out_byte.append(bit)
-
-            if len(out_byte) == 8:
-                out.bytes.append(out_byte[:])
-                out_byte.clear()
-
-            index_counter += 1
-        if out_byte:
-            out.bytes.append(out_byte[:])
-
-    if out.bytes and len(out.bytes[-1]) < 8:
-        out.bytes[-1] = (out.bytes[-1] + [None] * 8)[:8]
+    bits = list(iterate_logical_bits(mem.bytes))
+    bit_slice = bits[start:stop]
+    out.bytes = group_bits_into_bytes(bit_slice)
 
     return contract_validate_memory(out)
 

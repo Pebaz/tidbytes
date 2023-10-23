@@ -701,18 +701,18 @@ Slice = type('Slice', tuple(), dict(__getitem__=lambda self, index: index))()
 
 
 @pytest.mark.parametrize('index,expect', [
-    (Slice[::1], '01111111'),
+    (Slice[::1], '01111111 11111111'),
     (Slice[:1], '0'),
     (Slice[:1:1], '0'),
     (Slice[:1:8], '01111111'),
     (Slice[0:1], '0'),
     (Slice[0:1:], '0'),
     (Slice[0:1:8], '01111111'),
-    (Slice[1::1], '01111111'),
-    (Slice[1::8], '01111111'),
+    (Slice[1::1], '11111111 1111111'),
+    (Slice[1::8], '11111111'),
 ])
 def test_mem__getitem__(index, expect):
-    mem = Mem(u8(254))
+    mem = Mem(u16(65534))
     other = mem[:]
     start, stop, step = index.start, index.stop, index.step
 

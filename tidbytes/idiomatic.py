@@ -209,9 +209,21 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         match (start, stop, step):  # Bit or byte slices from here on out
             # mem[::1]
-            # mem[1::1]
-            case [None, None, int()] | [int(), None, int()]:
+            case [None, None, int()]:
                 return type(self)(self)
+
+            # mem[1::1]
+            case [int(), None, 1]:
+                out.rgn = op_get_bits(self.rgn, start, len(self))
+
+            # mem[1::8]
+            case [int(), None, 8]:
+                from .von_neumann import meta_op_byte_length
+                out.rgn = op_get_bytes(
+                    self.rgn,
+                    start,
+                    meta_op_byte_length(self.rgn)
+                )
 
             # mem[:1]
             # mem[:1:1]
