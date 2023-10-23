@@ -704,10 +704,21 @@ def test_index():
     assert mem.rgn.bytes is not other.rgn.bytes
     assert str(other) == str(mem)
 
+
+    # assert str(mem[:0:8]) == '11111111'
+    # assert str(mem[::1]) == '11111111'
+    # assert str(mem[::8]) == '11111111'
+
     assert str(mem[0]) == '1'
-    assert str(mem[:0:8]) == '11111111'
     assert str(mem[::1]) == '11111111'
-    assert str(mem[::8]) == '11111111'
+    assert str(mem[:1]) == '1'
+    assert str(mem[:1:1]) == '1'
+    assert str(mem[:1:8]) == '11111111'
+    assert str(mem[0:1]) == '1'
+    assert str(mem[0:1:]) == '1'
+    assert str(mem[0:1:8]) == '11111111'
+    assert str(mem[1::1]) == '11111111'
+    assert str(mem[1::8]) == '11111111'
 
     print('----------')
 

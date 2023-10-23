@@ -189,8 +189,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         return out.validate()
 
     def __getitem__(self, index: slice) -> Any:
-        "Exclusive index."
-        # TODO(pbz): Implement indexing operations
+        "Exclusive end index."
 
         if isinstance(index, int):  # Simple bit index
             out = type(self)()
@@ -200,19 +199,18 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         ensure(isinstance(index, slice), f'Invalid index: {type(index)}')
 
         start, stop, step = index.start, index.stop, index.step
-        print('🧨', start, stop, step)
 
         if start is stop is step is None:
             return type(self)(self)
 
-        # step = 1 if step is None else step
         ensure(step in (None, 1, 8), 'Can only index by bit or byte')
 
         out = type(self)()
 
         match (start, stop, step):  # Bit or byte slices from here on out
             # mem[::1]
-            case [None, None, int()]:
+            # mem[1::1]
+            case [None, None, int()] | [int(), None, int()]:
                 return type(self)(self)
 
             # mem[:1]
@@ -226,20 +224,13 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
             # mem[0:1]
             # mem[0:1:]
-            case [int(), int(), None]:
-                out.rgn = op_get_bits(self.rgn, start, stop)
-
             # mem[0:1:1]
-            case [int(), int(), 1]:
+            case [int(), int(), None] | [int(), int(), 1]:
                 out.rgn = op_get_bits(self.rgn, start, stop)
 
             # mem[0:1:8]
             case [int(), int(), 8]:
                 out.rgn = op_get_bytes(self.rgn, start, stop)
-
-            # mem[1::1]
-            case [int(), None, int()]:
-                pass
 
             case _:
                 ensure(False, f'Invalid index: [{start}:{stop}:{step}]')
