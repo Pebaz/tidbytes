@@ -13,7 +13,7 @@ from .mem_types import (
 from .von_neumann import (
     MemRgn, op_transform, op_set_bit, meta_op_bit_length, op_concatenate,
     op_truncate, contract_validate_memory, group_bits_into_bytes,
-    iterate_logical_bits
+    iterate_logical_bits, op_get_bits, op_get_bytes, op_get_bit, op_get_byte,
 )
 from .codec import (
     from_natural_u8, from_natural_u16, from_natural_u32, from_natural_u64,
@@ -192,57 +192,50 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "Exclusive index."
         # TODO(pbz): Implement indexing operations
 
-        if isinstance(index, int):
-            index = slice(index)
+        if isinstance(index, int):  # Simple bit index
+            out = type(self)()
+            out.rgn = op_get_bit(self.rgn, index)
+            return out
 
-        from .von_neumann import (
-            op_get_bits, op_get_bytes, op_get_bit, op_get_byte
-        )
+        ensure(isinstance(index, slice), f'Invalid index: {type(index)}')
 
         start, stop, step = index.start, index.stop, index.step
         print('🧨', start, stop, step)
 
         if start is stop is step is None:
-            out = Mem()
-            out.rgn.bytes = copy.copy(self.rgn.bytes)
-            return out
+            return type(self)(self)
 
         # step = 1 if step is None else step
         ensure(step in (None, 1, 8), 'Can only index by bit or byte')
 
-        out = Mem()
+        out = type(self)()
 
-        match (start, stop, step):
-            # case [None, int(), 1]:
-            #     out.rgn = op_get_bit(self.rgn, stop)
-            # case [None, int(), 8]:
-            #     print('❌', index)
-            #     out.rgn = op_get_byte(self.rgn, stop // 8)
+        match (start, stop, step):  # Bit or byte slices from here on out
+            # mem[::1]
+            case [None, None, int()]:
+                return type(self)(self)
 
-            # mem[1]
             # mem[:1]
             # mem[:1:1]
             case [None, int(), None] | [None, int(), 1]:
                 out.rgn = op_get_bit(self.rgn, stop)
 
-            # mem[::1]
-            case [None, None, int()]:
-                out = Mem()
-                out.rgn.bytes = copy.copy(self.rgn.bytes)
-                return out
+            # mem[:1:8]
+            case [None, int(), 8]:
+                out.rgn = op_get_byte(self.rgn, stop // 8)
 
             # mem[0:1]
             # mem[0:1:]
             case [int(), int(), None]:
-                pass
+                out.rgn = op_get_bits(self.rgn, start, stop)
 
             # mem[0:1:1]
-            case [int(), int(), int()]:
-                pass
+            case [int(), int(), 1]:
+                out.rgn = op_get_bits(self.rgn, start, stop)
 
-            # mem[:1:8]
-            case [None, int(), 8]:
-                out.rgn = op_get_byte(self.rgn, stop // 8)
+            # mem[0:1:8]
+            case [int(), int(), 8]:
+                out.rgn = op_get_bytes(self.rgn, start, stop)
 
             # mem[1::1]
             case [int(), None, int()]:
@@ -252,14 +245,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 ensure(False, f'Invalid index: [{start}:{stop}:{step}]')
 
         return out.validate()
-
-
-        start = 0 if start is None else start
-        stop = len(self) - 1 if stop is None else stop
-        slicer = op_get_bytes if step == 8 else op_get_bits
-
-        out.rgn = slicer(self.rgn, start, stop)
-
 
     def validate(self):
         if self.rgn.bytes:
@@ -272,7 +257,12 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Mem':
-        if bit_length == 0:
+        if type(init) == cls:  # Copy constructors
+            out = MemRgn()
+            out.bytes = copy.copy(init.rgn.bytes)
+            return out
+
+        elif bit_length == 0:
             return MemRgn()
 
         elif isinstance(init, type(None)):
