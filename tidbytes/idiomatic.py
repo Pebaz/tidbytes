@@ -126,6 +126,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         op_transform(self.rgn, bit_order=in_bit_order, byte_order=in_byte_order)
 
     def __setitem__(self, key, value):
+        # TODO(pbz): Support index assignment
         payload = MemRgn()
         payload.bytes = [[value] + [None] * 7]
         op_set_bit(self.rgn, key, payload)
@@ -136,6 +137,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def __reversed__(self):
         "This might cause more harm than good as the bits will also be reversed"
+        # TODO(pbz): Add .reverse_bits(), .reverse_bytes(), .reverse()
 
     def __str__(self):  # Display
         """
@@ -190,6 +192,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def __getitem__(self, index: slice) -> Any:
         "Exclusive end index."
+
+        # TODO(pbz): It might be amazing to support negative indexes only here
 
         if isinstance(index, int):  # Simple bit index
             out = type(self)()
