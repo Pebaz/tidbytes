@@ -402,8 +402,12 @@ class Num(Mem):
             f"Not enough bits to encode both positive and negative numbers: "
             f"{bit_length}. Two's complement encoding requires at least 2 bits"
         )
+        if type(init) == cls:  # Copy constructors
+            out = MemRgn()
+            out.bytes = copy.copy(init.rgn.bytes)
+            return out
 
-        if isinstance(init, type(None)):
+        elif isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, int):
             return from_numeric_big_integer(init, bit_length)

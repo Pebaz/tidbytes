@@ -11,6 +11,9 @@ from . import raises_exception
 
 UN = None  # Unsized
 
+# Helper type to test literal slice syntax without explicitly using `slice()`
+Slice = type('Slice', tuple(), dict(__getitem__=lambda self, index: index))()
+
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (0, 0b100, '', 'Truncate to null'),
     (UN, 0b100, '00100000', 'Four'),
@@ -697,21 +700,18 @@ def test_num___int__(bits, init, expect):
     assert int(num) == init, f'Incorrect number: {init}'
 
 
-Slice = type('Slice', tuple(), dict(__getitem__=lambda self, index: index))()
-
-
-@pytest.mark.parametrize('index,expect', [
-    (Slice[::1], '01111111 11111111'),
-    (Slice[:1], '0'),
-    (Slice[:1:1], '0'),
-    (Slice[:1:8], '01111111'),
-    (Slice[0:1], '0'),
-    (Slice[0:1:], '0'),
-    (Slice[0:1:8], '01111111'),
-    (Slice[1::1], '11111111 1111111'),
-    (Slice[1::8], '11111111'),
+@pytest.mark.parametrize('index,expect,msg', [
+    (Slice[::1], '01111111 11111111', 'Copy self'),
+    (Slice[:1], '0', 'First bit'),
+    (Slice[:1:1], '0', 'First bit'),
+    (Slice[:1:8], '01111111', 'First byte'),
+    (Slice[0:1], '0', 'First bit'),
+    (Slice[0:1:], '0', 'First bit'),
+    (Slice[0:1:8], '01111111', 'First byte'),
+    (Slice[1::1], '11111111 1111111', 'Missing a bit'),
+    (Slice[1::8], '11111111', 'Second byte'),
 ])
-def test_mem__getitem__(index, expect):
+def test_mem__getitem__(index, expect, msg):
     mem = Mem(u16(65534))
     other = mem[:]
     start, stop, step = index.start, index.stop, index.step
@@ -720,31 +720,33 @@ def test_mem__getitem__(index, expect):
     assert mem.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
     assert str(other) == str(mem), 'Copy constructor failed'
     assert str(mem[0]) == '0', 'Single bit index failed'
+    assert str(mem[len(mem) - 1]) == '1', 'Last bit index failed'
     assert str(mem[start:stop:step]) == expect, (
-        f'{mem}[{start}:{stop}:{step}] != {expect}'
+        f'[{msg}]: {mem}[{start}:{stop}:{step}] != {expect}'
     )
 
 
-# @pytest.mark.parametrize('index,expect', [
-#     (Slice[::1], '01111111 11111111'),
-#     (Slice[:1], '0'),
-#     (Slice[:1:1], '0'),
-#     (Slice[:1:8], '01111111'),
-#     (Slice[0:1], '0'),
-#     (Slice[0:1:], '0'),
-#     (Slice[0:1:8], '01111111'),
-#     (Slice[1::1], '11111111 1111111'),
-#     (Slice[1::8], '11111111'),
-# ])
-# def test_num__getitem__(index, expect):
-#     num = Num(u16(65534))
-#     other = num[:]
-#     start, stop, step = index.start, index.stop, index.step
+@pytest.mark.parametrize('index,expect,msg', [
+    (Slice[::1], '11111111 11111110', 'Copy self'),
+    (Slice[:1], '1', 'First bit'),
+    (Slice[:1:1], '1', 'First bit'),
+    (Slice[:1:8], '11111111', 'First byte'),
+    (Slice[0:1], '1', 'First bit'),
+    (Slice[0:1:], '1', 'First bit'),
+    (Slice[0:1:8], '11111111', 'First byte'),
+    (Slice[1::1], '11111111 1111110', 'Missing a bit'),
+    (Slice[1::8], '11111110', 'Second byte'),
+])
+def test_num__getitem__(index, expect, msg):
+    num = Num(u16(65534))
+    other = num[:]
+    start, stop, step = index.start, index.stop, index.step
 
-#     assert num.rgn is not other.rgn, 'Should not be same region'
-#     assert num.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
-#     assert str(other) == str(num), 'Copy constructor failed'
-#     assert str(num[0]) == '0', 'Single bit index failed'
-#     assert str(num[start:stop:step]) == expect, (
-#         f'{num}[{start}:{stop}:{step}] != {expect}'
-#     )
+    assert num.rgn is not other.rgn, 'Should not be same region'
+    assert num.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
+    assert str(other) == str(num), 'Copy constructor failed'
+    assert str(num[0]) == '1', 'Single bit index failed'
+    assert str(num[len(num) - 1]) == '0', 'Last bit index failed'
+    assert str(num[start:stop:step]) == expect, (
+        f'[{msg}]: {num}[{start}:{stop}:{step}] != {expect}'
+    )
