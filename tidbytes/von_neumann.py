@@ -172,24 +172,10 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     )
 
     out = MemRgn()
-    index_counter = 0
-    for byte in mem.bytes:
-        out_byte = []
-        for bit in byte:
-            if offset <= index_counter < ending_index:
-                bit = op_get_bit(payload, index_counter - offset).bytes[0][0]
-                out_byte.append(bit)
-            else:
-                out_byte.append(bit)
-
-            if len(out_byte) == 8:
-                out.bytes.append(out_byte[:])
-                out_byte.clear()
-
-            index_counter += 1
-
-        if out_byte:
-            out.bytes.append(out_byte[:])
+    mem_bits = list(iterate_logical_bits(mem.bytes))
+    payload_bits = list(iterate_logical_bits(payload.bytes))
+    mem_bits[offset:offset + len(payload_bits)] = payload_bits
+    out.bytes = group_bits_into_bytes(mem_bits)
 
     return contract_validate_memory(out)
 

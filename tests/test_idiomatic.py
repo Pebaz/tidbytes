@@ -723,3 +723,28 @@ def test_mem__getitem__(index, expect):
     assert str(mem[start:stop:step]) == expect, (
         f'{mem}[{start}:{stop}:{step}] != {expect}'
     )
+
+
+# @pytest.mark.parametrize('index,expect', [
+#     (Slice[::1], '01111111 11111111'),
+#     (Slice[:1], '0'),
+#     (Slice[:1:1], '0'),
+#     (Slice[:1:8], '01111111'),
+#     (Slice[0:1], '0'),
+#     (Slice[0:1:], '0'),
+#     (Slice[0:1:8], '01111111'),
+#     (Slice[1::1], '11111111 1111111'),
+#     (Slice[1::8], '11111111'),
+# ])
+# def test_num__getitem__(index, expect):
+#     num = Num(u16(65534))
+#     other = num[:]
+#     start, stop, step = index.start, index.stop, index.step
+
+#     assert num.rgn is not other.rgn, 'Should not be same region'
+#     assert num.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
+#     assert str(other) == str(num), 'Copy constructor failed'
+#     assert str(num[0]) == '0', 'Single bit index failed'
+#     assert str(num[start:stop:step]) == expect, (
+#         f'{num}[{start}:{stop}:{step}] != {expect}'
+#     )
