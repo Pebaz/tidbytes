@@ -216,7 +216,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             # mem[:1]
             # mem[:1:1]
             case [None, int(), None] | [None, int(), 1]:
-                out.rgn = op_get_bit(self.rgn, stop)
+                out.rgn = op_get_bits(self.rgn, 0, stop)
 
             # mem[:1:8]
             case [None, int(), 8]:

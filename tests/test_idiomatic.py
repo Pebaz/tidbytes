@@ -701,25 +701,25 @@ Slice = type('Slice', tuple(), dict(__getitem__=lambda self, index: index))()
 
 
 @pytest.mark.parametrize('index,expect', [
-    (Slice[::1], '11111111'),
-    (Slice[:1], '1'),
-    (Slice[:1:1], '1'),
-    (Slice[:1:8], '11111111'),
-    (Slice[0:1], '1'),
-    (Slice[0:1:], '1'),
-    (Slice[0:1:8], '11111111'),
-    (Slice[1::1], '11111111'),
-    (Slice[1::8], '11111111'),
+    (Slice[::1], '01111111'),
+    (Slice[:1], '0'),
+    (Slice[:1:1], '0'),
+    (Slice[:1:8], '01111111'),
+    (Slice[0:1], '0'),
+    (Slice[0:1:], '0'),
+    (Slice[0:1:8], '01111111'),
+    (Slice[1::1], '01111111'),
+    (Slice[1::8], '01111111'),
 ])
 def test_mem__getitem__(index, expect):
-    mem = Mem(u8(255))
+    mem = Mem(u8(254))
     other = mem[:]
     start, stop, step = index.start, index.stop, index.step
 
     assert mem.rgn is not other.rgn, 'Should not be same region'
     assert mem.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
     assert str(other) == str(mem), 'Copy constructor failed'
-    assert str(mem[0]) == '1', 'Single bit index failed'
+    assert str(mem[0]) == '0', 'Single bit index failed'
     assert str(mem[start:stop:step]) == expect, (
         f'{mem}[{start}:{stop}:{step}] != {expect}'
     )
