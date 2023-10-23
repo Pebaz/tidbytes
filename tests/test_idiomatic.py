@@ -697,34 +697,29 @@ def test_num___int__(bits, init, expect):
     assert int(num) == init, f'Incorrect number: {init}'
 
 
-def test_index():
+Slice = type('Slice', tuple(), dict(__getitem__=lambda self, index: index))()
+
+
+@pytest.mark.parametrize('index,expect', [
+    (Slice[::1], '11111111'),
+    (Slice[:1], '1'),
+    (Slice[:1:1], '1'),
+    (Slice[:1:8], '11111111'),
+    (Slice[0:1], '1'),
+    (Slice[0:1:], '1'),
+    (Slice[0:1:8], '11111111'),
+    (Slice[1::1], '11111111'),
+    (Slice[1::8], '11111111'),
+])
+def test_mem__getitem__(index, expect):
     mem = Mem(u8(255))
     other = mem[:]
-    assert mem.rgn is not other.rgn
-    assert mem.rgn.bytes is not other.rgn.bytes
-    assert str(other) == str(mem)
+    start, stop, step = index.start, index.stop, index.step
 
-
-    # assert str(mem[:0:8]) == '11111111'
-    # assert str(mem[::1]) == '11111111'
-    # assert str(mem[::8]) == '11111111'
-
-    assert str(mem[0]) == '1'
-    assert str(mem[::1]) == '11111111'
-    assert str(mem[:1]) == '1'
-    assert str(mem[:1:1]) == '1'
-    assert str(mem[:1:8]) == '11111111'
-    assert str(mem[0:1]) == '1'
-    assert str(mem[0:1:]) == '1'
-    assert str(mem[0:1:8]) == '11111111'
-    assert str(mem[1::1]) == '11111111'
-    assert str(mem[1::8]) == '11111111'
-
-    print('----------')
-
-
-
-
-
-
-
+    assert mem.rgn is not other.rgn, 'Should not be same region'
+    assert mem.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
+    assert str(other) == str(mem), 'Copy constructor failed'
+    assert str(mem[0]) == '1', 'Single bit index failed'
+    assert str(mem[start:stop:step]) == expect, (
+        f'{mem}[{start}:{stop}:{step}] != {expect}'
+    )

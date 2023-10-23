@@ -153,7 +153,6 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     Invariant: input memory must be valid and mapped to program's universe.
     """
     contract_validate_memory(mem)
-    print('💡', start, stop, meta_op_byte_length(mem))
     ensure(
         0 <= start <= stop <= meta_op_byte_length(mem),
         'Index out of bounds'
