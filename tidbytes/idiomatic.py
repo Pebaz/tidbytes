@@ -1,3 +1,10 @@
+"""
+Design decisions:
+    - Operator overloads for idiomatic types return new copies of themselves
+        since there should be no side-effects.
+"""
+
+import copy
 import indexed_meta
 from typing import Any, Generic, TypeVar
 from .mem_types import (
@@ -177,23 +184,82 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         return into_natural_big_integer(self.rgn)
 
     def __add__(self, other):
-        mem = Mem()
-        mem.rgn = op_concatenate(self.rgn, other.rgn)
-        return mem.validate()
+        out = Mem()
+        out.rgn = op_concatenate(self.rgn, other.rgn)
+        return out.validate()
 
     def __getitem__(self, index: slice) -> Any:
+        "Exclusive index."
         # TODO(pbz): Implement indexing operations
-        print(index, type(index))
 
         if isinstance(index, int):
             index = slice(index)
 
-        index.start, index.stop, index.step
-
-        ensure(
-            index.step == 0 or index.step == 8,
-            'Can only index by bit or byte'
+        from .von_neumann import (
+            op_get_bits, op_get_bytes, op_get_bit, op_get_byte
         )
+
+        start, stop, step = index.start, index.stop, index.step
+        print('🧨', start, stop, step)
+
+        if start is stop is step is None:
+            out = Mem()
+            out.rgn.bytes = copy.copy(self.rgn.bytes)
+            return out
+
+        # step = 1 if step is None else step
+        ensure(step in (None, 1, 8), 'Can only index by bit or byte')
+
+        out = Mem()
+
+        match (start, stop, step):
+            # case [None, int(), 1]:
+            #     out.rgn = op_get_bit(self.rgn, stop)
+            # case [None, int(), 8]:
+            #     print('❌', index)
+            #     out.rgn = op_get_byte(self.rgn, stop // 8)
+
+            # mem[1]
+            # mem[:1]
+            # mem[:1:1]
+            case [None, int(), None] | [None, int(), 1]:
+                out.rgn = op_get_bit(self.rgn, stop)
+
+            # mem[::1]
+            case [None, None, int()]:
+                out = Mem()
+                out.rgn.bytes = copy.copy(self.rgn.bytes)
+                return out
+
+            # mem[0:1]
+            # mem[0:1:]
+            case [int(), int(), None]:
+                pass
+
+            # mem[0:1:1]
+            case [int(), int(), int()]:
+                pass
+
+            # mem[:1:8]
+            case [None, int(), 8]:
+                out.rgn = op_get_byte(self.rgn, stop // 8)
+
+            # mem[1::1]
+            case [int(), None, int()]:
+                pass
+
+            case _:
+                ensure(False, f'Invalid index: [{start}:{stop}:{step}]')
+
+        return out.validate()
+
+
+        start = 0 if start is None else start
+        stop = len(self) - 1 if stop is None else stop
+        slicer = op_get_bytes if step == 8 else op_get_bits
+
+        out.rgn = slicer(self.rgn, start, stop)
+
 
     def validate(self):
         if self.rgn.bytes:

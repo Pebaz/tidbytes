@@ -697,6 +697,23 @@ def test_num___int__(bits, init, expect):
     assert int(num) == init, f'Incorrect number: {init}'
 
 
-# def test_index():
-#     mem = Mem.from_byte_u8(255)
-#     print(repr(mem))
+def test_index():
+    mem = Mem(u8(255))
+    other = mem[:]
+    assert mem.rgn is not other.rgn
+    assert mem.rgn.bytes is not other.rgn.bytes
+    assert str(other) == str(mem)
+
+    assert str(mem[0]) == '1'
+    assert str(mem[:0:8]) == '11111111'
+    assert str(mem[::1]) == '11111111'
+    assert str(mem[::8]) == '11111111'
+
+    print('----------')
+
+
+
+
+
+
+

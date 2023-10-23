@@ -81,7 +81,9 @@ def op_reverse_bits(mem: MemRgn) -> MemRgn:
 # Fundamental memory read and write operations
 # ------------------------------------------------------------------------------
 def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
-    "Invariant: input memory must be valid and mapped to program's universe."
+    """
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
     contract_validate_memory(mem)
     ensure(0 <= index < meta_op_bit_length(mem), f'Index out of bounds: {index}')
 
@@ -114,7 +116,11 @@ def op_get_byte(mem: MemRgn, index: int) -> MemRgn:
 
 
 def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
-    "Invariant: input memory must be valid and mapped to program's universe."
+    """
+    Exclusive index.
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
     contract_validate_memory(mem)
     ensure(0 <= start <= stop <= meta_op_bit_length(mem), 'Index out of bounds')
 
@@ -141,8 +147,13 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
 
 
 def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
-    "Invariant: input memory must be valid and mapped to program's universe."
+    """
+    Exclusive index.
+
+    Invariant: input memory must be valid and mapped to program's universe.
+    """
     contract_validate_memory(mem)
+    print('💡', start, stop, meta_op_byte_length(mem))
     ensure(
         0 <= start <= stop <= meta_op_byte_length(mem),
         'Index out of bounds'
