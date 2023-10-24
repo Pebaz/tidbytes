@@ -8,7 +8,7 @@ import copy
 import indexed_meta
 from typing import Any, Generic, TypeVar
 from .mem_types import (
-    ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
+    ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
 )
 from .von_neumann import (
     MemRgn, op_transform, op_set_bit, meta_op_bit_length, op_concatenate,
@@ -23,8 +23,8 @@ from .codec import (
     from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
     from_natural_big_integer, from_numeric_big_integer, from_natural_float,
     from_numeric_float, from_bool, from_bit_list, from_grouped_bits, from_bytes,
-    from_bytes_utf8, into_byte_u8, into_numeric_big_integer,
-    into_natural_big_integer
+    into_byte_u8, into_numeric_big_integer, into_natural_big_integer,
+    from_bytes_utf8
 )
 
 T = TypeVar('T')
@@ -229,36 +229,46 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 rgn = MemRgn()
                 rgn.bytes = group_bits_into_bytes([0] * bit_length)
                 return rgn
+
         elif isinstance(init, MemRgn):
             return init
 
         elif isinstance(init, bool):  # isinstance(True, int) == True
             return from_bool(init, bit_length)
+
         elif isinstance(init, int):
             return from_natural_big_integer(init, bit_length)
+
         elif isinstance(init, float):
             return from_natural_float(init, bit_length)
 
         elif isinstance(init, u8):
             return from_natural_u8(init, bit_length)
+
         elif isinstance(init, u16):
             return from_natural_u16(init, bit_length)
+
         elif isinstance(init, u32):
             return from_natural_u32(init, bit_length)
+
         elif isinstance(init, u64):
             return from_natural_u64(init, bit_length)
 
         elif isinstance(init, i8):
             return from_natural_i8(init, bit_length)
+
         elif isinstance(init, i16):
             return from_natural_i16(init, bit_length)
+
         elif isinstance(init, i32):
             return from_natural_i32(init, bit_length)
+
         elif isinstance(init, i64):
             return from_natural_i64(init, bit_length)
 
         elif isinstance(init, f32):
             return from_natural_f32(init, bit_length)
+
         elif isinstance(init, f64):
             return from_natural_f64(init, bit_length)
 
@@ -273,11 +283,18 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise MemException("Invalid initializer: Can't deduce codec")
 
         elif isinstance(init, str):
-            # TODO(pbz): from_hex_str('0xFF')
-            # TODO(pbz): from_bin_str('0b11101001101101101')
+            if init and init.startswith(('0x', '0X')):
+                # TODO(pbz): from_hex_str('0xFF')
+                return from_natural_big_integer(int(init, base=16), bit_length)
+            elif init and init.startswith(('0b', '0B')):
+                # TODO(pbz): from_bin_str('0b11101001101101101')
+                # TODO(pbz): Implement in Num but reverse
+                return from_natural_big_integer(int(init, base=2), bit_length)
             return from_bytes(init.encode(), bit_length)
+
         elif isinstance(init, bytes):
             return from_bytes(init, bit_length)
+
         elif isinstance(init, bytearray):
             return from_bytes(bytes(init), bit_length)
 
@@ -356,12 +373,16 @@ class Num(Mem):
 
         elif isinstance(init, type(None)):
             return MemRgn()
+
         elif isinstance(init, int):
             return from_numeric_big_integer(init, bit_length)
+
         elif isinstance(init, float):
             return from_numeric_float(init, bit_length)
+
         elif isinstance(init, bool):
             return from_bool(init)
+
         elif isinstance(init, list):
             if not init:
                 return MemRgn()
@@ -371,29 +392,44 @@ class Num(Mem):
                 return from_bit_list(init)
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
+
+        elif isinstance(init, str):
+            if init and init.startswith(('0x', '0X')):
+                return from_numeric_big_integer(int(init, base=16), bit_length)
+            elif init and init.startswith(('0b', '0B')):
+                return from_numeric_big_integer(int(init, base=2), bit_length)
+            return from_bytes(init.encode(), bit_length)
+
         elif isinstance(init, tuple):
             return from_bytes(init)
 
         elif isinstance(init, u8):
             return from_numeric_u8(init, bit_length)
+
         elif isinstance(init, u16):
             return from_numeric_u16(init, bit_length)
+
         elif isinstance(init, u32):
             return from_numeric_u32(init, bit_length)
+
         elif isinstance(init, u64):
             return from_numeric_u64(init, bit_length)
 
         elif isinstance(init, i8):
             return from_numeric_i8(init, bit_length)
+
         elif isinstance(init, i16):
             return from_numeric_i16(init, bit_length)
+
         elif isinstance(init, i32):
             return from_numeric_i32(init, bit_length)
+
         elif isinstance(init, i64):
             return from_numeric_i64(init, bit_length)
 
         elif isinstance(init, f32):
             return from_numeric_f32(init, bit_length)
+
         elif isinstance(init, f64):
             return from_numeric_f64(init, bit_length)
 
@@ -413,7 +449,6 @@ class Str(Mem):
     than raw memory.
     """
 
-    # ! -> Str::from <-
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Str':
         if isinstance(init, type(None)):
@@ -430,7 +465,6 @@ class Str(Mem):
         else:
             raise MemException('Invalid initializer')
 
-    # ! -> Str::into <-
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
             return into_byte_u8(self.rgn)
@@ -438,74 +472,3 @@ class Str(Mem):
     def __str__(self):
         chars = (int(byte, base=2) for byte in Mem.__str__(self).split())
         return bytearray(chars).decode()
-
-
-'''
-
-# class U32(Num[32]):
-#     "Does not support signed"
-
-
-
-# TODO(pbz): Do NOT implement __add__ and other common ops. Is not the purpose.
-class I32(Num):
-    "Specializes even further with From & Into. Twos-complement for signed"
-
-
-# TODO(pbz): Should probably subclass Struct to have [sign, exp, mantissa] but
-# TODO(pbz): should fully support indexing like Mem
-class F32(Mem):
-    pass
-
-# TODO(pbz): Indexing is backwards
-class Signed(Mem): ...
-class Number(Mem): ...
-class Integer(Mem): ...
-
-# ! Pass bits as init value to set each inner type
-class Struct:
-    """
-    foo: Num
-    bar: I32
-    baz: F32
-    pbz: 'Struct'
-    """
-    # TODO(pzb): Support nested types
-    # TODO(pzb): Support offset
-    # TODO(pzb): Support padding
-    # TODO(pzb): Support alignment
-
-    def __init__(self):
-        self.regions = {}  # Tracks multiple regions or nested Structs
-
-        bit_ranges = self.__annotations__
-        default_values = {
-            i: getattr(type(self), i)
-            for i in self.__annotations__
-            if hasattr(type(self), i)
-        }
-
-        print('ℹ️', bit_ranges)
-        print('ℹ️', default_values)
-
-        self.bit_ranges = {i: Mem() for i in self.__annotations__}
-
-    def __getattr__(self, name):
-        pass
-
-    def __setattr__(self, name, value):
-        "Call the appropriate set() method on the memory region"
-        assert type(value) in Int.variants(), (
-            f'Invalid data type for assignment: {type(value)}'
-        )
-
-    def __getattribute__(self, attribute: str) -> Any:
-        # TODO(pbz): Access nested attributes
-        return super().__getattribute__(attribute)
-
-
-class addi32le(Struct):
-    sign: Mem[1]
-    exponent: Num[12] = 123
-    mantissa: Num[19]
-'''

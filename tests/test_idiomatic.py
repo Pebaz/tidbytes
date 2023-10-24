@@ -645,6 +645,22 @@ def test_from_bit_length():
     assert str(mem) == '0', 'Invalid!'
 
 
+def test_from_hex_str():
+    mem = Mem('0xFE')
+    assert str(mem) == '01111111 0'  # Padding bit for twos-complement
+
+    num = Num('0xFE')
+    assert str(num) == '01111111 0'  # Padding bit for twos-complement
+
+
+def test_from_bin_str():
+    mem = Mem('0b1011')
+    assert str(mem) == '11010'  # Padding bit for twos-complement
+
+    num = Num('0b1011')
+    assert str(num) == '01011'  # Padding bit for twos-complement
+
+
 @pytest.mark.parametrize('bits,init,expect', [
     (UN, 0, False),
     (UN, 1, True),
