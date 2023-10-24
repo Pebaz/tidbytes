@@ -20,5 +20,3 @@
 - ⭐ C++ implementation
 - ⭐ Rust implementation
 - ⭐ Refactor Python implementation to use bindings to C++ implementation for speed
-- ⭐ From hex string
-- ⭐ From bin string

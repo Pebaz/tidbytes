@@ -11,7 +11,7 @@ from .mem_types import (
     ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
 )
 from .von_neumann import (
-    MemRgn, op_transform, op_set_bit, meta_op_bit_length, op_concatenate,
+    MemRgn, op_transform, op_set_bits, meta_op_bit_length, op_concatenate,
     op_truncate, contract_validate_memory, group_bits_into_bytes,
     iterate_logical_bits, op_get_bits, op_get_bytes, op_get_bit, op_get_byte,
 )
@@ -74,12 +74,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         # order so transforming according to the input bit and byte order always
         # results in left to right bit and byte order.
         op_transform(self.rgn, bit_order=in_bit_order, byte_order=in_byte_order)
-
-    def __setitem__(self, key, value):
-        # TODO(pbz): Support index assignment
-        payload = MemRgn()
-        payload.bytes = [[value] + [None] * 7]
-        op_set_bit(self.rgn, key, payload)
 
     def __iter__(self):
         "Iterator over integer bits containing 0 or 1."
@@ -202,6 +196,26 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 ensure(False, f'Invalid index: [{start}:{stop}:{step}]')
 
         return out.validate()
+
+    def __setitem__(self, index, payload):
+        """
+        Sets a range of bits with the given payload.
+
+        The payload must be a valid initializer for Mem in order to pass
+        validation and support indexing or be a Mem subclass directly.
+        """
+        # TODO(pbz): Support index assignment
+        # payload = MemRgn()
+        # payload.bytes = [[value] + [None] * 7]
+        # op_set_bit(self.rgn, key, payload)
+
+        payload = Mem(payload)
+
+        # TODO(pbz): The rules of truncation are unclear here. Should they be
+        # TODO(pbz): broken to allow ints directly? Why does Num[1](1) not work?
+        # TODO(pbz): U32(1) shouldn't be necessary here.
+        if isinstance(index, int):
+            self.rgn = op_set_bits(self.rgn, index, payload.rgn)
 
     def validate(self):
         if self.rgn.bytes:

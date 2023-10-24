@@ -766,3 +766,11 @@ def test_num__getitem__(index, expect, msg):
     assert str(num[start:stop:step]) == expect, (
         f'[{msg}]: {num}[{start}:{stop}:{step}] != {expect}'
     )
+
+
+def test_mem__setitem__():
+    mem = Mem[1]()
+    assert int(mem[0]) == 0
+
+    mem[0] = Num[1](u8(1))
+    assert int(mem[0]) == 1
