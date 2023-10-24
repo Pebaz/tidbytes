@@ -33,56 +33,6 @@ T = TypeVar('T')
 # ! Idiomatic API
 # ! ----------------------------------------------------------------------------
 
-# ! These are solutions for handling codecs that take parameters. Codecs are
-# ! like twos-complement. Without a destination bit length, they are undefined.
-'''
-# Factory Pattern:
-class MemFactory:
-    def __call__(self, *args, **kwargs):
-        pass
-
-    def register_codec(self, codec):
-        pass
-
-Mem = MemFactory()
-Mem.register_codec(...)
-
-# Parameterized Constructor:
-Mem(123)
-Mem('asdf', ascii=True)
-
-# Builder Pattern:
-class MemBuilder:
-    def __call__(self, *args, **kwargs):
-        pass
-
-    def __getattribute__(self, attribute: str):
-        return lambda: self
-
-Mem = MemBuilder().foo().bar().baz()
-'''
-
-"""
-class Mem: ...         # Assumes non-numeric bytes data
-class Num(Mem): ...    # Assumes numeric data, indexing is reversed
-class Struct: ...      # Allows free and structured indexing
-class Float(Mem): ...  # Actually a type of struct. Indexing should work.
-class I32(Num): ...    # From/Into codecs are different (int value is negative)
-class U32(Num): ...    # From/Into codecs are different
-"""
-
-
-
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-# There may be a problem: does Num convert to identity, perform op, and then go
-# back? If all operations assume identity, how was this going to work?
-
-
-
-
-
-
-# TODO(pbz): 8/4/23
 class Mem(metaclass=indexed_meta.IndexedMetaclass):
     """
     "Pure" memory. Can work with any kind of input data and can perform the most
@@ -334,7 +284,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         else:
             raise MemException('Invalid initializer')
 
-    # ! -> Mem::into <-
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
             return into_byte_u8(self.rgn)
@@ -347,11 +296,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 NullMem = Mem()
 
 
-
-# TODO(pbz): Indexing is backwards
-class Signed(Mem): ...
-class Number(Mem): ...
-class Integer(Mem): ...
 class Num(Mem):
     """
     Semantically meaningful data representing numeric information. Input types
@@ -398,7 +342,6 @@ class Num(Mem):
         """
         return into_numeric_big_integer(self.rgn)
 
-    # ! -> Num::from <-
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Num':
         ensure(
@@ -457,7 +400,6 @@ class Num(Mem):
         else:
             raise MemException('Invalid initializer')
 
-    # ! -> Num::into <-
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
             return into_byte_u8(self.rgn)
@@ -515,12 +457,10 @@ class I32(Num):
 class F32(Mem):
     pass
 
-
-
-# TODO(pbz): What would make this project complete?
-# TODO(pbz): A Mem type that can support indexing and all other operations.
-
-
+# TODO(pbz): Indexing is backwards
+class Signed(Mem): ...
+class Number(Mem): ...
+class Integer(Mem): ...
 
 # ! Pass bits as init value to set each inner type
 class Struct:

@@ -1,0 +1,30 @@
+{
+    "version": "0.1.0",
+    "tests": [
+        {
+            "op": "meta_op_bit_length",
+            "cases": [
+                {
+                    "in": [{"Mem": 1}],
+                    "out": [1],
+                    "tag": "Single bit, 7 unset bits"
+                },
+                {
+                    "in": {"Mem": 8},
+                    "out": 8,
+                    "tag": "8 set bits"
+                },
+                {
+                    "in": [{"Mem": 9}],
+                    "out": [9],
+                    "tag": "9 set bits, 7 unset bits crossing byte boundary"
+                },
+                {
+                    "in": {"Mem": 1},
+                    "out": 16,
+                    "tag": "2 bytes"
+                }
+            ]
+        }
+    ]
+}
