@@ -1,5 +1,7 @@
 # tidbytes
 
+> **Memory manipulation reimagined with bit addressing**
+
 > Bit & byte manipulation library
 
 # Fully Under Construction (Made Public To Reduce Risk Of Name Squatting)
