@@ -347,6 +347,16 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 NullMem = Mem()
 
 
+# TODO(pbz): I don't think Num is actually possible. Use Signed and Unsigned for
+# TODO infinite bits and I32 and U32 for finite bits. This will take care of the
+# TODO need to truncate to support both signed and unsigned.
+
+class Signed(Mem):
+    pass
+
+class Unsigned(Mem):
+    pass
+
 class Num(Mem):
     """
     Semantically meaningful data representing numeric information. Input types
