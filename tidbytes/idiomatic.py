@@ -73,15 +73,35 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         # All codec methods treat input values as left to right big and byte
         # order so transforming according to the input bit and byte order always
         # results in left to right bit and byte order.
-        op_transform(self.rgn, bit_order=in_bit_order, byte_order=in_byte_order)
+        self.rgn = op_transform(
+            self.rgn,
+            bit_order=in_bit_order,
+            byte_order=in_byte_order
+        )
 
     def __iter__(self):
         "Iterator over integer bits containing 0 or 1."
         return iterate_logical_bits(self.rgn.bytes)
 
     def __reversed__(self):
-        "This might cause more harm than good as the bits will also be reversed"
-        # TODO(pbz): Add .reverse_bits(), .reverse_bytes(), .reverse()
+        "Iterator over integer bits containing 0 or 1 in reverse order."
+        return reversed(list(iterate_logical_bits(self.rgn.bytes)))
+
+    def identity(self):
+        "Returns a new region with identity memory order (unchanged)."
+        return type(self)(self, Order.LeftToRight, Order.LeftToRight)
+
+    def reverse(self):
+        "Returns a new region with all bits and bytes reversed."
+        return type(self)(self, Order.RightToLeft, Order.RightToLeft)
+
+    def reverse_bits(self):
+        "Returns a new region with all bytes in place with reversed bits."
+        return type(self)(self, Order.RightToLeft, Order.LeftToRight)
+
+    def reverse_bytes(self):
+        "Returns a new region with all bits in place but reversed bytes."
+        return type(self)(self, Order.LeftToRight, Order.RightToLeft)
 
     def __str__(self):  # Display
         """
