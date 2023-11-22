@@ -232,8 +232,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         payload = Mem(payload)
 
         # TODO(pbz): The rules of truncation are unclear here. Should they be
-        # TODO(pbz): broken to allow ints directly? Why does Num[1](1) not work?
-        # TODO(pbz): U32(1) shouldn't be necessary here.
+        # TODO broken to allow ints directly? Why does Num[1](1) not work?
+        # TODO U32(1) shouldn't be necessary here.
         if isinstance(index, int):
             self.rgn = op_set_bits(self.rgn, index, payload.rgn)
 
