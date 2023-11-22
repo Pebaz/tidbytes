@@ -27,7 +27,7 @@ API operations, it should be possible to only use that Mem type to get and set
 bits and bytes: `mem.set_bytes(Mem.from_i32(123))`. This means that setting bits
 needs to support:
 
-:: Von Neumann API ::
+:: Natural API ::
 Mem <- get slice as Mem, set slice to number, set range within Mem to that slice
 
 :: Idiomatic API ::
@@ -38,10 +38,10 @@ This may be the limit to the necessary complexity of this problem domain.
 
 Furthermore, there seems to be 2 use cases:
 
-- Language agnostic Von Neumann API for getting/setting bits/bytes.
+- Language agnostic Natural API for getting/setting bits/bytes.
 - Idiomatic Python API for structs, slicing, and indexing.
 
-The Von Neumann API closely follows C conventions in order to enable
+The Natural API closely follows C conventions in order to enable
 reimplementation in many languages.
 
 The Idiomatic API needs to be the smoothest experience possible since languages
@@ -49,13 +49,13 @@ can support very convenient syntax.
 
 # Design Elements
 
-The Von Neumann API will return a memory slice of the same type as the normal
+The Natural API will return a memory slice of the same type as the normal
 memory type when getting bits or bytes. There are no operations to get memory
 and also convert it to language-specific types. That is what conversion methods
 are for. Languages can implement any number of conversion functions as makes
 sense in their language. Internally, the backing store for the bits could be
 integers or an array of u8s in the range 0-1. Even getting one bit returns the
-root memory type. Setting bits works the same way, the Von Neumann API will only
+root memory type. Setting bits works the same way, the Natural API will only
 accept the Mem type.
 
 The Idiomatic API will be able to convert as many different types as makes sense
@@ -64,6 +64,6 @@ into the backing store type and vice versa.
 
 # ruff: noqa: F403: These imports are exported and need to be flexible
 from .mem_types import *
-from .von_neumann import *
+from .natural import *
 from .idiomatic import *
 from .codec import *

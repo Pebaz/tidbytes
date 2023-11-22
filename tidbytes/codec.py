@@ -31,11 +31,11 @@ as strings or physical data such as the contents of one memory page. Being able
 to effectively slice and transform each is useful and Tidbytes can do them all.
 
 Design notes for this module:
-- If the result of a Von Neumann operation is directly returned, there's no need
+- If the result of a Natural operation is directly returned, there's no need
     to validate the returned memory because all operations validate memory
     before returning.
-- The "op" nomenclature always refers to algebraic operations with Von Neuman
-    inputs and Von Neuman outputs (the Mem type). Think arithmetic: all ops take
+- The "op" nomenclature always refers to algebraic operations with Natural
+    inputs and Natural outputs (the Mem type). Think arithmetic: all ops take
     numbers and return numbers.
 
 
@@ -46,7 +46,7 @@ import sys
 import struct
 from typing import TypeVar
 from .mem_types import u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure
-from .von_neumann import (
+from .natural import (
     MemRgn, op_identity, op_reverse, contract_validate_memory,
     op_ensure_bit_length, group_bits_into_bytes, meta_op_bit_length,
     iterate_logical_bits

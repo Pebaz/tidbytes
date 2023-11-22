@@ -106,7 +106,7 @@ graph RL;
             *(High Level API)*
         `")
 
-        von_neumann("`
+        natural("`
             **Language Agnostic Interface
             Based On Von Neumann Architecture**
             *(Low Level API)*
@@ -123,8 +123,8 @@ graph RL;
         *(Language Specific)*
     `"}}
 
-    idiomatic ==> von_neumann
-    vonn_type --> von_neumann
+    idiomatic ==> natural
+    vonn_type --> natural
     idio_type --> idiomatic
     vonn_type --> idiomatic
 ```

@@ -596,6 +596,7 @@ def test_from_natural_big_integer(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
+    # TODO(pbz): Rework this into Signed & Unsigned
     # (0, 1, '', 'Trucate to null'),
     # (None, 1, '1', 'Single bit'),
     # (None, 4, '100', 'Bit ordering'),

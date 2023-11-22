@@ -10,7 +10,7 @@ from typing import Any, Generic, TypeVar
 from .mem_types import (
     ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
 )
-from .von_neumann import (
+from .natural import (
     MemRgn, op_transform, op_set_bits, meta_op_bit_length, op_concatenate,
     op_truncate, contract_validate_memory, group_bits_into_bytes,
     iterate_logical_bits, op_get_bits, op_get_bytes, op_get_bit, op_get_byte,
@@ -186,7 +186,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
             # mem[1::8]
             case [int(), None, 8]:
-                from .von_neumann import meta_op_byte_length
+                from .natural import meta_op_byte_length
                 out.rgn = op_get_bytes(
                     self.rgn,
                     start,

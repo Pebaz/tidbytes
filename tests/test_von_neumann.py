@@ -1,6 +1,6 @@
 import pytest
 from tidbytes.mem_types import Order
-from tidbytes.von_neumann import (
+from tidbytes.natural import (
     MemRgn, op_transform, op_identity, op_reverse, op_reverse_bytes,
     op_reverse_bits, op_get_bit, op_get_byte, op_get_bits, op_get_bytes,
     op_set_bit, op_set_bits, op_set_byte, op_set_bytes, op_truncate,
