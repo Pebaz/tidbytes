@@ -411,16 +411,16 @@ class Unsigned(Mem):
             return from_numeric_u64(init, bit_length)
 
         elif isinstance(init, i8):  # Treats negatives as positives
-            return from_numeric_i8(abs(init.value), bit_length)
+            return from_numeric_i8(i8(abs(init.value)), bit_length)
 
         elif isinstance(init, i16):  # Treats negatives as positives
-            return from_numeric_i16(abs(init.value), bit_length)
+            return from_numeric_i16(i16(abs(init.value)), bit_length)
 
         elif isinstance(init, i32):  # Treats negatives as positives
-            return from_numeric_i32(abs(init.value), bit_length)
+            return from_numeric_i32(i32(abs(init.value)), bit_length)
 
         elif isinstance(init, i64):  # Treats negatives as positives
-            return from_numeric_i64(abs(init.value), bit_length)
+            return from_numeric_i64(i64(abs(init.value)), bit_length)
 
         elif isinstance(init, f32):
             return from_numeric_f32(init, bit_length)
