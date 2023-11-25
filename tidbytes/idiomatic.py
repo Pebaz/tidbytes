@@ -351,13 +351,167 @@ NullMem = Mem()
 # TODO infinite bits and I32 and U32 for finite bits. This will take care of the
 # TODO need to truncate to support both signed and unsigned.
 
-class Signed(Mem):
-    pass
+
 
 class Unsigned(Mem):
-    pass
+    @classmethod
+    def from_(cls, init: T, bit_length: int) -> 'Num':
+        # ensure(
+        #     bit_length in (None, 0) or bit_length >= 2,
+        #     f"Not enough bits to encode both positive and negative numbers: "
+        #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
+        # )
+        if type(init) == cls:  # Copy constructors
+            out = MemRgn()
+            out.bytes = copy.copy(init.rgn.bytes)
+            return out
 
-class Num(Mem):
+        elif isinstance(init, type(None)):
+            return MemRgn()
+
+        elif isinstance(init, int):
+            return from_numeric_big_integer(init, bit_length)
+
+        elif isinstance(init, float):
+            return from_numeric_float(init, bit_length)
+
+        elif isinstance(init, bool):
+            return from_bool(init)
+
+        elif isinstance(init, list):
+            if not init:
+                return MemRgn()
+            elif init and isinstance(init[0], (list, tuple)):
+                return from_grouped_bits(init)
+            elif init and isinstance(init[0], int):
+                return from_bit_list(init)
+            else:
+                raise MemException("Invalid initializer: Can't deduce codec")
+
+        elif isinstance(init, str):
+            if init and init.startswith(('0x', '0X')):
+                return from_numeric_big_integer(int(init, base=16), bit_length)
+            elif init and init.startswith(('0b', '0B')):
+                return from_numeric_big_integer(int(init, base=2), bit_length)
+            return from_bytes(init.encode(), bit_length)
+
+        elif isinstance(init, tuple):
+            return from_bytes(init)
+
+        elif isinstance(init, u8):
+            return from_numeric_u8(init, bit_length)
+
+        elif isinstance(init, u16):
+            return from_numeric_u16(init, bit_length)
+
+        elif isinstance(init, u32):
+            return from_numeric_u32(init, bit_length)
+
+        elif isinstance(init, u64):
+            return from_numeric_u64(init, bit_length)
+
+        elif isinstance(init, i8):  # Treats negatives as positives
+            return from_numeric_i8(abs(init.value), bit_length)
+
+        elif isinstance(init, i16):  # Treats negatives as positives
+            return from_numeric_i16(abs(init.value), bit_length)
+
+        elif isinstance(init, i32):  # Treats negatives as positives
+            return from_numeric_i32(abs(init.value), bit_length)
+
+        elif isinstance(init, i64):  # Treats negatives as positives
+            return from_numeric_i64(abs(init.value), bit_length)
+
+        elif isinstance(init, f32):
+            return from_numeric_f32(init, bit_length)
+
+        elif isinstance(init, f64):
+            return from_numeric_f64(init, bit_length)
+
+        else:
+            raise MemException('Invalid initializer')
+
+
+class Signed(Mem):
+    @classmethod
+    def from_(cls, init: T, bit_length: int) -> 'Num':
+        # ensure(
+        #     bit_length in (None, 0) or bit_length >= 2,
+        #     f"Not enough bits to encode both positive and negative numbers: "
+        #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
+        # )
+        if type(init) == cls:  # Copy constructors
+            out = MemRgn()
+            out.bytes = copy.copy(init.rgn.bytes)
+            return out
+
+        elif isinstance(init, type(None)):
+            return MemRgn()
+
+        elif isinstance(init, int):
+            return from_numeric_big_integer(init, bit_length)
+
+        elif isinstance(init, float):
+            return from_numeric_float(init, bit_length)
+
+        elif isinstance(init, bool):
+            return from_bool(init)
+
+        elif isinstance(init, list):
+            if not init:
+                return MemRgn()
+            elif init and isinstance(init[0], (list, tuple)):
+                return from_grouped_bits(init)
+            elif init and isinstance(init[0], int):
+                return from_bit_list(init)
+            else:
+                raise MemException("Invalid initializer: Can't deduce codec")
+
+        elif isinstance(init, str):
+            if init and init.startswith(('0x', '0X')):
+                return from_numeric_big_integer(int(init, base=16), bit_length)
+            elif init and init.startswith(('0b', '0B')):
+                return from_numeric_big_integer(int(init, base=2), bit_length)
+            return from_bytes(init.encode(), bit_length)
+
+        elif isinstance(init, tuple):
+            return from_bytes(init)
+
+        elif isinstance(init, u8):
+            return from_numeric_i8(init.value, bit_length)
+
+        elif isinstance(init, u16):
+            return from_numeric_i16(init.value, bit_length)
+
+        elif isinstance(init, u32):
+            return from_numeric_i32(init.value, bit_length)
+
+        elif isinstance(init, u64):
+            return from_numeric_i64(init.value, bit_length)
+
+        elif isinstance(init, i8):
+            return from_numeric_i8(init, bit_length)
+
+        elif isinstance(init, i16):
+            return from_numeric_i16(init, bit_length)
+
+        elif isinstance(init, i32):
+            return from_numeric_i32(init, bit_length)
+
+        elif isinstance(init, i64):
+            return from_numeric_i64(init, bit_length)
+
+        elif isinstance(init, f32):
+            return from_numeric_f32(init, bit_length)
+
+        elif isinstance(init, f64):
+            return from_numeric_f64(init, bit_length)
+
+        else:
+            raise MemException('Invalid initializer')
+
+
+class Num_(Mem):
     """
     Semantically meaningful data representing numeric information. Input types
     are constrained since the output concept is a quantity and not raw memory.
@@ -405,11 +559,11 @@ class Num(Mem):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Num':
-        ensure(
-            bit_length in (None, 0) or bit_length >= 2,
-            f"Not enough bits to encode both positive and negative numbers: "
-            f"{bit_length}. Two's complement encoding requires at least 2 bits"
-        )
+        # ensure(
+        #     bit_length in (None, 0) or bit_length >= 2,
+        #     f"Not enough bits to encode both positive and negative numbers: "
+        #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
+        # )
         if type(init) == cls:  # Copy constructors
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
