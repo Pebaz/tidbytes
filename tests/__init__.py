@@ -9,3 +9,8 @@ def raises_exception(expected_exception) -> object:
         def closure():
             yield
         return closure()
+
+UN = None  # Unsized
+
+# Helper type to test literal slice syntax without explicitly using `slice()`
+Slice = type('Slice', tuple(), dict(__getitem__=lambda self, index: index))()
