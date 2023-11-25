@@ -60,6 +60,28 @@ PYTHON_X64_FLOATS = sys.float_info.mant_dig == X64_MANTISSA
 # Prevents generators/iterators from being consumed without being processed
 collect_iterator = list
 
+def range_unsigned(bit_length: int) -> (int, int):
+    "u8 range is 0 ..= 255"
+    return 0, 2 ** bit_length - 1
+
+
+def range_signed(bit_length: int) -> (int, int):
+    "i8 range is -128 ..= 127"
+    return -2 ** (bit_length - 1), 2 ** (bit_length - 1) - 1
+
+
+def is_in_range_unsigned(value: int, bit_length: int) -> bool:
+    "u8 range is 0 ..= 255"
+    lo, hi = range_unsigned(bit_length)
+    return lo <= value <= hi
+
+
+def is_in_range_signed(value: int, bit_length: int) -> bool:
+    "i8 range is -128 ..= 127"
+    lo, hi = range_signed(bit_length)
+    return lo <= value <= hi
+
+
 # ! ----------------------------------------------------------------------------
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
@@ -255,8 +277,8 @@ def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
 
 def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i8()` because it assumes the provided i8
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i8()` because it assumes the provided
+    i8 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -269,6 +291,16 @@ def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
         -10 turns into [11110110]
     """
     bit_length = 8 if bit_length is None else bit_length
+
+    min_value = -2 ** (bit_length - 1)
+    max_value = 2 ** (bit_length - 1) - 1
+
+    ensure(
+        min_value <= value.value <= max_value,
+        f"Value {value} doesn't fit into signed range of bit length "
+        f"{bit_length} from {min_value} to {max_value}"
+    )
+
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<b', value.value)
     return op_ensure_bit_length(op_identity(out), bit_length)
@@ -276,8 +308,8 @@ def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
 
 def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i16()` because it assumes the provided i16
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i16()` because it assumes the provided
+    i16 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -293,8 +325,8 @@ def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
 
 def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i32()` because it assumes the provided i32
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i32()` because it assumes the provided
+    i32 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -310,8 +342,8 @@ def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
 
 def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i64()` because it assumes the provided i64
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i64()` because it assumes the provided
+    i64 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -327,8 +359,8 @@ def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
 
 def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i8()` because it assumes the provided i8
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i8()` because it assumes the provided
+    i8 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -348,8 +380,8 @@ def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
 
 def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i16()` because it assumes the provided i16
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i16()` because it assumes the provided
+    i16 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -365,8 +397,8 @@ def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
 
 def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i32()` because it assumes the provided i32
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i32()` because it assumes the provided
+    i32 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -382,8 +414,8 @@ def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
 
 def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
     """
-    This is different from `from_byte_i64()` because it assumes the provided i64
-    value is numeric data with the least significant bit on the right. This
+    This is different from `from_natural_i64()` because it assumes the provided
+    i64 value is numeric data with the least significant bit on the right. This
     means bit order is from right to left always.
 
     For instance, 0b00010011 will be turned into: [00010011]. It appears
@@ -466,6 +498,7 @@ def from_numeric_f64(value: f64, bit_length: int) -> MemRgn:
 
 def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     """
+    TODO(pbz): This is outdated.
     Initializes a memory region from a big integer, assuming a bit length for
     negative numbers to allow for twos-complement encoding. Since big integers
     are signed, `int.bit_length()` will return an unusable value because it
@@ -475,27 +508,28 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     additional bit is used to store the twos-complement encoding. Treats the
     returned memory as identity bits and not numeric data.
     """
-    if bit_length is None:
-        # .bit_length() returns same value for positive as for negative so it can't
-        # be used to tell how large the destination memory is for 2's complement
-        bit_length = value.bit_length() + 1
+    if bit_length == 0:
+        return MemRgn()
+
+    # Pretend like the value is unsigned unless it's negative
+    if bit_length is None and value < 0:
+        bit_length = value.bit_length()
+    elif bit_length is None and value < 0:
+        # .bit_length() returns the same for both positive and negative values
+        # so reserve an extra bit if unsized memory region is used and value is
+        # negative so that it can be twos-complement encoded.
+        twos_complement_space = 1 if value < 0 else 0
+        bit_length = value.bit_length() + twos_complement_space
+
+    if value < 0:
+        lo, hi = range_signed(bit_length)
     else:
-        if bit_length == 0:
-            return MemRgn()
-
-        ensure(
-            bit_length > 1,
-            'Bit length of 1 is not enough for negative numbers using '
-            'twos-complement encoding'
-        )
-
-    min_signed = -2 ** (bit_length - 1)
-    max_signed = 2 ** (bit_length - 1) - 1
+        lo, hi = range_unsigned(bit_length)
 
     ensure(
-        min_signed <= value <= max_signed,
-        f"Value {value} doesn't fit into signed range of bit length "
-        f"{bit_length} from {min_signed} to {max_signed}"
+        lo <= value <= hi,
+        f"Value {value} doesn't fit into range of bit length {bit_length} from "
+        f"{lo} to {hi}"
     )
 
     bits = [

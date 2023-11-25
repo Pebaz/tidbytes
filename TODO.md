@@ -13,6 +13,9 @@
 - 🔰 Remove iterations after blog post
 - 🔰 Write readme
 - 🔰 Go through each codec and note it in readme (from tuple is interesting)
+- 🔰 Fix the docs of each old Num op since Signed & Unsigned replaced Num
+- 🔰 Fix the broken big integer and negative number truncation errors throughout
+    the project
 
 # Aspirational Goals
 
