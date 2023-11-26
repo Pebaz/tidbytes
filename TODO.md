@@ -17,6 +17,10 @@
 - 🔰 Fix the broken big integer and negative number truncation errors throughout
     the project
 
+- 🐸 Negatives are handled wrong
+- 🐸 Truncation only works if semantically valid (integer in range of bit length)
+    - Go through each codec path and make sure it checks the int range
+
 # Aspirational Goals
 
 - ⭐ Parametrize test suite

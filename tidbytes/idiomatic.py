@@ -355,7 +355,7 @@ NullMem = Mem()
 
 class Unsigned(Mem):
     @classmethod
-    def from_(cls, init: T, bit_length: int) -> 'Num':
+    def from_(cls, init: T, bit_length: int) -> 'Unsigned':
         # ensure(
         #     bit_length in (None, 0) or bit_length >= 2,
         #     f"Not enough bits to encode both positive and negative numbers: "
@@ -370,7 +370,7 @@ class Unsigned(Mem):
             return MemRgn()
 
         elif isinstance(init, int):
-            return from_numeric_big_integer(init, bit_length)
+            return from_numeric_big_integer(abs(init), bit_length)
 
         elif isinstance(init, float):
             return from_numeric_float(init, bit_length)
@@ -434,7 +434,7 @@ class Unsigned(Mem):
 
 class Signed(Mem):
     @classmethod
-    def from_(cls, init: T, bit_length: int) -> 'Num':
+    def from_(cls, init: T, bit_length: int) -> 'Signed':
         # ensure(
         #     bit_length in (None, 0) or bit_length >= 2,
         #     f"Not enough bits to encode both positive and negative numbers: "
