@@ -39,6 +39,12 @@ def test_smoke():
     assert str(Mem[2](-2)) == '01'
 
     # It's odd, but the twos-complement counts up towards -1 (properly here)
+    # ! assert str(Signed[2](2)) == '10' <- This should error out -2 ..= 1
+    # ! This is the problem ^^^
+    # ! There needs to be checking even for the positive range:
+    # ! from_numeric_big_integer needs to check for signed/unsigned because the
+    # ! ranges are totally different
+    # ? Does that mean codecs need to know origin AND destination?
     assert str(Signed[2](1)) == '01'
     assert str(Signed[2](0)) == '00'
     assert str(Signed[2](-1)) == '11'
@@ -50,8 +56,3 @@ def test_smoke():
     assert str(Unsigned[2](0)) == '00'
     assert str(Unsigned[2](-1)) == '01'
     assert str(Unsigned[2](-2)) == '10'
-
-    # TODO(pbz): This should error out. If it can't be meaningfully truncated,
-    # TODO don't allow it
-    # ! This is wrong. It should not error out but check this <<<
-    # assert str(Mem[1](i8(-1))), 'This should have errored out'
