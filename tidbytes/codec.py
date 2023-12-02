@@ -507,6 +507,28 @@ def from_natural_big_integer_signed(value: int, bit_length: int) -> MemRgn:
     if bit_length == 0:
         return MemRgn()
 
+    elif bit_length is None:
+        twos_complement_space = 1
+        bit_length = value.bit_length() + twos_complement_space
+
+    lo, hi = range_signed(bit_length)
+
+    ensure(
+        lo <= value <= hi,
+        f"Value {value} doesn't fit into range of bit length {bit_length} from "
+        f"{lo} to {hi}"
+    )
+
+    bits = [
+        int(bool(value & 1 << bit_index))
+        for bit_index in range(bit_length)
+    ]
+
+    out = MemRgn()
+    out.bytes = group_bits_into_bytes(bits)
+
+    return contract_validate_memory(out)
+
 def from_natural_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     """
     - Uses optional bit length to determine integer range and validate input

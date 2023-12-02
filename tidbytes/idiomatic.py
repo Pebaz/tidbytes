@@ -122,7 +122,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         if bits.count(' ') > 7:
             bits = hex(int(''.join(bits.split()), base=2))[2:]
 
-        return f'<Mem [{bits}]>'
+        return f'<{type(self).__name__} [{bits}]>'
 
     def __format__(self, specifier: str) -> str:
         match specifier:
