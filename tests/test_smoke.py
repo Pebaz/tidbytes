@@ -80,3 +80,18 @@ def test_smoke():
     assert str(Unsigned[2](0)) == '00'
     assert str(Unsigned[2](-1)) == '01'
     assert str(Unsigned[2](-2)) == '10'
+
+
+# TODO(pbz): 12/2/23 - Remove on next session to prove this is not stale.
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
+# TODO(pbz): 12/2/23 - Remove on next session to prove this is not stale.
