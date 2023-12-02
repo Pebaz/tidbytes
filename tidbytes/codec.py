@@ -496,6 +496,64 @@ def from_numeric_f64(value: f64, bit_length: int) -> MemRgn:
     return op_reverse(from_natural_f64(value, bit_length))
 
 
+def from_natural_big_integer_signed(value: int, bit_length: int) -> MemRgn:
+    """
+    - Two's-complement encoded for negative values
+    - When no bit length given, adds an extra bit for signedness
+    - Uses optional bit length to determine integer range and validate input
+    - Has half the range of `from_natural_big_integer_unsigned`
+    - Treats the returned memory as identity bits and not numeric data
+    """
+    if bit_length == 0:
+        return MemRgn()
+
+def from_natural_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
+    """
+    - Uses optional bit length to determine integer range and validate input
+    - When no bit length given, stores exactly enough bits to hold the number
+    - Treats the returned memory as identity bits and not numeric data.
+    """
+    ensure(value >= 0, 'Implicit conversion from signed to unsigned')
+
+    if bit_length == 0:
+        return MemRgn()
+
+    elif bit_length is None:
+        bit_length = value.bit_length()
+
+    lo, hi = range_unsigned(bit_length)
+
+    ensure(
+        lo <= value <= hi,
+        f"Value {value} doesn't fit into range of bit length {bit_length} from "
+        f"{lo} to {hi}"
+    )
+
+    bits = [
+        int(bool(value & 1 << bit_index))
+        for bit_index in range(bit_length)
+    ]
+
+    out = MemRgn()
+    out.bytes = group_bits_into_bytes(bits)
+
+    return contract_validate_memory(out)
+
+def from_numeric_big_integer_signed(value: int, bit_length: int) -> MemRgn:
+    """
+    - Two's-complement encoded for negative values
+    - When no bit length given, adds an extra bit for signedness
+    - Uses optional bit length to determine integer range and validate input
+    - Has half the range of `from_numeric_big_integer_unsigned`
+    """
+
+def from_numeric_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
+    """
+    - Uses optional bit length to determine integer range and validate input
+    - Takes the absolute value of negative values and stores them unsigned
+    - When no bit length given, stores exactly enough bits to hold the number
+    """
+
 def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     """
     TODO(pbz): This is outdated.
@@ -512,7 +570,7 @@ def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
         return MemRgn()
 
     # Pretend like the value is unsigned unless it's negative
-    if bit_length is None and value < 0:
+    if bit_length is None and value > 0:
         bit_length = value.bit_length()
     elif bit_length is None and value < 0:
         # .bit_length() returns the same for both positive and negative values
