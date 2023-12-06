@@ -75,11 +75,15 @@ def test_smoke():
     assert str(Signed[2](-2)) == '10'
 
     # Unsigned uses abs() to just ignore the negative sign
+    ensure_fails(lambda: str(Unsigned[2](4)))
+    assert str(Unsigned[2](3)) == '11'
     assert str(Unsigned[2](2)) == '10'
     assert str(Unsigned[2](1)) == '01'
     assert str(Unsigned[2](0)) == '00'
-    assert str(Unsigned[2](-1)) == '01'
-    assert str(Unsigned[2](-2)) == '10'
+    ensure_fails(lambda: str(Unsigned[2](-1)))
+    ensure_fails(lambda: str(Unsigned[2](-2)))
+
+    # assert str(Signed(-4)) == ''
 
 
 # TODO(pbz): 12/2/23 - Remove on next session to prove this is not stale.

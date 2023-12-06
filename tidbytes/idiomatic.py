@@ -24,7 +24,8 @@ from .codec import (
     from_natural_big_integer, from_numeric_big_integer, from_natural_float,
     from_numeric_float, from_bool, from_bit_list, from_grouped_bits, from_bytes,
     into_byte_u8, into_numeric_big_integer, into_natural_big_integer,
-    from_bytes_utf8, from_natural_big_integer_unsigned
+    from_bytes_utf8, from_numeric_big_integer_signed,
+    from_numeric_big_integer_unsigned,
 )
 
 T = TypeVar('T')
@@ -371,7 +372,7 @@ class Unsigned(Mem):
 
         elif isinstance(init, int):
             # return from_numeric_big_integer(abs(init), bit_length)
-            return from_natural_big_integer_unsigned(init, bit_length)
+            return from_numeric_big_integer_unsigned(init, bit_length)
 
         elif isinstance(init, float):
             return from_numeric_float(init, bit_length)
@@ -450,7 +451,7 @@ class Signed(Mem):
             return MemRgn()
 
         elif isinstance(init, int):
-            return from_numeric_big_integer(init, bit_length)
+            return from_numeric_big_integer_signed(init, bit_length)
 
         elif isinstance(init, float):
             return from_numeric_float(init, bit_length)

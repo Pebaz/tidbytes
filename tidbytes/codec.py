@@ -561,6 +561,7 @@ def from_natural_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
 
     return contract_validate_memory(out)
 
+
 def from_numeric_big_integer_signed(value: int, bit_length: int) -> MemRgn:
     """
     - Two's-complement encoded for negative values
@@ -568,6 +569,8 @@ def from_numeric_big_integer_signed(value: int, bit_length: int) -> MemRgn:
     - Uses optional bit length to determine integer range and validate input
     - Has half the range of `from_numeric_big_integer_unsigned`
     """
+    return op_reverse(from_natural_big_integer_signed(value, bit_length))
+
 
 def from_numeric_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     """
@@ -575,6 +578,8 @@ def from_numeric_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     - Takes the absolute value of negative values and stores them unsigned
     - When no bit length given, stores exactly enough bits to hold the number
     """
+    return op_reverse(from_natural_big_integer_unsigned(value, bit_length))
+
 
 def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
     """
