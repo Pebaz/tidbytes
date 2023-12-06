@@ -83,19 +83,28 @@ def test_smoke():
     ensure_fails(lambda: str(Unsigned[2](-1)))
     ensure_fails(lambda: str(Unsigned[2](-2)))
 
-    # assert str(Signed(-4)) == ''
+    '''
+    This proves that signed integers are twos complement encoded. Generate this
+    range with:
 
+    >>> lo, hi = range_signed(4)
+    >>> for i in range(lo, hi + 1):
+    >>>     print(f'{i:<3}', f'{Signed[4](i)}')
+    '''
 
-# TODO(pbz): 12/2/23 - Remove on next session to prove this is not stale.
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): Prove that the signed negative numbers are 2s complement encoded
-# TODO(pbz): 12/2/23 - Remove on next session to prove this is not stale.
+    assert str(Signed[4](-8)) == '1000'
+    assert str(Signed[4](-7)) == '1001'
+    assert str(Signed[4](-6)) == '1010'
+    assert str(Signed[4](-5)) == '1011'
+    assert str(Signed[4](-4)) == '1100'
+    assert str(Signed[4](-3)) == '1101'
+    assert str(Signed[4](-2)) == '1110'
+    assert str(Signed[4](-1)) == '1111'
+    assert str(Signed[4](0)) == '0000'
+    assert str(Signed[4](1)) == '0001'
+    assert str(Signed[4](2)) == '0010'
+    assert str(Signed[4](3)) == '0011'
+    assert str(Signed[4](4)) == '0100'
+    assert str(Signed[4](5)) == '0101'
+    assert str(Signed[4](6)) == '0110'
+    assert str(Signed[4](7)) == '0111'
