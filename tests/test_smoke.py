@@ -108,3 +108,19 @@ def test_smoke():
     assert str(Signed[4](5)) == '0101'
     assert str(Signed[4](6)) == '0110'
     assert str(Signed[4](7)) == '0111'
+
+    # Unsigned cannot take ctypes signed integers
+    ensure_fails(lambda: Unsigned[4](i8(-8)))
+
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+
+
+    # TODO(pbz): Fix this, this should work:
+    assert str(Signed[4](i8(-8))) == '1000'
