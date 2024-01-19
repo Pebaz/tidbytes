@@ -120,7 +120,7 @@ def test_from_numeric_i16(bits, init, expect, msg):
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b1, '00000000 00000000 00000000 00000001', 'Positive'),
     (UN, 0b10, '00000000 00000000 00000000 00000010', 'Positive'),
-    (16, 0b10, '00000000 00000000', 'Truncation positive'),
+    (16, 0b10, '00000000 00000010', 'Truncation positive'),
 ])
 def test_from_numeric_i32(bits, init, expect, msg):
     assert str(Unsigned[bits](i32(init))) == expect, msg
@@ -144,7 +144,7 @@ def test_from_numeric_i32(bits, init, expect, msg):
         '00000000 00000000 00000000 00000010',
         'Positive'
     ),
-    (32, 0b10, '00000000 00000000 00000000 00000000', 'Truncation positive'),
+    (32, 0b10, '00000000 00000000 00000000 00000010', 'Truncation positive'),
 ])
 def test_from_numeric_i64(bits, init, expect, msg):
     assert str(Unsigned[bits](i64(init))) == expect, msg
@@ -287,9 +287,6 @@ def test_from_numeric_float_python64(bits, init, expect, exc, msg):
     (1, 0b0, '0', '1 bit number'),
     (None, 1, '1', 'Single bit'),
     (None, 4, '100', 'Bit ordering'),
-    (2, -1, '11', 'Negative bits'),
-    (4, -2, '1110', 'Bit ordering negative'),
-    (16, -10, '11111111 11110110', 'Byte ordering'),
     (
         UN,
         sys.maxsize,
@@ -306,31 +303,27 @@ def test_from_numeric_big_integer(bits, init, expect, msg):
 
 
 def test_unsigned_from_hex_str():
+    "No padding bit for twos-complement"
     num = Unsigned('0xFE')
-    assert str(num) == '01111111 0'  # Padding bit for twos-complement
+    assert str(num) == '11111110'
 
 
 
 def test_unsigned_from_bin_str():
+    "No padding bit for twos-complement"
     num = Unsigned('0b1011')
-    assert str(num) == '01011'  # Padding bit for twos-complement
+    assert str(num) == '1011'
 
 
 
 @pytest.mark.parametrize('bits,init,expect', [
     (2, 0, '00'),
     (2, 1, '01'),
-    (2, -2, '10'),
-    (2, -1, '11'),
 
     (3, 0, '000'),
     (3, 1, '001'),
     (3, 2, '010'),
     (3, 3, '011'),
-    (3, -4, '100'),
-    (3, -3, '101'),
-    (3, -2, '110'),
-    (3, -1, '111'),
 ])
 def test_num___int__(bits, init, expect):
     num = Unsigned[bits](init)
