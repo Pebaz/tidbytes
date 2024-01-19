@@ -204,3 +204,20 @@ mindmap
 
 * When given a destination bit width of 0, this is like multiplying by 0 in
     arithmetic and results in truncation to null (no bit width).
+
+# Hmmm
+
+The dream of Tidbytes is to allow bits to be place precisely where they are
+wanted. In the pursuit of mapping this ideal to idiomatic types, some in-built
+concepts were uncovered. There really seems to be some fundamental types in
+relation to mapping numeric data to bits. "Type" here means an operation either
+assuming metadata about an input or an operation requiring metadata as a meta
+input. This represents an orientation that points away from the operation and
+towards an operation respectively. Some concepts I've uncovered are:
+
+* Unsized data (no bit length)
+* Sized data (bit length)
+* Natural data (raw/untyped/uninterpreted/unmapped memory)
+* Numeric data (mathematical identity or quantity)
+* Unsigned numbers (one axis)
+* Signed numbers (two axes)
