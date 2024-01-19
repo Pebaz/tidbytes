@@ -35,7 +35,9 @@ def def_class(type_name, superclass, low, hi):
                 superclass.__init__(self, value),
             )[-1],
             __repr__=lambda self: f'{superclass.__name__}({self.value})',
-            __str__=lambda self: str(self.value)
+            __str__=lambda self: str(self.value),
+            lo=low,
+            hi=hi,
         )
     )
 

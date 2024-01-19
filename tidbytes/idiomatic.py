@@ -490,16 +490,44 @@ class Signed(Mem):
             return from_bytes(init)
 
         elif isinstance(init, u8):
-            return from_numeric_i8(init.value, bit_length)
+            try:
+                return from_numeric_i8(i8(init.value), bit_length)
+            except MemException as e:
+                err = MemException(
+                    f'{type(init).__name__} type would under/overflow: '
+                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                )
+                raise err.with_traceback(e.__traceback__)
 
         elif isinstance(init, u16):
-            return from_numeric_i16(init.value, bit_length)
+            try:
+                return from_numeric_i16(i16(init.value), bit_length)
+            except MemException as e:
+                err = MemException(
+                    f'{type(init).__name__} type would under/overflow: '
+                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                )
+                raise err.with_traceback(e.__traceback__)
 
         elif isinstance(init, u32):
-            return from_numeric_i32(init.value, bit_length)
+            try:
+                return from_numeric_i32(i32(init.value), bit_length)
+            except MemException as e:
+                err = MemException(
+                    f'{type(init).__name__} type would under/overflow: '
+                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                )
+                raise err.with_traceback(e.__traceback__)
 
         elif isinstance(init, u64):
-            return from_numeric_i64(init.value, bit_length)
+            try:
+                return from_numeric_i64(i64(init.value), bit_length)
+            except MemException as e:
+                err = MemException(
+                    f'{type(init).__name__} type would under/overflow: '
+                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                )
+                raise err.with_traceback(e.__traceback__)
 
         elif isinstance(init, i8):
             return from_numeric_i8(init, bit_length)
