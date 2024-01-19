@@ -1,0 +1,3 @@
+indexed_meta
+pytest
+ruff

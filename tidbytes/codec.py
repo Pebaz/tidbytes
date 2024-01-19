@@ -1,5 +1,4 @@
 """
-
 The job of a codec is to efficiently bring idiomatic types into the algebraic
 system of MemRgn. They are exactly analogous to Rust's From & Into traits.
 
@@ -37,8 +36,6 @@ Design notes for this module:
 - The "op" nomenclature always refers to algebraic operations with Natural
     inputs and Natural outputs (the Mem type). Think arithmetic: all ops take
     numbers and return numbers.
-
-
 """
 
 import ctypes

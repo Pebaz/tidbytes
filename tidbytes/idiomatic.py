@@ -348,12 +348,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 NullMem = Mem()
 
 
-# TODO(pbz): I don't think Num is actually possible. Use Signed and Unsigned for
-# TODO infinite bits and I32 and U32 for finite bits. This will take care of the
-# TODO need to truncate to support both signed and unsigned.
-
-
-
 class Unsigned(Mem):
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Unsigned':
