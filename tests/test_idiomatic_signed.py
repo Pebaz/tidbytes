@@ -86,8 +86,8 @@ def test_from_numeric_u64(bits, init, expect, msg):
     (UN, -0b1, '11111111', 'Negative'),
     (UN, 0b10, '00000010', 'Positive'),
     (UN, -0b10, '11111110', 'Negative'),
-    (4, 0b10, '0000', 'Truncation positive'),
-    (4, -0b10, '1111', 'Truncation negative'),
+    (4, 0b10, '0010', 'Truncation positive'),
+    (4, -0b10, '1110', 'Truncation negative'),
 ])
 def test_from_numeric_i8(bits, init, expect, msg):
     assert str(Signed[bits](i8(init))) == expect, msg
@@ -99,8 +99,8 @@ def test_from_numeric_i8(bits, init, expect, msg):
     (UN, -0b1, '11111111 11111111', 'Negative'),
     (UN, 0b10, '00000000 00000010', 'Positive'),
     (UN, -0b10, '11111111 11111110', 'Negative'),
-    (8, 0b10, '00000000', 'Truncation positive'),
-    (8, -0b10, '11111111', 'Truncation negative'),
+    (8, 0b10, '00000010', 'Truncation positive'),
+    (8, -0b10, '11111110', 'Truncation negative'),
 ])
 def test_from_numeric_i16(bits, init, expect, msg):
     assert str(Signed[bits](i16(init))) == expect, msg
@@ -112,8 +112,8 @@ def test_from_numeric_i16(bits, init, expect, msg):
     (UN, -0b1, '11111111 11111111 11111111 11111111', 'Negative'),
     (UN, 0b10, '00000000 00000000 00000000 00000010', 'Positive'),
     (UN, -0b10, '11111111 11111111 11111111 11111110', 'Negative'),
-    (16, 0b10, '00000000 00000000', 'Truncation positive'),
-    (16, -0b10, '11111111 11111111', 'Truncation negative'),
+    (16, 0b10, '00000000 00000010', 'Truncation positive'),
+    (16, -0b10, '11111111 11111110', 'Truncation negative'),
 ])
 def test_from_numeric_i32(bits, init, expect, msg):
     assert str(Signed[bits](i32(init))) == expect, msg
@@ -149,8 +149,8 @@ def test_from_numeric_i32(bits, init, expect, msg):
         '11111111 11111111 11111111 11111110',
         'Negative'
     ),
-    (32, 0b10, '00000000 00000000 00000000 00000000', 'Truncation positive'),
-    (32, -0b10, '11111111 11111111 11111111 11111111', 'Truncation negative'),
+    (32, 0b10, '00000000 00000000 00000000 00000010', 'Truncation positive'),
+    (32, -0b10, '11111111 11111111 11111111 11111110', 'Truncation negative'),
 ])
 def test_from_numeric_i64(bits, init, expect, msg):
     assert str(Signed[bits](i64(init))) == expect, msg
@@ -291,30 +291,30 @@ def test_from_numeric_float_python64(bits, init, expect, exc, msg):
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (0, 1, '', 'Trucate to null'),
-    (None, 1, '1', 'Single bit'),
-    (None, 4, '100', 'Bit ordering'),
+    (None, 1, '01', 'Single bit'),
+    (None, 4, '0100', 'Bit ordering'),
     (2, -1, '11', 'Negative bits'),
     (4, -2, '1110', 'Bit ordering negative'),
     (16, -10, '11111111 11110110', 'Byte ordering'),
     (
         UN,
         sys.maxsize,
-        '11111111 11111111 11111111 11111111 '
-        '11111111 11111111 11111111 1111111',
+        '01111111 11111111 11111111 11111111 '
+        '11111111 11111111 11111111 11111111',
         'Big integer'
     ),
-    (UN, sys.maxsize + 1, '10000000 00000000 00000000 00000000 '
-    '00000000 00000000 00000000 00000000', 'Big integer + 1')
+    (UN, sys.maxsize + 1, '01000000 00000000 00000000 00000000 '
+    '00000000 00000000 00000000 00000000 0', 'Big integer + 1')
 ])
 def test_from_numeric_big_integer(bits, init, expect, msg):
     assert str(Signed[bits](init)) == expect, msg
 
 
-def test_unsigned_from_hex_str():
+def test_signed_from_hex_str():
     num = Signed('0xFE')
     assert str(num) == '01111111 0'  # Padding bit for twos-complement
 
-def test_unsigned_from_bin_str():
+def test_signed_from_bin_str():
     num = Signed('0b1011')
     assert str(num) == '01011'  # Padding bit for twos-complement
 
