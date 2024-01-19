@@ -112,15 +112,37 @@ def test_smoke():
     # Unsigned cannot take ctypes signed integers
     ensure_fails(lambda: Unsigned[4](i8(-8)))
 
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
-    # TODO(pbz): FIX THIS CTYPES THING FOR SIGNED ALSO
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
+    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
 
-
-    # TODO(pbz): Fix this, this should work:
+    assert str(Signed[4](-8)) == '1000'
     assert str(Signed[4](i8(-8))) == '1000'
+    assert str(Signed[16](i16(-32768))) == '10000000 00000000'
+
+    assert str(Signed[1](-1)) == '1'
+    assert str(Signed[1](i8(-1))) == '1'
+    assert str(Signed[1](i16(-1))) == '1'
+    assert str(Signed[1](i32(-1))) == '1'
+    assert str(Signed[1](i64(-1))) == '1'
+
+    assert str(Unsigned[1](1)) == '1'
+    assert str(Unsigned[1](i8(1))) == '1'
+    assert str(Unsigned[1](i16(1))) == '1'
+    assert str(Unsigned[1](i32(1))) == '1'
+    assert str(Unsigned[1](i64(1))) == '1'

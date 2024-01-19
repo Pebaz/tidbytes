@@ -317,7 +317,7 @@ def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
     bit_length = 16 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<h', value.value)
-    return op_ensure_bit_length(op_identity(out), bit_length)
+    return op_identity(op_ensure_bit_length(out, bit_length))
 
 
 def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
@@ -334,7 +334,7 @@ def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
     bit_length = 32 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<l', value.value)
-    return op_ensure_bit_length(op_identity(out), bit_length)
+    return op_identity(op_ensure_bit_length(out, bit_length))
 
 
 def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
@@ -351,7 +351,7 @@ def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
     bit_length = 64 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<q', value.value)
-    return op_ensure_bit_length(op_identity(out), bit_length)
+    return op_identity(op_ensure_bit_length(out, bit_length))
 
 
 def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
@@ -372,7 +372,7 @@ def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
     bit_length = 8 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<b', value.value)
-    return op_ensure_bit_length(op_reverse(out), bit_length)
+    return op_reverse(op_ensure_bit_length(out, bit_length))
 
 
 def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
@@ -389,7 +389,12 @@ def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
     bit_length = 16 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<h', value.value)
-    return op_ensure_bit_length(op_reverse(out), bit_length)
+
+    # TODO(pbz): This line of code used to read:
+    # TODO return op_ensure_bit_length(op_reverse(out), bit_length)
+    # NOTE(pbz): But that's ridiculous because someone could pass in a valid i16
+    # NOTE and have it get truncated on the least significate byte =|
+    return op_reverse(op_ensure_bit_length(out, bit_length))
 
 
 def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
@@ -406,7 +411,7 @@ def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
     bit_length = 32 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<l', value.value)
-    return op_ensure_bit_length(op_reverse(out), bit_length)
+    return op_reverse(op_ensure_bit_length(out, bit_length))
 
 
 def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
@@ -423,7 +428,7 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
     bit_length = 64 if bit_length is None else bit_length
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<q', value.value)
-    return op_ensure_bit_length(op_reverse(out), bit_length)
+    return op_reverse(op_ensure_bit_length(out, bit_length))
 
 
 def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
