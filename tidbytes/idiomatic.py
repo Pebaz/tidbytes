@@ -479,16 +479,11 @@ class Signed(Mem):
                 raise MemException("Invalid initializer: Can't deduce codec")
 
         elif isinstance(init, str):
+            codec = from_numeric_big_integer_signed
             if init and init.startswith(('0x', '0X')):
-                return from_numeric_big_integer_signed(
-                    int(init, base=16),
-                    bit_length
-                )
+                return codec(int(init, base=16), bit_length)
             elif init and init.startswith(('0b', '0B')):
-                return from_numeric_big_integer_signed(
-                    int(init, base=2),
-                    bit_length
-                )
+                return codec(int(init, base=2), bit_length)
             return from_bytes(init.encode(), bit_length)
 
         elif isinstance(init, tuple):
@@ -554,6 +549,11 @@ class Signed(Mem):
 
         else:
             raise MemException('Invalid initializer')
+
+    def __int__(self):
+        # TODO(pbz): into_numeric_big_integer_signed
+        negative = -1 if op_get_bit(self.rgn, 0) == 1 else 1
+        return negative * into_numeric_big_integer(self.rgn)
 
 
 class Num_(Mem):
