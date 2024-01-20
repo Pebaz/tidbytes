@@ -21,10 +21,9 @@ from .codec import (
     from_natural_i8, from_natural_i16, from_natural_i32, from_natural_i64,
     from_numeric_i8, from_numeric_i16, from_numeric_i32, from_numeric_i64,
     from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
-    from_natural_big_integer, from_numeric_big_integer, from_natural_float,
-    from_numeric_float, from_bool, from_bit_list, from_grouped_bits, from_bytes,
-    into_byte_u8, into_numeric_big_integer, into_natural_big_integer,
-    from_bytes_utf8, from_numeric_big_integer_signed,
+    from_natural_float, from_numeric_float, from_bool, from_bit_list,
+    from_grouped_bits, from_bytes, into_byte_u8, into_numeric_big_integer,
+    into_natural_big_integer, from_bytes_utf8, from_numeric_big_integer_signed,
     from_numeric_big_integer_unsigned,
 )
 
@@ -481,9 +480,15 @@ class Signed(Mem):
 
         elif isinstance(init, str):
             if init and init.startswith(('0x', '0X')):
-                return from_numeric_big_integer(int(init, base=16), bit_length)
+                return from_numeric_big_integer_signed(
+                    int(init, base=16),
+                    bit_length
+                )
             elif init and init.startswith(('0b', '0B')):
-                return from_numeric_big_integer(int(init, base=2), bit_length)
+                return from_numeric_big_integer_signed(
+                    int(init, base=2),
+                    bit_length
+                )
             return from_bytes(init.encode(), bit_length)
 
         elif isinstance(init, tuple):
