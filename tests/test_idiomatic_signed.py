@@ -354,8 +354,8 @@ def test_num___int__(bits, init, expect):
     (Slice[1::8], '11111110', 'Second byte'),
 ])
 def test_num__getitem__(index, expect, msg):
-    num = Signed(u16(65534))
-    other = Signed[:]
+    num = Signed(u16(0xFF))
+    other = num[:]
     start, stop, step = index.start, index.stop, index.step
 
     assert num.rgn is not other.rgn, 'Should not be same region'

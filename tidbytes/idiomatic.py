@@ -494,8 +494,8 @@ class Signed(Mem):
                 return from_numeric_i8(i8(init.value), bit_length)
             except MemException as e:
                 err = MemException(
-                    f'{type(init).__name__} type would under/overflow: '
-                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                    f'{type(init).__name__} type casted to i8 would under/'
+                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
@@ -504,8 +504,8 @@ class Signed(Mem):
                 return from_numeric_i16(i16(init.value), bit_length)
             except MemException as e:
                 err = MemException(
-                    f'{type(init).__name__} type would under/overflow: '
-                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                    f'{type(init).__name__} type casted to i16 would under/'
+                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
@@ -514,8 +514,8 @@ class Signed(Mem):
                 return from_numeric_i32(i32(init.value), bit_length)
             except MemException as e:
                 err = MemException(
-                    f'{type(init).__name__} type would under/overflow: '
-                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                    f'{type(init).__name__} type casted to i32 would under/'
+                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
@@ -524,8 +524,8 @@ class Signed(Mem):
                 return from_numeric_i64(i64(init.value), bit_length)
             except MemException as e:
                 err = MemException(
-                    f'{type(init).__name__} type would under/overflow: '
-                    f'{init.value} not in {i8.lo} .. {i8.hi}'
+                    f'{type(init).__name__} type casted to i64 would under/'
+                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
