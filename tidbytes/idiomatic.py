@@ -271,6 +271,11 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_bool(init, bit_length)
 
         elif isinstance(init, int):
+            if init < 0:
+                raise MemException(
+                    'Cannot interpret negative big integer as slice of raw '
+                    'memory since raw bytes are unsigned. Use `Signed` instead'
+                )
             return from_natural_big_integer_unsigned(init, bit_length)
 
         elif isinstance(init, float):

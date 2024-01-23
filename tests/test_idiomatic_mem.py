@@ -300,27 +300,24 @@ def test_from_bool(bits, init, expect, msg):
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (0, 1, '', 'Trucate to null'),
-    (None, 1, '10', 'Single bit, intrinsic pad bit for twos complement'),
-    (None, 4, '0010', 'Bit ordering'),
-    (2, -1, '11', 'Negative bit'),
-    (4, -2, '0111', 'Bit ordering negative'),
-    (16, -10, '01101111 11111111', 'Byte ordering'),
+    (None, 1, '1', 'Single bit, intrinsic pad bit for twos complement'),
+    (None, 4, '001', 'Bit ordering'),
     (
         UN,
         sys.maxsize,
         '11111111 11111111 11111111 11111111 '
-        '11111111 11111111 11111111 11111110',
+        '11111111 11111111 11111111 1111111',
         'Big integer'
     ),
     (
         UN,
         sys.maxsize + 1,
         '00000000 00000000 00000000 00000000 '
-        '00000000 00000000 00000000 00000001 0',
+        '00000000 00000000 00000000 00000001',
         'Big integer + 1'
     )
 ])
-def test_from_natural_big_integer(bits, init, expect, msg):
+def test_from_natural_big_integer_unsigned(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
 
@@ -355,12 +352,12 @@ def test_from_bit_length():
 
 def test_from_hex_str():
     mem = Mem('0xFE')
-    assert str(mem) == '01111111 0'  # Padding bit for twos-complement
+    assert str(mem) == '01111111'  # No padding bit for twos-complement
 
 
 def test_from_bin_str():
     mem = Mem('0b1011')
-    assert str(mem) == '11010'  # Padding bit for twos-complement
+    assert str(mem) == '1101'  # No padding bit for twos-complement
 
 
 @pytest.mark.parametrize('bits,init,expect', [
@@ -379,17 +376,10 @@ def test_mem___bool__(bits, init, expect):
 @pytest.mark.parametrize('bits,init,out,expect', [
     (2, 0, 0, '00'),
     (2, 1, 2, '10'),
-    (2, -2, 1, '01'),
-    (2, -1, 3, '11'),
-
     (3, 0, 0, '000'),
     (3, 1, 4, '100'),
     (3, 2, 2, '010'),
     (3, 3, 6, '110'),
-    (3, -4, 1, '001'),
-    (3, -3, 5, '101'),
-    (3, -2, 3, '011'),
-    (3, -1, 7, '111'),
 ])
 def test_mem___int__(bits, init, out, expect):
     mem = Mem[bits](init)
