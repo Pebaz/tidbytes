@@ -91,6 +91,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "Returns a new region with identity memory order (unchanged)."
         return type(self)(self, Order.LeftToRight, Order.LeftToRight)
 
+    clone = identity
+
     def reverse(self):
         "Returns a new region with all bits and bytes reversed."
         return type(self)(self, Order.RightToLeft, Order.RightToLeft)
@@ -136,6 +138,10 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 return str(self)
 
     def __eq__(self, that):
+        ensure(
+            isinstance(that, type(self)),
+            f'Cannot compare unlike types: {type(self)} and {type(that)}'
+        )
         return self.rgn.bytes == that.rgn.bytes
 
     def __len__(self):
@@ -230,7 +236,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         if isinstance(index, int):
             self.rgn = op_set_bits(self.rgn, index, payload.rgn)
 
-    def validate(self):
+    def validate(self) -> 'Mem':
         if self.rgn.bytes:
             contract_validate_memory(self.rgn)
         return self

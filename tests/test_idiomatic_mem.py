@@ -420,3 +420,34 @@ def test_mem__getitem__(index, expect, msg):
 
 #     mem[0] = Num[1](u8(1))
 #     assert int(mem[0]) == 1
+
+def test_mem___init__():
+    assert list(iter(Mem[4](1))) == [1, 0, 0, 0]
+
+
+def test_mem___reversed__():
+    assert list(reversed(Mem[4](1))) == [0, 0, 0, 1]
+
+
+def test_mem_identity():
+    mem = Mem[24](1)
+    assert str(mem) == str(mem.identity())
+
+
+def test_mem_reverse():
+    mem = Mem[24](1)
+    assert list(reversed(mem)) == list(mem.reverse())
+
+
+def test_mem_reverse_bytes():
+    mem = Mem[24](1).reverse_bytes()
+    res = type(mem)(1)
+    res.rgn.bytes = list(reversed(res.rgn.bytes))
+    assert mem == res
+
+
+def test_mem_reverse_bits():
+    mem = Mem[24](1).reverse_bits()
+    res = type(mem)(1)
+    res.rgn.bytes = [list(reversed(byte)) for byte in res.rgn.bytes]
+    assert mem == res

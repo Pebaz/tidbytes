@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] Remove extraneous operations from natural API.
+- [X] Remove extraneous operations from natural API.
     Is this really necessary? From what I can see, `op_get_bits()` can replace
     `op_get_byte()` but getting bytes requires the validation of a different
     contract than getting bits (logical group of 8 bits). Since that is a very
