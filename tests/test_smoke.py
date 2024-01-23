@@ -27,7 +27,7 @@ def test_smoke():
     ensure_fails(lambda: Mem[1](2))
 
     # The two's complement version of an i1(-1) is "all ones" or '1'
-    assert str(Mem[1](-1)) == '1'
+    assert str(Signed[1](-1)) == '1'
 
     # The two's complement version of an i1(0) is just '0'
     assert str(Mem[1](i8(0))) == '0'
@@ -35,8 +35,8 @@ def test_smoke():
     # It's odd, but the twos-complement counts up towards -1 (backwards here)
     assert str(Mem[2](1)) == '10'
     assert str(Mem[2](0)) == '00'
-    assert str(Mem[2](-1)) == '11'
-    assert str(Mem[2](-2)) == '01'
+    assert str(Signed[2](-1)) == '11'
+    assert str(Signed[2](-2)) == '10'
 
     # It's odd, but the twos-complement counts up towards -1 (properly here)
     # ! assert str(Signed[2](2)) == '10' <- This should error out -2 ..= 1
