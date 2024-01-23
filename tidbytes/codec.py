@@ -753,21 +753,13 @@ def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
 
     return op_ensure_bit_length(out, bit_length)
 
-# TODO(pbz): Implement serialization
-# Serialize MemRgn from primitive idiomatic types
 
 def into_numeric_big_integer(mem: MemRgn) -> int:
     "Treats the memory region as a signed big integer."
     if not mem.bytes:
         return 0
 
-    bits = ''.join(
-        ''.join(
-            str(bit) if bit is not None else ''  # ? '▫'
-            for bit in byte
-        )
-        for byte in mem.bytes
-    )
+    bits = ''.join(str(i) for i in iterate_logical_bits(mem.bytes))
 
     if bits[0] == '1':  # Negative
         raw_integer_value = int(bits, base=2)
@@ -785,30 +777,9 @@ def into_numeric_big_integer(mem: MemRgn) -> int:
 
 
 def into_natural_big_integer(mem: MemRgn) -> int:
+    "Always assumes destination is signed since Python's big integer type is."
     out = 0
     for i, bit in enumerate(reversed(list(iterate_logical_bits(mem.bytes)))):
         if bit:
             out |= 1 << i
     return out
-
-
-
-
-def into_u8_bit_arr(): ...
-def into_u8_byte_arr(): ...
-def into_u32_arr(): ...
-def into_u8(): ...
-def into_u16(): ...
-def into_u32(): ...
-def into_u64(): ...
-
-def into_i8_arr(): ...
-def into_i32_arr(): ...
-def into_i8(): ...
-def into_i16(): ...
-def into_i32(): ...
-def into_i64(): ...
-def into_i8_list(): ...
-def into_i8_arr_(): ...
-def into_int(): ...  # Examine host endianness, use struct.unpack
-def into_byte_u8(value) -> u8: ...

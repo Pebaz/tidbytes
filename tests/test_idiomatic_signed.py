@@ -18,8 +18,6 @@ from . import raises_exception, UN, Slice
 def test_from_numeric_u8(bits, init, expect, msg):
     assert str(Signed[bits](u8(init))) == expect, msg
 
-# TODO(pbz): clear; pytest tests -k test_idiomatic_signed -k test_from_numeric_u8
-
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (0, 0b1011, '', 'Truncate to null'),

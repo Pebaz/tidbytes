@@ -22,7 +22,7 @@ from .codec import (
     from_numeric_i8, from_numeric_i16, from_numeric_i32, from_numeric_i64,
     from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
     from_natural_float, from_numeric_float, from_bool, from_bit_list,
-    from_grouped_bits, from_bytes, into_byte_u8, into_numeric_big_integer,
+    from_grouped_bits, from_bytes, into_numeric_big_integer,
     into_natural_big_integer, from_bytes_utf8, from_numeric_big_integer_signed,
     from_numeric_big_integer_unsigned, from_natural_big_integer_unsigned
 )
@@ -70,7 +70,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         self.rgn = self.from_(init, bit_length=indexed_meta.get_param(self))
         self.validate()
 
-        # All codec methods treat input values as left to right big and byte
+        # All codec methods treat input values as left to right bit and byte
         # order so transforming according to the input bit and byte order always
         # results in left to right bit and byte order.
         self.rgn = op_transform(
@@ -224,16 +224,9 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         The payload must be a valid initializer for Mem in order to pass
         validation and support indexing or be a Mem subclass directly.
         """
-        # TODO(pbz): Support index assignment
-        # payload = MemRgn()
-        # payload.bytes = [[value] + [None] * 7]
-        # op_set_bit(self.rgn, key, payload)
-
+        # TODO(pbz): Support more data types
         payload = Mem(payload)
 
-        # TODO(pbz): The rules of truncation are unclear here. Should they be
-        # TODO broken to allow ints directly? Why does Num[1](1) not work?
-        # TODO U32(1) shouldn't be necessary here.
         if isinstance(index, int):
             self.rgn = op_set_bits(self.rgn, index, payload.rgn)
 
@@ -348,7 +341,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
-            return into_byte_u8(self.rgn)
+            return into_natural_big_integer(self.rgn)
         if target_type == str:
             "return into_utf8(self.rgn)"
         else:
@@ -461,6 +454,39 @@ class Unsigned(Mem):
 
 
 class Signed(Mem):
+    """
+    Semantically meaningful data representing numeric information. Input types
+    are constrained since the output concept is a quantity and not raw memory.
+    Supports positive and negative integers. At least one bit of the memory
+    region must be given to support differentiation of positive and negative
+    values stored in two's-complement encoding. This means the smallest bit
+    length that is supported is 2.
+
+    The overall process for negative numbers is:
+        - Interpret the entire memory region as an unsigned integer (it's
+            the negative number stored in two's complement encoding)
+        - Subtract 1 from that value but left-pad with zeroes (to preserve
+            bit length) to get the one's complement
+        - Invert all those bits to get the positive number
+        - Negate that value and return it
+
+    With bit length of 3:
+        000 = 0
+        001 = 1
+        010 = 2
+        011 = 3
+        100 = -4
+        101 = -3
+        110 = -2
+        111 = -1
+
+    With bit length of 2:
+        00 = 0
+        01 = 1
+        10 = -2
+        11 = -1
+    """
+
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Signed':
         # ensure(
@@ -573,134 +599,6 @@ class Signed(Mem):
         return negative * into_numeric_big_integer(self.rgn)
 
 
-class Num_(Mem):
-    """
-    Semantically meaningful data representing numeric information. Input types
-    are constrained since the output concept is a quantity and not raw memory.
-    Supports positive and negative integers. At least one bit of the memory
-    region must be given to support differentiation of positive and negative
-    values stored in two's-complement encoding. This means the smallest bit
-    length that is supported is 2.
-
-    With bit length of 3:
-        000 = 0
-        001 = 1
-        010 = 2
-        011 = 3
-        100 = -4
-        101 = -3
-        110 = -2
-        111 = -1
-
-    With bit length of 2:
-        00 = 0
-        01 = 1
-        10 = -2
-        11 = -1
-    """
-
-    def __iter__(self):
-        "Iterator over integer bits containing 0 or 1."
-        return reversed(list(iterate_logical_bits(self.rgn.bytes)))
-
-    def __bool__(self):
-        "False if Num is null or 0 else True for any non-null, non-zero value."
-        return bool(int(self))
-
-    def __int__(self):
-        """
-        The overall process for negative numbers is:
-            - Interpret the entire memory region as an unsigned integer (it's
-                the negative number stored in two's complement encoding)
-            - Subtract 1 from that value but left-pad with zeroes (to preserve
-                bit length) to get the one's complement
-            - Invert all those bits to get the positive number
-            - Negate that value and return it
-        """
-        return into_numeric_big_integer(self.rgn)
-
-    @classmethod
-    def from_(cls, init: T, bit_length: int) -> 'Num':
-        # ensure(
-        #     bit_length in (None, 0) or bit_length >= 2,
-        #     f"Not enough bits to encode both positive and negative numbers: "
-        #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
-        # )
-        if type(init) == cls:  # Copy constructors
-            out = MemRgn()
-            out.bytes = copy.copy(init.rgn.bytes)
-            return out
-
-        elif isinstance(init, type(None)):
-            return MemRgn()
-
-        elif isinstance(init, int):
-            return from_numeric_big_integer(init, bit_length)
-
-        elif isinstance(init, float):
-            return from_numeric_float(init, bit_length)
-
-        elif isinstance(init, bool):
-            return from_bool(init)
-
-        elif isinstance(init, list):
-            if not init:
-                return MemRgn()
-            elif init and isinstance(init[0], (list, tuple)):
-                return from_grouped_bits(init)
-            elif init and isinstance(init[0], int):
-                return from_bit_list(init)
-            else:
-                raise MemException("Invalid initializer: Can't deduce codec")
-
-        elif isinstance(init, str):
-            if init and init.startswith(('0x', '0X')):
-                return from_numeric_big_integer(int(init, base=16), bit_length)
-            elif init and init.startswith(('0b', '0B')):
-                return from_numeric_big_integer(int(init, base=2), bit_length)
-            return from_bytes(init.encode(), bit_length)
-
-        elif isinstance(init, tuple):
-            return from_bytes(init)
-
-        elif isinstance(init, u8):
-            return from_numeric_u8(init, bit_length)
-
-        elif isinstance(init, u16):
-            return from_numeric_u16(init, bit_length)
-
-        elif isinstance(init, u32):
-            return from_numeric_u32(init, bit_length)
-
-        elif isinstance(init, u64):
-            return from_numeric_u64(init, bit_length)
-
-        elif isinstance(init, i8):
-            return from_numeric_i8(init, bit_length)
-
-        elif isinstance(init, i16):
-            return from_numeric_i16(init, bit_length)
-
-        elif isinstance(init, i32):
-            return from_numeric_i32(init, bit_length)
-
-        elif isinstance(init, i64):
-            return from_numeric_i64(init, bit_length)
-
-        elif isinstance(init, f32):
-            return from_numeric_f32(init, bit_length)
-
-        elif isinstance(init, f64):
-            return from_numeric_f64(init, bit_length)
-
-        else:
-            raise MemException('Invalid initializer')
-
-    def into(self, target_type: type) -> Generic[T]:
-        if target_type == u8:
-            return into_byte_u8(self.rgn)
-
-
 class Str(Mem):
     """
     Semantically meaningful data representing a array of UTF8 code points. Not
@@ -727,7 +625,7 @@ class Str(Mem):
 
     def into(self, target_type: type) -> Generic[T]:
         if target_type == u8:
-            return into_byte_u8(self.rgn)
+            return into_natural_big_integer(self.rgn)
 
     def __str__(self):
         chars = (int(byte, base=2) for byte in Mem.__str__(self).split())

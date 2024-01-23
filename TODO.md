@@ -14,6 +14,7 @@
 
 - [ ] Fully test idiomatic operations
 
+- [ ] Go back through and fix typos, documentation, and formatting
 
 
 

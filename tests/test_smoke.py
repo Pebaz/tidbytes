@@ -112,25 +112,6 @@ def test_smoke():
     # Unsigned cannot take ctypes signed integers
     ensure_fails(lambda: Unsigned[4](i8(-8)))
 
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-    # TODO(pbz): RN I'M WORKNG ON GETTING test_idiomatic_unsigned.py FINISHED
-
     assert str(Signed[4](-8)) == '1000'
     assert str(Signed[4](i8(-8))) == '1000'
     assert str(Signed[16](i16(-32768))) == '10000000 00000000'
