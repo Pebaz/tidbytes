@@ -24,7 +24,7 @@ from .codec import (
     from_natural_float, from_numeric_float, from_bool, from_bit_list,
     from_grouped_bits, from_bytes, into_byte_u8, into_numeric_big_integer,
     into_natural_big_integer, from_bytes_utf8, from_numeric_big_integer_signed,
-    from_numeric_big_integer_unsigned,
+    from_numeric_big_integer_unsigned, from_natural_big_integer_unsigned
 )
 
 T = TypeVar('T')
@@ -120,7 +120,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         # More than 8 bytes is getting long
         if bits.count(' ') > 7:
-            bits = hex(int(''.join(bits.split()), base=2))[2:]
+            bits = hex(int(''.join(bits.split()), base=2))
 
         return f'<{type(self).__name__} [{bits}]>'
 
@@ -129,7 +129,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             case 'bits':
                 return str(self)
             case 'hex' | 'x':
-                return hex(int(''.join(str(self).split()), base=2))[2:]
+                return hex(int(''.join(str(self).split()), base=2))
             case 'X':
                 return format(self, 'x').upper()
             case _:
@@ -271,7 +271,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_bool(init, bit_length)
 
         elif isinstance(init, int):
-            return from_natural_big_integer(init, bit_length)
+            return from_natural_big_integer_unsigned(init, bit_length)
 
         elif isinstance(init, float):
             return from_natural_float(init, bit_length)
@@ -319,11 +319,17 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         elif isinstance(init, str):
             if init and init.startswith(('0x', '0X')):
                 # TODO(pbz): from_hex_str('0xFF')
-                return from_natural_big_integer(int(init, base=16), bit_length)
+                return from_natural_big_integer_unsigned(
+                    int(init, base=16),
+                    bit_length
+                )
             elif init and init.startswith(('0b', '0B')):
                 # TODO(pbz): from_bin_str('0b11101001101101101')
                 # TODO(pbz): Implement in Num but reverse
-                return from_natural_big_integer(int(init, base=2), bit_length)
+                return from_natural_big_integer_unsigned(
+                    int(init, base=2),
+                    bit_length
+                )
             return from_bytes(init.encode(), bit_length)
 
         elif isinstance(init, bytes):
@@ -385,9 +391,15 @@ class Unsigned(Mem):
 
         elif isinstance(init, str):
             if init and init.startswith(('0x', '0X')):
-                return from_numeric_big_integer(int(init, base=16), bit_length)
+                return from_numeric_big_integer_unsigned(
+                    int(init, base=16),
+                    bit_length
+                )
             elif init and init.startswith(('0b', '0B')):
-                return from_numeric_big_integer(int(init, base=2), bit_length)
+                return from_numeric_big_integer_unsigned(
+                    int(init, base=2),
+                    bit_length
+                )
             return from_bytes(init.encode(), bit_length)
 
         elif isinstance(init, tuple):
@@ -474,7 +486,7 @@ class Signed(Mem):
             elif init and isinstance(init[0], (list, tuple)):
                 return from_grouped_bits(init)
             elif init and isinstance(init[0], int):
-                return from_bit_list(init)
+                return from_bit_list(init, bit_length)
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
 

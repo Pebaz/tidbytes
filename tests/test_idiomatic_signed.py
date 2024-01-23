@@ -335,7 +335,7 @@ def test_signed_from_bin_str():
     (3, -2, '110'),
     (3, -1, '111'),
 ])
-def test_num___int__(bits, init, expect):
+def test_signed___int__(bits, init, expect):
     num = Signed[bits](init)
     assert str(num) == expect, f'Incorrect bits: {init}'
     assert int(num) == init, f'Incorrect number: {init}'
@@ -353,16 +353,16 @@ def test_num___int__(bits, init, expect):
     (Slice[1::1], '11111111 1111110', 'Missing a bit'),
     (Slice[1::8], '11111110', 'Second byte'),
 ])
-def test_num__getitem__(index, expect, msg):
-    num = Signed(u16(0xFF))
+def test_signed__getitem__(index, expect, msg):
+    num = Signed[16]([1] * 15 + [0])
     other = num[:]
     start, stop, step = index.start, index.stop, index.step
 
     assert num.rgn is not other.rgn, 'Should not be same region'
     assert num.rgn.bytes is not other.rgn.bytes, 'Should not be same bytes'
     assert str(other) == str(num), 'Copy constructor failed'
-    assert str(Signed[0]) == '1', 'Single bit index failed'
-    assert str(Signed[len(num) - 1]) == '0', 'Last bit index failed'
-    assert str(Signed[start:stop:step]) == expect, (
+    assert str(num[0]) == '1', 'Single bit index failed'
+    assert str(num[len(num) - 1]) == '0', 'Last bit index failed'
+    assert str(num[start:stop:step]) == expect, (
         f'[{msg}]: {num}[{start}:{stop}:{step}] != {expect}'
     )
