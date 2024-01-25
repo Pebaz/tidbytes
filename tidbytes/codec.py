@@ -81,6 +81,24 @@ def is_in_range_signed(value: int, bit_length: int) -> bool:
     return lo <= value <= hi
 
 
+def check_range_unsigned(val, bit_length: int) -> None:
+    lo, hi = range_unsigned(bit_length)
+    ensure(
+        lo <= val <= hi,
+        f"Value {val} doesn't fit into range of bit length {bit_length} from "
+        f"{lo} to {hi}"
+    )
+
+
+def check_range_signed(val, bit_length: int) -> None:
+    lo, hi = range_signed(bit_length)
+    ensure(
+        lo <= val <= hi,
+        f"Value {val} doesn't fit into range of bit length {bit_length} from "
+        f"{lo} to {hi}"
+    )
+
+
 # ! ----------------------------------------------------------------------------
 # ! Codecs (From & Into)
 # ! ----------------------------------------------------------------------------
@@ -122,14 +140,7 @@ def from_natural_u8(value: u8, bit_length: int) -> MemRgn:
     """
     bit_length = 8 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<B', value.value)
@@ -155,14 +166,7 @@ def from_natural_u16(value: u16, bit_length: int) -> MemRgn:
     """
     bit_length = 16 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<H', value.value)
@@ -188,14 +192,7 @@ def from_natural_u32(value: u32, bit_length: int) -> MemRgn:
     """
     bit_length = 32 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<L', value.value)
@@ -225,14 +222,7 @@ def from_natural_u64(value: u64, bit_length: int) -> MemRgn:
     """
     bit_length = 64 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<Q', value.value)
@@ -250,14 +240,7 @@ def from_numeric_u8(value: u8, bit_length: int) -> MemRgn:
     """
     bit_length = 8 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     return op_ensure_bit_length(
         op_reverse(from_natural_u8(value, bit_length)),
@@ -278,14 +261,7 @@ def from_numeric_u16(value: u16, bit_length: int) -> MemRgn:
     """
     bit_length = 16 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     return op_ensure_bit_length(
         op_reverse(from_natural_u16(value, bit_length)),
@@ -307,14 +283,7 @@ def from_numeric_u32(value: u32, bit_length: int) -> MemRgn:
     """
     bit_length = 32 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     return op_ensure_bit_length(
         op_reverse(from_natural_u32(value, bit_length)),
@@ -339,14 +308,7 @@ def from_numeric_u64(value: u64, bit_length: int) -> MemRgn:
     """
     bit_length = 64 if bit_length is None else bit_length
 
-    lo, hi = range_unsigned(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value.value, bit_length)
 
     return op_ensure_bit_length(
         op_reverse(from_natural_u64(value, bit_length)),
@@ -371,14 +333,7 @@ def from_natural_i8(value: i8, bit_length: int) -> MemRgn:
     """
     bit_length = 8 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<b', value.value)
@@ -398,14 +353,7 @@ def from_natural_i16(value: i16, bit_length: int) -> MemRgn:
     """
     bit_length = 16 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<h', value.value)
@@ -425,14 +373,7 @@ def from_natural_i32(value: i32, bit_length: int) -> MemRgn:
     """
     bit_length = 32 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<l', value.value)
@@ -452,14 +393,7 @@ def from_natural_i64(value: i64, bit_length: int) -> MemRgn:
     """
     bit_length = 64 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<q', value.value)
@@ -483,14 +417,7 @@ def from_numeric_i8(value: i8, bit_length: int) -> MemRgn:
     """
     bit_length = 8 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<b', value.value)
@@ -510,14 +437,7 @@ def from_numeric_i16(value: i16, bit_length: int) -> MemRgn:
     """
     bit_length = 16 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<h', value.value)
@@ -542,14 +462,7 @@ def from_numeric_i32(value: i32, bit_length: int) -> MemRgn:
     """
     bit_length = 32 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<l', value.value)
@@ -569,14 +482,7 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
     """
     bit_length = 64 if bit_length is None else bit_length
 
-    lo, hi = range_signed(bit_length)
-    val = value.value
-
-    ensure(
-        lo <= val <= hi,
-        f"Value {val} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value.value, bit_length)
 
     out = MemRgn()
     out.bytes = identity_bits_from_struct_field('<q', value.value)
@@ -665,13 +571,7 @@ def from_natural_big_integer_signed(value: int, bit_length: int) -> MemRgn:
         twos_complement_space = 1
         bit_length = value.bit_length() + twos_complement_space
 
-    lo, hi = range_signed(bit_length)
-
-    ensure(
-        lo <= value <= hi,
-        f"Value {value} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_signed(value, bit_length)
 
     bits = [
         int(bool(value & 1 << bit_index))
@@ -697,13 +597,7 @@ def from_natural_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     elif bit_length is None:
         bit_length = value.bit_length()
 
-    lo, hi = range_unsigned(bit_length)
-
-    ensure(
-        lo <= value <= hi,
-        f"Value {value} doesn't fit into range of bit length {bit_length} from "
-        f"{lo} to {hi}"
-    )
+    check_range_unsigned(value, bit_length)
 
     bits = [
         int(bool(value & 1 << bit_index))

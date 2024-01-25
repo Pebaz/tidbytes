@@ -73,6 +73,9 @@ accept the Mem type.
 
 The Idiomatic API will be able to convert as many different types as makes sense
 into the backing store type and vice versa.
+
+No implicit truncation to lower bit length but allow padding for greater bit
+length.
 """
 
 # ruff: noqa: F403: These imports are exported and need to be flexible
