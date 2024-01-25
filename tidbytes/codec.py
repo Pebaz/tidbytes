@@ -491,9 +491,6 @@ def from_numeric_i64(value: i64, bit_length: int) -> MemRgn:
 
 def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
     "Treats an f32 like a sequence of bytes"
-    if bit_length == 0:
-        return MemRgn()
-
     bit_length = 32 if bit_length is None else bit_length
 
     ensure(
@@ -521,9 +518,6 @@ def from_natural_f32(value: f32, bit_length: int) -> MemRgn:
 
 def from_natural_f64(value: f64, bit_length: int) -> MemRgn:
     "Treats an f64 like a sequence of bytes"
-    if bit_length == 0:
-        return MemRgn()
-
     bit_length = 64 if bit_length is None else bit_length
 
     ensure(
@@ -564,10 +558,7 @@ def from_natural_big_integer_signed(value: int, bit_length: int) -> MemRgn:
     - Has half the range of `from_natural_big_integer_unsigned`
     - Treats the returned memory as identity bits and not numeric data
     """
-    if bit_length == 0:
-        return MemRgn()
-
-    elif bit_length is None:
+    if bit_length is None:
         twos_complement_space = 1
         bit_length = value.bit_length() + twos_complement_space
 
@@ -591,10 +582,7 @@ def from_natural_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     """
     ensure(value >= 0, 'Implicit conversion from signed to unsigned')
 
-    if bit_length == 0:
-        return MemRgn()
-
-    elif bit_length is None:
+    if bit_length is None:
         bit_length = value.bit_length()
 
     check_range_unsigned(value, bit_length)
@@ -629,69 +617,6 @@ def from_numeric_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     return op_reverse(from_natural_big_integer_unsigned(value, bit_length))
 
 
-# def from_natural_big_integer(value: int, bit_length: int) -> MemRgn:
-#     # TODO(pbz): This is outdated. Keep?
-#     """
-#     Initializes a memory region from a big integer, assuming a bit length for
-#     negative numbers to allow for twos-complement encoding. Since big integers
-#     are signed, `int.bit_length()` will return an unusable value because it
-#     won't be able to fit the number provided. For example, with a signed single
-#     bit number 1, this is not actually possible to store 1 because there's no
-#     room left for twos-complement encoding. If no bit length is given, an
-#     additional bit is used to store the twos-complement encoding. Treats the
-#     returned memory as identity bits and not numeric data.
-#     """
-#     if bit_length == 0:
-#         return MemRgn()
-
-#     # Pretend like the value is unsigned unless it's negative
-#     if bit_length is None and value > 0:
-#         bit_length = value.bit_length()
-#     elif bit_length is None and value < 0:
-#         # .bit_length() returns the same for both positive and negative values
-#         # so reserve an extra bit if unsized memory region is used and value is
-#         # negative so that it can be twos-complement encoded.
-#         twos_complement_space = 1 if value < 0 else 0
-#         bit_length = value.bit_length() + twos_complement_space
-
-#     if value < 0:
-#         lo, hi = range_signed(bit_length)
-#     else:
-#         lo, hi = range_unsigned(bit_length)
-
-#     ensure(
-#         lo <= value <= hi,
-#         f"Value {value} doesn't fit into range of bit length {bit_length} from "
-#         f"{lo} to {hi}"
-#     )
-
-#     bits = [
-#         int(bool(value & 1 << bit_index))
-#         for bit_index in range(bit_length)
-#     ]
-
-#     out = MemRgn()
-#     out.bytes = group_bits_into_bytes(bits)
-
-#     return contract_validate_memory(out)
-
-
-# def from_numeric_big_integer(value: int, bit_length: int) -> MemRgn:
-#     # TODO(pbz): This is outdated. Keep?
-#     """
-#     Initializes a memory region from a big integer, assuming a bit length for
-#     negative numbers to allow for twos-complement encoding. Since big integers
-#     are signed, `int.bit_length()` will return an unusable value because it
-#     won't be able to fit the number provided. For example, with a signed single
-#     bit number 1, this is not actually possible to store 1 because there's no
-#     room left for twos-complement encoding. If no bit length is given, an
-#     additional bit is used to store the twos-complement encoding. Treats the
-#     returned memory as numeric data and not identity bits.
-#     """
-#     mem = from_natural_big_integer(value, bit_length)
-#     return op_reverse(mem)
-
-
 def from_natural_float(value: float, bit_length: int) -> MemRgn:
     """
     Converts a float value to 32 or 64 identity bits depending on host CPU.
@@ -719,10 +644,7 @@ def from_bool(value: bool, bit_length: int) -> MemRgn:
     "Converts a boolean value to a single bit"
     bit_length = bit_length if bit_length is not None else 1
     out = MemRgn()
-
-    if bit_length == 0:
-        return out
-
+    ensure(bit_length > 0, 'Cannot store bool in zero-sized memory region')
     out.bytes = [[1 if value else 0] + [None] * 7]
     return op_ensure_bit_length(out, bit_length)
 
@@ -736,8 +658,7 @@ def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     bit_length = bit_length if bit_length is not None else 1
     out = MemRgn()
 
-    if bit_length == 0:
-        return out
+    ensure(bit_length > 0, 'Cannot store bits in zero-sized memory region')
 
     null = [None] * 8
 
@@ -763,8 +684,7 @@ def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
     bit_length = bit_length if bit_length is not None else 1
     out = MemRgn()
 
-    if bit_length == 0:
-        return out
+    ensure(bit_length > 0, 'Cannot store bits in zero-sized memory region')
 
     null = [None] * 8
     out.bytes = [(byte[:] + null)[:8] for byte in value]

@@ -13,7 +13,6 @@ from . import raises_exception, UN, Slice
     (0, 0b100, '', 'Truncate to null'),
     (UN, 0b100, '00100000', 'Four'),
     (UN, 0b1011, '11010000', 'Single byte'),
-    (4, 0b1011, '1101', 'Truncation'),
 ])
 def test_from_natural_u8(bits, init, expect, msg):
     assert str(Mem[bits](u8(init))) == expect, msg
@@ -23,7 +22,6 @@ def test_from_natural_u8(bits, init, expect, msg):
     (0, 0b1011, '', 'Truncate to null'),
     (UN, 0b1011, '11010000 00000000', 'Single byte'),
     (UN, 0b100000101, '10100000 10000000', '2 bytes'),
-    (8, 0b100000101, '10100000', 'Truncation'),
 ])
 def test_from_natural_u16(bits, init, expect, msg):
     assert str(Mem[bits](u16(init))) == expect, msg

@@ -288,7 +288,6 @@ def test_from_numeric_float_python64(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 1, '', 'Trucate to null'),
     (None, 1, '01', 'Single bit'),
     (None, 4, '0100', 'Bit ordering'),
     (2, -1, '11', 'Negative bits'),

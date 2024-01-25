@@ -10,12 +10,11 @@ from tidbytes.idiomatic import Mem, Unsigned, Signed, Str
 from . import raises_exception, UN, Slice
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b100, '', 'Truncate to null'),
+    (0, 0b0, '', 'Truncate to null'),
     (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b100, '00000100', 'Four'),
     (UN, 0b1011, '00001011', 'Single byte'),
-    (7, 0b10000101, '0000101', 'Truncation'),
 ])
 def test_from_numeric_u8(bits, init, expect, msg):
     assert str(Unsigned[bits](u8(init))) == expect, msg
