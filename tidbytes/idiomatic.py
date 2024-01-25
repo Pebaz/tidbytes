@@ -247,7 +247,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Mem':
-        if type(init) == cls:  # Copy constructors
+        if isinstance(init, cls):  # Copy constructor
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
             return out

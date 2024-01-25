@@ -11,7 +11,7 @@ from . import raises_exception, UN, Slice
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b100, '', 'Truncate to null'),
+    (0, 0b0, '', 'Truncate to null'),
     (UN, 0b100, '00000100', 'Four'),
     (UN, 0b1011, '00001011', 'Single byte'),
 ])
@@ -79,7 +79,7 @@ def test_from_numeric_u64(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
+    (0, 0b0, '', 'Truncate to null'),
     (UN, 0b1, '00000001', 'Positive'),
     (UN, -0b1, '11111111', 'Negative'),
     (UN, 0b10, '00000010', 'Positive'),

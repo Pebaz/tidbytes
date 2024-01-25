@@ -412,14 +412,21 @@ def test_mem__getitem__(index, expect, msg):
         f'[{msg}]: {mem}[{start}:{stop}:{step}] != {expect}'
     )
 
+    with pytest.raises(MemException, match='Can only index by bit or byte'):
+        mem['foo':1:'asdf']
+    with pytest.raises(MemException, match='Invalid index'):
+        mem['foo':1:8]
 
 # TODO(pbz): Fix this
-# def test_mem__setitem__():
-#     mem = Mem[1]()
-#     assert int(mem[0]) == 0
+def test_mem__setitem__():
+    mem = Mem[1]()
+    assert int(mem[0]) == 0
 
-#     mem[0] = Num[1](u8(1))
-#     assert int(mem[0]) == 1
+    mem[0] = Unsigned[1](u8(1))
+    assert int(mem[0]) == 1
+
+    mem[0] = Signed[1](u8(1))  # TODO(pbz): u8 should bug here use i8 after fix
+    assert int(mem[0]) == 1
 
 def test_mem___init__():
     assert list(iter(Mem[4](1))) == [1, 0, 0, 0]
@@ -451,3 +458,28 @@ def test_mem_reverse_bits():
     res = type(mem)(1)
     res.rgn.bytes = [list(reversed(byte)) for byte in res.rgn.bytes]
     assert mem == res
+
+
+def test_mem__repr__():
+    assert repr(Mem[4](1)) == '<Mem [1000]>'
+    assert repr(Mem[65](1)) == '<Mem [0x10000000000000000]>'
+
+
+def test_mem__format__():
+    mem = Mem[4](1)
+    assert f'{mem}' == '1000'
+    assert f'{mem:bits}' == '1000'
+    assert f'{mem:hex}' == hex(int(mem))
+    assert f'{mem:x}' == hex(int(mem))
+    assert f'{mem:X}' == hex(int(mem)).upper()
+
+
+def test_mem___add__():
+    a, b = [Mem[4](1)] * 2
+    assert str(a + b) == '10001000'
+
+
+def test_mem_bytes():
+    mem = Mem[4](1)
+    # bytes() calls __iter__ and apparently accepts ints
+    assert bytes(mem) == b'\x01\x00\x00\x00'
