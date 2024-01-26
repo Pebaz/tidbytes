@@ -6,7 +6,7 @@ Design decisions:
 
 import copy
 import indexed_meta
-from typing import Any, Generic, TypeVar
+from typing import Any, Generic, TypeVar, Union
 from .mem_types import (
     ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
 )
@@ -357,6 +357,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 NullMem = Mem()
 
 
+# TODO(pbz): Should Unsigned extend Signed since they share methods?
 class Unsigned(Mem):
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Unsigned':
@@ -365,7 +366,7 @@ class Unsigned(Mem):
         #     f"Not enough bits to encode both positive and negative numbers: "
         #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
         # )
-        if type(init) == cls:  # Copy constructors
+        if isinstance(init, cls):  # Copy constructors
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
             return out
@@ -458,6 +459,75 @@ class Unsigned(Mem):
         else:
             raise MemException('Invalid initializer')
 
+    def __add__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, sums them, and returns it.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Concatenation is no longer the most intuitive operation to
+        perform when dealing with signed numbers, especially with twos
+        complement encoding. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a + b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
+            raise MemException(msg) from e
+
+    def __sub__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, subtracts them, and returns
+        the result.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a - b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} - {b} = {res}: {e}'
+            raise MemException(msg) from e
+
+    def __mul__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, multiplies them, and returns
+        the result.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a * b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} * {b} = {res}: {e}'
+            raise MemException(msg) from e
+
+    def __truediv__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, divides them, and returns
+        the result.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a / b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} / {b} = {res}: {e}'
+            raise MemException(msg) from e
+
 
 class Signed(Mem):
     """
@@ -500,7 +570,7 @@ class Signed(Mem):
         #     f"Not enough bits to encode both positive and negative numbers: "
         #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
         # )
-        if type(init) == cls:  # Copy constructors
+        if isinstance(init, cls):  # Copy constructors
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
             return out
@@ -603,6 +673,75 @@ class Signed(Mem):
         # TODO(pbz): into_numeric_big_integer_signed
         negative = -1 if op_get_bit(self.rgn, 0) == 1 else 1
         return negative * into_numeric_big_integer(self.rgn)
+
+    def __add__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, sums them, and returns it.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Concatenation is no longer the most intuitive operation to
+        perform when dealing with signed numbers, especially with twos
+        complement encoding. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a + b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
+            raise MemException(msg) from e
+
+    def __sub__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, subtracts them, and returns
+        the result.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a - b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} - {b} = {res}: {e}'
+            raise MemException(msg) from e
+
+    def __mul__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, multiplies them, and returns
+        the result.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a * b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} * {b} = {res}: {e}'
+            raise MemException(msg) from e
+
+    def __truediv__(self, other: Union[int, 'Signed']) -> 'Signed':
+        """
+        Converts self and other to signed integers, divides them, and returns
+        the result.
+
+        Memory region is interpreted as a semantically meaningful numeric
+        quantity. Raises an exception if the new quantity can't fit
+        in self's bit length.
+        """
+        a, b = int(self), int(other)
+        res = int(a / b)
+        try:
+            return type(self)(res)
+        except MemException as e:
+            msg = f'Overflow/Underflow with {a} / {b} = {res}: {e}'
+            raise MemException(msg) from e
 
 
 class Str(Mem):
