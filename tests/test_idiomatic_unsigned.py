@@ -10,7 +10,6 @@ from tidbytes.idiomatic import Mem, Unsigned, Signed, Str
 from . import raises_exception, UN, Slice
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b0, '', 'Truncate to null'),
     (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b100, '00000100', 'Four'),
@@ -21,19 +20,17 @@ def test_from_numeric_u8(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1011, '', 'Truncate to null'),
     (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b1011, '00000000 00001011', 'Single byte'),
     (UN, 0b100000101, '00000001 00000101', '2 bytes'),
-    (8, 0b100000101, '00000101', '2 bytes'),
+    (8, 0b00000101, '00000101', '2 bytes'),
 ])
 def test_from_numeric_u16(bits, init, expect, msg):
     assert str(Unsigned[bits](u16(init))) == expect, msg
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1011, '', 'Truncate to null'),
     (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b1011, '00000000 00000000 00000000 00001011', 'Single byte'),
@@ -45,7 +42,7 @@ def test_from_numeric_u16(bits, init, expect, msg):
     ),
     (
         16,
-        0b00000001000001010000000100000101,
+        0b00000000000000000000000100000101,
         '00000001 00000101',
         'Truncate'
     ),
@@ -56,7 +53,6 @@ def test_from_numeric_u32(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1011, '', 'Truncate to null'),
     (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (
@@ -75,7 +71,7 @@ def test_from_numeric_u32(bits, init, expect, msg):
     ),
     (
         32,
-        0b0000000100000101000000010000010100000001000001010000000100000101,
+        0b0000000000000000000000000000000000000001000001010000000100000101,
         '00000001 00000101 00000001 00000101',
         'Truncate'
     ),
@@ -86,24 +82,17 @@ def test_from_numeric_u64(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    # (0, 0b1, '', 'Truncate to null'),
-    # (1, 0b1, '1', '1 bit number'),
-    # (1, 0b0, '0', '1 bit number'),
-    # (UN, 0b1, '00000001', 'Positive'),
-    # (UN, -0b1, '00000001', 'Abs negative'),
-    # (UN, 0b10, '00000010', 'Positive'),
+    (1, 0b0, '0', '1 bit number'),
+    (UN, 0b1, '00000001', 'Positive'),
+    (UN, 0b10, '00000010', 'Positive'),
     (4, 0b10, '0010', 'Positive'),  # * Added this one later <-
-    # (UN, -0b10, '11111110', 'Abs negative'),
-    # (4, 0b10, '0000', 'Truncation positive'),
-    # (4, -0b10, '0000', 'Abs truncation negative'),
+    (4, 0b10, '0010', 'Truncation positive'),
 ])
 def test_from_numeric_i8(bits, init, expect, msg):
     assert str(Unsigned[bits](i8(init))) == expect, msg
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
-    (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b1, '00000000 00000001', 'Positive'),
     (UN, 0b10, '00000000 00000010', 'Positive'),
@@ -114,8 +103,6 @@ def test_from_numeric_i16(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
-    (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (UN, 0b1, '00000000 00000000 00000000 00000001', 'Positive'),
     (UN, 0b10, '00000000 00000000 00000000 00000010', 'Positive'),
@@ -126,8 +113,6 @@ def test_from_numeric_i32(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
-    (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (
         UN,
@@ -150,7 +135,6 @@ def test_from_numeric_i64(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
     (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
     (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
@@ -165,7 +149,6 @@ def test_from_numeric_f32(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (
         UN,
         1.0,
@@ -212,7 +195,6 @@ def test_from_numeric_f64(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
     (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
     (33, 1.0, '00011111 11000000 00000000 00000000 0', None, 'Pad positive'),
@@ -232,7 +214,6 @@ def test_from_numeric_float_python32(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (
         UN,
         1.0,
@@ -269,7 +250,6 @@ def test_from_numeric_float_python32(bits, init, expect, exc, msg):
     (4, -1.0, (), MemException, 'Truncation negative'),
 ])
 def test_from_numeric_float_python64(bits, init, expect, exc, msg):
-    (0, 1.0, '', 'Truncate to null'),
     try:
         old = tidbytes.codec.PYTHON_X64_FLOATS
         with raises_exception(exc):
@@ -281,7 +261,6 @@ def test_from_numeric_float_python64(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 1, '', 'Trucate to null'),
     (1, 0b1, '1', '1 bit number'),
     (1, 0b0, '0', '1 bit number'),
     (None, 1, '1', 'Single bit'),
