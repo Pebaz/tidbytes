@@ -24,7 +24,8 @@ from .codec import (
     from_natural_float, from_numeric_float, from_bool, from_bit_list,
     from_grouped_bits, from_bytes, into_numeric_big_integer,
     into_natural_big_integer, from_bytes_utf8, from_numeric_big_integer_signed,
-    from_numeric_big_integer_unsigned, from_natural_big_integer_unsigned
+    from_numeric_big_integer_unsigned, from_natural_big_integer_unsigned,
+    range_signed
 )
 
 T = TypeVar('T')
@@ -427,6 +428,7 @@ class Unsigned(Mem):
                 init.value >= 0,
                 'Implicit conversion from signed to unsigned'
             )
+            # TODO(pbz): this is a bug: Unsigned[1](i8(1)) fails...
             return from_numeric_i8(i8(abs(init.value)), bit_length)
 
         elif isinstance(init, i16):
@@ -612,9 +614,10 @@ class Signed(Mem):
             try:
                 return from_numeric_i8(i8(init.value), bit_length)
             except MemException as e:
+                lo, hi = range_signed(bit_length)
                 err = MemException(
                     f'{type(init).__name__} type casted to i8 would under/'
-                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
+                    f'overflow: {init.value} not in {lo} .. {hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
@@ -622,9 +625,10 @@ class Signed(Mem):
             try:
                 return from_numeric_i16(i16(init.value), bit_length)
             except MemException as e:
+                lo, hi = range_signed(bit_length)
                 err = MemException(
                     f'{type(init).__name__} type casted to i16 would under/'
-                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
+                    f'overflow: {init.value} not in {lo} .. {hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
@@ -632,9 +636,10 @@ class Signed(Mem):
             try:
                 return from_numeric_i32(i32(init.value), bit_length)
             except MemException as e:
+                lo, hi = range_signed(bit_length)
                 err = MemException(
                     f'{type(init).__name__} type casted to i32 would under/'
-                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
+                    f'overflow: {init.value} not in {lo} .. {hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 
@@ -642,9 +647,10 @@ class Signed(Mem):
             try:
                 return from_numeric_i64(i64(init.value), bit_length)
             except MemException as e:
+                lo, hi = range_signed(bit_length)
                 err = MemException(
                     f'{type(init).__name__} type casted to i64 would under/'
-                    f'overflow: {init.value} not in {i8.lo} .. {i8.hi} ({e})'
+                    f'overflow: {init.value} not in {lo} .. {hi} ({e})'
                 )
                 raise err.with_traceback(e.__traceback__)
 

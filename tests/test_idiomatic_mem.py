@@ -423,8 +423,9 @@ def test_mem__setitem__():
     mem[0] = Unsigned[1](u8(1))
     assert int(mem[0]) == 1
 
-    mem[0] = Signed[1](u8(1))  # TODO(pbz): u8 should bug here use i8 after fix
-    assert int(mem[0]) == 1
+    mem = Mem[2]()
+    mem[0] = Signed[2](i8(1))
+    assert int(mem[1]) == 1
 
 def test_mem___init__():
     assert list(iter(Mem[4](1))) == [1, 0, 0, 0]
