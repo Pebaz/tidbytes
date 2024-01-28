@@ -4,18 +4,24 @@ from enum import Enum, auto
 
 class MemException(Exception):
     "Used instead of assertion failures to give better error messages"
+    def __init__(self, msg: str):
+        self.msg = msg
+
+    def __str__(self):
+        return self.msg
 
 
 # TODO(pbz): Create exception heirarchy after analyzing codebase
-class UnderOverFlowException(MemException):
+class UnderOverflowException(MemException):
     def __init__(self, in_type: type, out_type: type, value, lo, hi):
-        super().__init__(self)
-        self.msg = (
-            f'{in_type.__name__} type casted to {out_type.__name__} would under/overflow: '
-            f'{value} not in {lo} .. {hi}'
+        super().__init__(
+            f'{in_type.__name__} type casted to {out_type.__name__} would '
+            f'under/overflow: {value} not in {lo} .. {hi}'
         )
-    def __str__(self):
-        return self.msg
+
+
+class MathOpUnderOverflowException(MemException):
+    msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
 
 
 def ensure(condition: bool, message=''):
