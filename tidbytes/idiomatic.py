@@ -428,29 +428,28 @@ class Unsigned(Mem):
                 init.value >= 0,
                 'Implicit conversion from signed to unsigned'
             )
-            # TODO(pbz): this is a bug: Unsigned[1](i8(1)) fails...
-            return from_numeric_i8(i8(abs(init.value)), bit_length)
+            return from_numeric_u8(u8(init.value), bit_length)
 
         elif isinstance(init, i16):
             ensure(
                 init.value >= 0,
                 'Implicit conversion from signed to unsigned'
             )
-            return from_numeric_i16(i16(abs(init.value)), bit_length)
+            return from_numeric_u16(u16(init.value), bit_length)
 
         elif isinstance(init, i32):
             ensure(
                 init.value >= 0,
                 'Implicit conversion from signed to unsigned'
             )
-            return from_numeric_i32(i32(abs(init.value)), bit_length)
+            return from_numeric_u32(u32(init.value), bit_length)
 
         elif isinstance(init, i64):
             ensure(
                 init.value >= 0,
                 'Implicit conversion from signed to unsigned'
             )
-            return from_numeric_i64(i64(abs(init.value)), bit_length)
+            return from_numeric_u64(u64(init.value), bit_length)
 
         elif isinstance(init, f32):
             return from_numeric_f32(init, bit_length)
