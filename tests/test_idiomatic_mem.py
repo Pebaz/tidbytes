@@ -415,7 +415,7 @@ def test_mem__getitem__(index, expect, msg):
     with pytest.raises(MemException, match='Invalid index'):
         mem['foo':1:8]
 
-# TODO(pbz): Fix this
+
 def test_mem__setitem__():
     mem = Mem[1]()
     assert int(mem[0]) == 0
@@ -426,6 +426,7 @@ def test_mem__setitem__():
     mem = Mem[2]()
     mem[0] = Signed[2](i8(1))
     assert int(mem[1]) == 1
+
 
 def test_mem___init__():
     assert list(iter(Mem[4](1))) == [1, 0, 0, 0]

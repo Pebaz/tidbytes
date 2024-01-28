@@ -16,6 +16,8 @@
 
 - [ ] Go back through and fix typos, documentation, and formatting
 
+- [ ] Create exception heirarchy for exact errors. Analyze codebase.
+
 
 
 > What would it take to consider this project done?

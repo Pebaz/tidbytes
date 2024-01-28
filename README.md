@@ -215,7 +215,7 @@ assuming metadata about an input or an operation requiring metadata as a meta
 input. This represents an orientation that points away from the operation and
 towards an operation respectively. Some concepts I've uncovered are:
 
-* Unsized data (no bit length)
+* Unsized data (no fixed bit length to limit input data)
 * Sized data (bit length)
 * Natural data (raw/untyped/uninterpreted/unmapped memory)
 * Numeric data (mathematical identity or quantity)

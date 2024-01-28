@@ -340,3 +340,18 @@ def test_signed__getitem__(index, expect, msg):
     assert str(num[start:stop:step]) == expect, (
         f'[{msg}]: {num}[{start}:{stop}:{step}] != {expect}'
     )
+
+
+def test_signed__setitem__():
+    mem = Signed[1]()
+    assert int(mem[0]) == 0
+
+    mem[0] = Signed[1](i8(1))
+    assert int(mem[0]) == 1
+
+    mem[0] = 1
+    assert int(mem[0]) == 1
+
+    mem = Signed[2]()
+    mem[0] = Signed[2](i8(1))
+    assert int(mem[1]) == 1

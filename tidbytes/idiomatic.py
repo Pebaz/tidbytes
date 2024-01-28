@@ -373,7 +373,12 @@ class Unsigned(Mem):
             return out
 
         elif isinstance(init, type(None)):
-            return MemRgn()
+            if bit_length is None:
+                return MemRgn()
+            else:
+                rgn = MemRgn()
+                rgn.bytes = group_bits_into_bytes([0] * bit_length)
+                return rgn
 
         elif isinstance(init, int):
             # return from_numeric_big_integer(abs(init), bit_length)
@@ -577,7 +582,12 @@ class Signed(Mem):
             return out
 
         elif isinstance(init, type(None)):
-            return MemRgn()
+            if bit_length is None:
+                return MemRgn()
+            else:
+                rgn = MemRgn()
+                rgn.bytes = group_bits_into_bytes([0] * bit_length)
+                return rgn
 
         elif isinstance(init, int):
             return from_numeric_big_integer_signed(init, bit_length)
