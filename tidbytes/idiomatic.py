@@ -720,6 +720,9 @@ class Signed(Mem):
             return type(self)(res)
         except MemException as e:
             # TODO(pbz): MathOpUnderOverflowException
+            # ! It doesn't make sense to have exception tiers unless I formalize
+            # ! a model of why they are constructed off of each other. Is this
+            # ! like Rust's thiserror or is this just typed strings?
             msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
             raise MemException(msg) from e
 
