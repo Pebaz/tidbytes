@@ -21,7 +21,7 @@ class UnderOverflowException(MemException):
 
 
 class MathOpUnderOverflowException(MemException):
-    msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
+    "msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'"
 
 
 def ensure(condition: bool, message=''):

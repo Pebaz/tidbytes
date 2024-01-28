@@ -579,6 +579,7 @@ class Signed(Mem):
         # )
         if isinstance(init, cls):  # Copy constructors
             out = MemRgn()
+            init.validate()
             out.bytes = copy.copy(init.rgn.bytes)
             return out
 

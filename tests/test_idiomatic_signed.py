@@ -343,15 +343,15 @@ def test_signed__getitem__(index, expect, msg):
 
 
 def test_signed__setitem__():
-    mem = Signed[1]()
+    mem = Signed[2]()
     assert int(mem[0]) == 0
 
-    mem[0] = Signed[1](i8(1))
-    assert int(mem[0]) == 1
+    mem[0] = Signed[2](i8(1))
+    assert str(mem) == '01'
+    assert int(mem[:]) == 1
+    assert int(mem[1]) == -1  # i1 can only old 0 and -1
 
     mem[0] = 1
-    assert int(mem[0]) == 1
-
-    mem = Signed[2]()
-    mem[0] = Signed[2](i8(1))
-    assert int(mem[1]) == 1
+    assert str(mem) == '11'
+    assert int(mem[:]) == -1  # i2[11] = -1
+    assert int(mem[0]) == -1  # i1[1] = -1
