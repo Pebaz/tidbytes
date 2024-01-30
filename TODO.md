@@ -16,9 +16,10 @@
 
 - [ ] Go back through and fix typos, documentation, and formatting
 
-- [ ] Create exception heirarchy for exact errors. Analyze codebase.
+- [ ] Create exception heirarchy for exact errors. Analyze codebase. Is this
+    something that is useful? I think so since IEEE754 defines exceptions.
 
-
+- [ ] Instrument code with `Identity[MemRgn]`
 
 > What would it take to consider this project done?
 

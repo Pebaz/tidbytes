@@ -29,6 +29,11 @@ def ensure(condition: bool, message=''):
         raise MemException(message)
 
 
+# Passthrough generic type for syntactically identifying identity memory regions
+# Usage: Identity[MemRgn]
+Identity = type('Identity', tuple(), {'__getitem__': lambda self, key: key})()
+
+
 class Order(Enum):
     LeftToRight = auto()  # First element is on far left
     RightToLeft = auto()  # First element is on far right
@@ -38,7 +43,7 @@ L2R = Order.LeftToRight
 R2L = Order.RightToLeft
 
 
-def def_class(type_name, superclass, low, hi):
+def ranged_number_type(type_name, superclass, low, hi):
     """
     Ensures that ctypes cannot be created with values that will be interpreted
     as a numeric range underflow or overflow.
@@ -59,14 +64,14 @@ def def_class(type_name, superclass, low, hi):
         )
     )
 
-u8 = def_class('u8', ctypes.c_ubyte, 0, 255)
-u16 = def_class('u16', ctypes.c_uint16, 0, 65535)
-u32 = def_class('u32', ctypes.c_uint32, 0, 4294967295)
-u64 = def_class('u64', ctypes.c_uint64, 0, 18446744073709551615)
-i8 = def_class('i8', ctypes.c_byte, -128, 127)
-i16 = def_class('i16', ctypes.c_int16, -32768, 32767)
-i32 = def_class('i32', ctypes.c_int32, -2147483648, 2147483647)
-i64 = def_class(
+u8 = ranged_number_type('u8', ctypes.c_ubyte, 0, 255)
+u16 = ranged_number_type('u16', ctypes.c_uint16, 0, 65535)
+u32 = ranged_number_type('u32', ctypes.c_uint32, 0, 4294967295)
+u64 = ranged_number_type('u64', ctypes.c_uint64, 0, 18446744073709551615)
+i8 = ranged_number_type('i8', ctypes.c_byte, -128, 127)
+i16 = ranged_number_type('i16', ctypes.c_int16, -32768, 32767)
+i32 = ranged_number_type('i32', ctypes.c_int32, -2147483648, 2147483647)
+i64 = ranged_number_type(
     *('i64', ctypes.c_int64, -9223372036854775808, 9223372036854775807)
 )
 f32 = ctypes.c_float
