@@ -1,11 +1,11 @@
-import sys
 import pytest
-import tidbytes.codec
-
 from tidbytes.mem_types import (
     MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
 )
-from tidbytes.idiomatic import Mem, Unsigned, Signed, Str
+from tidbytes.idiomatic import Mem, Unsigned, Signed
+from tidbytes.codec import (
+    range_unsigned, range_signed, is_in_range_signed, is_in_range_unsigned
+)
 
 from . import raises_exception, UN, Slice
 
@@ -127,3 +127,9 @@ def test_smoke():
     assert str(Unsigned[1](i16(1))) == '1'
     assert str(Unsigned[1](i32(1))) == '1'
     assert str(Unsigned[1](i64(1))) == '1'
+
+    assert range_signed(0) == (0, 0)
+    assert range_unsigned(8) == (0, 255)
+    assert range_signed(8) == (-128, 127)
+    assert is_in_range_unsigned(1, 8)
+    assert is_in_range_signed(1, 8)
