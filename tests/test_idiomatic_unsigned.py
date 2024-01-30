@@ -344,9 +344,9 @@ def test_unsigned__setitem__():
     mem[0] = Unsigned[2](i8(1))
     assert str(mem) == '01'
     assert int(mem[:]) == 1
-    assert int(mem[1]) == -1  # u1 can only old 0 and 1
+    assert int(mem[1]) == 1  # u1 can only old 0 and 1
 
     mem[0] = 1
     assert str(mem) == '11'
-    assert int(mem[:]) == -1  # u2[11] = 3
-    assert int(mem[0]) == -1  # u1[1] = 1
+    assert int(mem[:]) == 3  # u2[11] = 3
+    assert int(mem[0]) == 1  # u1[1] = 1
