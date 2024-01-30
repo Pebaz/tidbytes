@@ -232,8 +232,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         The payload must be a valid initializer for Mem in order to pass
         validation and support indexing or be a Mem subclass directly.
         """
-        # TODO(pbz): Support more data types
-        payload = Mem(payload)
+        payload = Mem(payload)  # Many payload types are supported in entrypoint
 
         if isinstance(index, int):
             self.rgn = op_set_bits(self.rgn, index, payload.rgn)
@@ -324,14 +323,11 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         elif isinstance(init, str):
             if init and init.startswith(('0x', '0X')):
-                # TODO(pbz): from_hex_str('0xFF')
                 return from_natural_big_integer_unsigned(
                     int(init, base=16),
                     bit_length
                 )
             elif init and init.startswith(('0b', '0B')):
-                # TODO(pbz): from_bin_str('0b11101001101101101')
-                # TODO(pbz): Implement in Num but reverse
                 return from_natural_big_integer_unsigned(
                     int(init, base=2),
                     bit_length
@@ -701,9 +697,7 @@ class Signed(Mem):
             raise MemException('Invalid initializer')
 
     def __int__(self):
-        # TODO(pbz): into_numeric_big_integer_signed
-        negative = -1 if op_get_bit(self.rgn, 0) == 1 else 1
-        return negative * into_numeric_big_integer(self.rgn)
+        return into_numeric_big_integer(self.rgn)
 
     def __add__(self, other: Union[int, 'Signed']) -> 'Signed':
         """

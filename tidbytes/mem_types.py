@@ -4,11 +4,6 @@ from enum import Enum, auto
 
 class MemException(Exception):
     "Used instead of assertion failures to give better error messages"
-    def __init__(self, msg: str):
-        self.msg = msg
-
-    def __str__(self):
-        return self.msg
 
 
 # TODO(pbz): Create exception heirarchy after analyzing codebase
@@ -29,9 +24,12 @@ def ensure(condition: bool, message=''):
         raise MemException(message)
 
 
-# Passthrough generic type for syntactically identifying identity memory regions
-# Usage: Identity[MemRgn]
-Identity = type('Identity', tuple(), {'__getitem__': lambda self, key: key})()
+# Passthrough generic type for syntactically identifying memory regions
+# Usage: identity[MemRgn()], signed[MemRgn()], unsigned[identity[MemRgn()]]
+_passthru = type('_passthru', tuple(), {'__getitem__': lambda self, key: key})
+identity = type('identity', (_passthru,), {})()
+signed = type('signed', (_passthru,), {})()
+unsigned = type('unsigned', (_passthru,), {})()
 
 
 class Order(Enum):

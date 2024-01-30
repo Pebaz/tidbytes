@@ -1,4 +1,4 @@
-from .mem_types import Order, L2R, R2L, ensure, Identity
+from .mem_types import Order, L2R, R2L, ensure, identity
 
 # Putting this first and foremost to declare the opportunity to refactor all
 # operations to use a more efficient backing store for bits and bytes. One idea
@@ -255,7 +255,7 @@ def op_extend(mem: MemRgn, amount: int, fill: MemRgn) -> MemRgn:
     return contract_validate_memory(out)
 
 
-def op_ensure_bit_length(mem: Identity[MemRgn], length: int) -> MemRgn:
+def op_ensure_bit_length(mem: identity[MemRgn], length: int) -> MemRgn:
     """
     Extends with zeros or truncates a memory region to be a specific length. The
     input region is expected to be identity as well as the output region. This
