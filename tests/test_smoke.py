@@ -44,7 +44,7 @@ def test_smoke():
     # ! There needs to be checking even for the positive range:
     # ! from_numeric_big_integer needs to check for signed/unsigned because the
     # ! ranges are totally different
-    # TODO(pbz): Mem[2](2) is also wrong due to signedness issues with bit_len
+    # Mem[2](2) is also wrong due to signedness issues with bit_len
     # ? Does that mean codecs need to know origin AND destination?
     # * bit_length has different range for signed and unsigned although this
     # * isn't the case with other codec types right?

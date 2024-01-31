@@ -355,7 +355,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 NullMem = Mem()
 
 
-# TODO(pbz): Should Unsigned extend Signed since they share methods?
 class Unsigned(Mem):
     """
     Semantically meaningful data representing numeric information. Input types
