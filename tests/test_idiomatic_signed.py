@@ -355,3 +355,22 @@ def test_signed__setitem__():
     assert str(mem) == '11'
     assert int(mem[:]) == -1  # i2[11] = -1
     assert int(mem[0]) == -1  # i1[1] = -1
+
+
+def test_signed_math():
+    assert Signed(1) + Signed(2) == Signed(1) + 2 == 3
+    assert Signed(1) + Signed(2) == Signed(3)
+    assert Signed([1]) == -1
+    assert Signed([[1]]) == -1
+    assert Signed(4) - 2 == 2
+    assert Signed(2) * 2 == 4
+    assert Signed(4) / 2 == 2
+
+    with pytest.raises(MemException, match='Cannot compare unlike types'):
+        Signed(1) == 'CAFEBABE'
+    with pytest.raises(MemException, match='Overflow/Underflow'):
+        Signed[2](1) + 100
+    with pytest.raises(MemException, match='Overflow/Underflow'):
+        Signed[2](1) - 100
+    with pytest.raises(MemException, match='Overflow/Underflow'):
+        Signed[2](1) * 100

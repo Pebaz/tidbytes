@@ -391,9 +391,9 @@ class Unsigned(Mem):
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], (list, tuple)):
-                return from_grouped_bits(init)
+                return from_grouped_bits(init, bit_length)
             elif init and isinstance(init[0], int):
-                return from_bit_list(init)
+                return from_bit_list(init, bit_length)
             else:
                 raise MemException("Invalid initializer: Can't deduce codec")
 
@@ -462,6 +462,17 @@ class Unsigned(Mem):
         else:
             raise MemException('Invalid initializer')
 
+    def __eq__(self, that):
+        "Can compare against integers and anything else that converts to int()."
+        if isinstance(that, type(self)):
+            return self.rgn.bytes == that.rgn.bytes
+        elif hasattr(that, '__int__'):
+            return int(self) == int(that)
+        else:
+            raise MemException(
+                f'Cannot compare unlike types: {type(self)} and {type(that)}'
+            )
+
     def __add__(self, other: Union[int, 'Signed']) -> 'Signed':
         """
         Converts self and other to signed integers, sums them, and returns it.
@@ -525,11 +536,7 @@ class Unsigned(Mem):
         """
         a, b = int(self), int(other)
         res = int(a / b)
-        try:
-            return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} / {b} = {res}: {e}'
-            raise MemException(msg) from e
+        return type(self)(res)
 
 
 class Signed(Mem):
@@ -600,7 +607,7 @@ class Signed(Mem):
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], (list, tuple)):
-                return from_grouped_bits(init)
+                return from_grouped_bits(init, bit_length)
             elif init and isinstance(init[0], int):
                 return from_bit_list(init, bit_length)
             else:
@@ -695,6 +702,17 @@ class Signed(Mem):
 
         else:
             raise MemException('Invalid initializer')
+
+    def __eq__(self, that):
+        "Can compare against integers and anything else that converts to int()."
+        if isinstance(that, type(self)):
+            return self.rgn.bytes == that.rgn.bytes
+        elif hasattr(that, '__int__'):
+            return int(self) == int(that)
+        else:
+            raise MemException(
+                f'Cannot compare unlike types: {type(self)} and {type(that)}'
+            )
 
     def __int__(self):
         return into_numeric_big_integer(self.rgn)

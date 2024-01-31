@@ -350,3 +350,22 @@ def test_unsigned__setitem__():
     assert str(mem) == '11'
     assert int(mem[:]) == 3  # u2[11] = 3
     assert int(mem[0]) == 1  # u1[1] = 1
+
+
+def test_unsigned_math():
+    assert Unsigned(1) + Unsigned(2) == Unsigned(1) + 2 == 3
+    assert Unsigned(1) + Unsigned(2) == Unsigned(3)
+    assert Unsigned([1]) == 1
+    assert Unsigned([[1]]) == 1
+    assert Unsigned(4) - 2 == 2
+    assert Unsigned(2) * 2 == 4
+    assert Unsigned(4) / 2 == 2
+
+    with pytest.raises(MemException, match='Cannot compare unlike types'):
+        Unsigned(1) == 'CAFEBABE'
+    with pytest.raises(MemException, match='Overflow/Underflow'):
+        Unsigned[2](1) + 100
+    with pytest.raises(MemException, match='Overflow/Underflow'):
+        Unsigned[2](1) - 100
+    with pytest.raises(MemException, match='Overflow/Underflow'):
+        Unsigned[2](1) * 100

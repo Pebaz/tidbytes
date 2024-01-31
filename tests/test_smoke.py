@@ -133,3 +133,4 @@ def test_smoke():
     assert range_signed(8) == (-128, 127)
     assert is_in_range_unsigned(1, 8)
     assert is_in_range_signed(1, 8)
+    assert int(Signed[0]()) == 0
