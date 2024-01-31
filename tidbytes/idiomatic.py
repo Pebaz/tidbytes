@@ -357,6 +357,14 @@ NullMem = Mem()
 
 # TODO(pbz): Should Unsigned extend Signed since they share methods?
 class Unsigned(Mem):
+    """
+    Semantically meaningful data representing numeric information. Input types
+    are constrained since the output concept is a quantity and not raw memory.
+    Supports positive integers. Unsigned memory inheriting from Mem is a natural
+    progression because unsigned numeric data can be fed to an arithmetic logic
+    unit but is otherwise indistinct from raw bytes.
+    """
+
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Unsigned':
         # ensure(
@@ -539,14 +547,11 @@ class Unsigned(Mem):
         return type(self)(res)
 
 
-class Signed(Mem):
+class Signed(Unsigned):
     """
     Semantically meaningful data representing numeric information. Input types
     are constrained since the output concept is a quantity and not raw memory.
-    Supports positive and negative integers. At least one bit of the memory
-    region must be given to support differentiation of positive and negative
-    values stored in two's-complement encoding. This means the smallest bit
-    length that is supported is 2.
+    Supports positive and negative integers.
 
     The overall process for negative numbers is:
         - Interpret the entire memory region as an unsigned integer (it's
@@ -716,79 +721,6 @@ class Signed(Mem):
 
     def __int__(self):
         return into_numeric_big_integer(self.rgn)
-
-    def __add__(self, other: Union[int, 'Signed']) -> 'Signed':
-        """
-        Converts self and other to signed integers, sums them, and returns it.
-
-        Memory region is interpreted as a semantically meaningful numeric
-        quantity. Concatenation is no longer the most intuitive operation to
-        perform when dealing with signed numbers, especially with twos
-        complement encoding. Raises an exception if the new quantity can't fit
-        in self's bit length.
-        """
-        a, b = int(self), int(other)
-        res = int(a + b)
-        try:
-            return type(self)(res)
-        except MemException as e:
-            # TODO(pbz): MathOpUnderOverflowException
-            # ! It doesn't make sense to have exception tiers unless I formalize
-            # ! a model of why they are constructed off of each other. Is this
-            # ! like Rust's thiserror or is this just typed strings?
-            msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
-            raise MemException(msg) from e
-
-    def __sub__(self, other: Union[int, 'Signed']) -> 'Signed':
-        """
-        Converts self and other to signed integers, subtracts them, and returns
-        the result.
-
-        Memory region is interpreted as a semantically meaningful numeric
-        quantity. Raises an exception if the new quantity can't fit
-        in self's bit length.
-        """
-        a, b = int(self), int(other)
-        res = int(a - b)
-        try:
-            return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} - {b} = {res}: {e}'
-            raise MemException(msg) from e
-
-    def __mul__(self, other: Union[int, 'Signed']) -> 'Signed':
-        """
-        Converts self and other to signed integers, multiplies them, and returns
-        the result.
-
-        Memory region is interpreted as a semantically meaningful numeric
-        quantity. Raises an exception if the new quantity can't fit
-        in self's bit length.
-        """
-        a, b = int(self), int(other)
-        res = int(a * b)
-        try:
-            return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} * {b} = {res}: {e}'
-            raise MemException(msg) from e
-
-    def __truediv__(self, other: Union[int, 'Signed']) -> 'Signed':
-        """
-        Converts self and other to signed integers, divides them, and returns
-        the result.
-
-        Memory region is interpreted as a semantically meaningful numeric
-        quantity. Raises an exception if the new quantity can't fit
-        in self's bit length.
-        """
-        a, b = int(self), int(other)
-        res = int(a / b)
-        try:
-            return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} / {b} = {res}: {e}'
-            raise MemException(msg) from e
 
 
 class Str(Mem):
