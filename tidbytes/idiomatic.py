@@ -89,6 +89,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "Iterator over integer bits containing 0 or 1 in reverse order."
         return reversed(list(iterate_logical_bits(self.rgn.bytes)))
 
+    # TODO(pbz): Name shadowing but I don't want to remove this unless it's good
     def identity(self):
         "Returns a new region with identity memory order (unchanged)."
         return type(self)(self, Order.LeftToRight, Order.LeftToRight)
@@ -350,6 +351,76 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             "return into_utf8(self.rgn)"
         else:
             raise MemException('Invalid type')
+
+    # Passthrough methods
+
+    # passthrough = lambda op: locals()[op]
+
+    import tidbytes.natural as nat
+    for name, op in filter(lambda o: 'op_' in o[0], nat.__dict__.items()):
+        def closure(op):
+            def operation(self, *args, **kwargs):
+                return type(self)(op(self.rgn, *args, **kwargs))
+            return operation
+        locals()[name.lstrip('op_')] = closure(op)
+
+    # TODO(pbz): Although this works, payload args only support MemRgn so redo
+    # TODO them all to call constructor on any type of payload.
+
+    # def transform(self, *args, **kwargs):
+    #     self.rgn = op_transform(self.rgn, *args, **kwargs)
+
+    # def identity(self, *args, **kwargs):
+    #     self.rgn = op_identity(self.rgn, *args, **kwargs)
+
+    # def reverse(self, *args, **kwargs):
+    #     self.rgn = op_reverse(self.rgn, *args, **kwargs)
+
+    # def reverse_bytes(self, *args, **kwargs):
+    #     self.rgn = op_reverse_bytes(self.rgn, *args, **kwargs)
+
+    # def reverse_bits(self, *args, **kwargs):
+    #     self.rgn = op_reverse_bits(self.rgn, *args, **kwargs)
+
+    # def get_bit(self, *args, **kwargs):
+    #     self.rgn = op_get_bit(self.rgn, *args, **kwargs)
+
+    # def get_byte(self, *args, **kwargs):
+    #     self.rgn = op_get_byte(self.rgn, *args, **kwargs)
+
+    # def get_bits(self, *args, **kwargs):
+    #     self.rgn = op_get_bits(self.rgn, *args, **kwargs)
+
+    # def get_bytes(self, *args, **kwargs):
+    #     self.rgn = op_get_bytes(self.rgn, *args, **kwargs)
+
+    # def set_bit(self, *args, **kwargs):
+    #     self.rgn = op_set_bit(self.rgn, *args, **kwargs)
+
+    # def set_bits(self, *args, **kwargs):
+    #     self.rgn = op_set_bits(self.rgn, *args, **kwargs)
+
+    # def set_byte(self, *args, **kwargs):
+    #     self.rgn = op_set_byte(self.rgn, *args, **kwargs)
+
+    # def set_bytes(self, *args, **kwargs):
+    #     self.rgn = op_set_bytes(self.rgn, *args, **kwargs)
+
+    # def truncate(self, *args, **kwargs):
+    #     self.rgn = op_truncate(self.rgn, *args, **kwargs)
+
+    # def extend(self, *args, **kwargs):
+    #     self.rgn = op_extend(self.rgn, *args, **kwargs)
+
+    # def ensure_bit_length(self, *args, **kwargs):
+    #     self.rgn = op_ensure_bit_length(self.rgn, *args, **kwargs)
+
+    # def ensure_byte_length(self, *args, **kwargs):
+    #     self.rgn = op_ensure_byte_length(self.rgn, *args, **kwargs)
+
+    # def concatenate(self, *args, **kwargs):
+    #     self.rgn = op_concatenate(self.rgn, *args, **kwargs)
+
 
 
 NullMem = Mem()
