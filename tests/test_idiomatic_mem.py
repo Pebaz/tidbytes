@@ -3,7 +3,7 @@ import pytest
 import tidbytes.codec
 
 from tidbytes.mem_types import (
-    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
+    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, L2R
 )
 from tidbytes.idiomatic import Mem, Unsigned, Signed, Str
 
@@ -483,3 +483,32 @@ def test_mem_bytes():
     mem = Mem[4](1)
     # bytes() calls __iter__ and apparently accepts ints
     assert bytes(mem) == b'\x01\x00\x00\x00'
+
+
+# TODO(pbz): Test this with Unsigned and Signed
+def test_passthrough_methods():
+    "This might be the most valuable test in the entire suite."
+    mem = Mem[16](1)
+    assert str(mem) == '10000000 00000000'
+    assert (
+        str(mem.transform(bit_order=L2R, byte_order=L2R)) == '10000000 00000000'
+    )
+    assert str(mem.identity()) == '10000000 00000000'
+    assert str(mem.reverse()) == '00000000 00000001'
+    assert str(mem.reverse_bits()) == '00000000 10000000'
+    assert str(mem.reverse_bytes()) == '10000000 00000000'
+    assert str(mem.get_bit(0)) == '1'
+    assert str(mem.get_byte(0)) == '10000000'
+    assert str(mem.get_bits(0, 8)) == '10000000'
+    assert str(mem.get_bytes(0, 1)) == '10000000'
+    assert str(mem.set_bit(8, 1)) == '10000000 10000000'
+    assert str(mem.set_bits(1, 1)) == '11000000 10000000'
+    assert str(mem.set_byte(0, 0)) == '00000000 10000000'
+    assert str(mem.set_bytes(0, [1] * 15)) == '11111111 11111110'
+    assert str(mem.truncate(8)) == '11111111'
+    assert str(mem.extend(8, 0)) == '11111111 00000000'
+    assert str(mem.ensure_bit_length(8)) == '11111111'
+    assert str(mem.ensure_bit_length(16)) == '11111111 00000000'
+    assert str(mem.ensure_byte_length(1)) == '11111111'
+    assert str(mem.ensure_byte_length(2)) == '11111111 00000000'
+    assert str(mem.concatenate(1)) == '11111111 00000000 1'

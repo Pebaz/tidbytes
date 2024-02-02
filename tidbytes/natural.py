@@ -181,19 +181,26 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
 def op_set_byte(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     "Invariant: input memory must be valid and mapped to program's universe."
     contract_validate_memory(mem)
+
     payload_bits = meta_op_bit_length(payload)
     ensure(payload_bits <= 8, f'Bit count greater than 8: {payload_bits}')
+
+    region_bits = meta_op_bit_length(mem)
+    bit_index = offset * 8
+    fill_any_leftovers = min(region_bits - bit_index, 8)
+    payload = op_ensure_bit_length(payload, fill_any_leftovers)
+
     ensure(
-        0 <= offset * 8 < meta_op_bit_length(mem),
-        f"Offset out of bounds: {meta_op_bit_length(mem)=}, {offset=}"
+        0 <= bit_index < region_bits,
+        f"Offset out of bounds: {region_bits=}, {offset=}"
     )
     ensure(
-        meta_op_bit_length(mem) - offset * 8 + payload_bits >= 0,
+        region_bits - bit_index + payload_bits >= 0,
         f"Payload byte doesn't fit within destination: "
-        f"{meta_op_bit_length(mem)=}, {offset=}, {meta_op_bit_length(payload)=}"
+        f"{region_bits=}, {offset=}, {meta_op_bit_length(payload)=}"
     )
 
-    out = op_set_bits(mem, offset * 8, payload)
+    out = op_set_bits(mem, bit_index, payload)
     return contract_validate_memory(out)
 
 

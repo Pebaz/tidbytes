@@ -92,25 +92,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         "Iterator over integer bits containing 0 or 1 in reverse order."
         return reversed(list(iterate_logical_bits(self.rgn.bytes)))
 
-    # TODO(pbz): Name shadowing but I don't want to remove this unless it's good
-    def identity(self):
-        "Returns a new region with identity memory order (unchanged)."
-        return type(self)(self, Order.LeftToRight, Order.LeftToRight)
-
-    clone = identity
-
-    def reverse(self):
-        "Returns a new region with all bits and bytes reversed."
-        return type(self)(self, Order.RightToLeft, Order.RightToLeft)
-
-    def reverse_bits(self):
-        "Returns a new region with all bytes in place with reversed bits."
-        return type(self)(self, Order.RightToLeft, Order.LeftToRight)
-
-    def reverse_bytes(self):
-        "Returns a new region with all bits in place but reversed bytes."
-        return type(self)(self, Order.LeftToRight, Order.RightToLeft)
-
     def __str__(self):  # Display
         """
         Displays all bits up to bit length 64, then displays bit length.
@@ -355,21 +336,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         else:
             raise MemException('Invalid type')
 
-    # Passthrough methods
-
-    # passthrough = lambda op: locals()[op]
-
-    import tidbytes.natural as nat
-    for name, op in filter(lambda o: 'op_' in o[0], nat.__dict__.items()):
-        def closure(op):
-            def operation(self, *args, **kwargs):
-                return type(self)(op(self.rgn, *args, **kwargs))
-            return operation
-        locals()[name.lstrip('op_')] = closure(op)
-
-    # TODO(pbz): Although this works, payload args only support MemRgn so redo
-    # TODO them all to call constructor on any type of payload.
-
     def transform(self, *, bit_order: Order, byte_order: Order) -> 'Mem':
         "See docs for `tidbytes.natural.op_transform`"
         self.rgn = op_transform(
@@ -417,10 +383,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def set_bit(self, offset: int, payload: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_set_bit`"
-        d = type(self)[None](payload).rgn
-        import ipdb; ipdb.set_trace()
         self.rgn = op_set_bit(
-            *(self.rgn, int(offset), d)
+            *(self.rgn, int(offset), type(self)[None](payload).rgn)
         )
         return self
 
@@ -452,7 +416,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def extend(self, amount: int, fill: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_extend`"
-        self.rgn = op_extend(self.rgn, int(amount), type(self)[None](fill))
+        self.rgn = op_extend(self.rgn, int(amount), type(self)[None](fill).rgn)
         return self
 
     def ensure_bit_length(self, length: int) -> 'Mem':
@@ -460,7 +424,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         self.rgn = op_ensure_bit_length(self.rgn, int(length))
         return self
 
-    def op_ensure_byte_length(self, length: int) -> 'Mem':
+    def ensure_byte_length(self, length: int) -> 'Mem':
         "See docs for `tidbytes.natural.op_op_ensure_byte_length`"
         self.rgn = op_ensure_byte_length(self.rgn, int(length))
         return self
@@ -470,6 +434,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         self.rgn = op_concatenate(self.rgn, type(self)[None](mem_right).rgn)
         return self
 
+    clone = identity
 
 NullMem = Mem()
 
