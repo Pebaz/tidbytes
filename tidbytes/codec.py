@@ -561,7 +561,7 @@ def from_natural_big_integer_signed(value: int, bit_length: int) -> MemRgn:
     ]
 
     out = MemRgn()
-    out.bytes = group_bits_into_bytes(bits)
+    out.bytes = group_bits_into_bytes(bits or [0])  # Value may have been zero
 
     return contract_validate_memory(out)
 

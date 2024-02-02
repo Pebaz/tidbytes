@@ -290,9 +290,7 @@ def op_concatenate(mem_left: MemRgn, mem_right: MemRgn) -> MemRgn:
     """
     Invariant: memory regions should be from the same universe and valid.
     """
-
-    contract_validate_memory(mem_left)
-    contract_validate_memory(mem_right)
+    contract_validate_memory(mem_left), contract_validate_memory(mem_right)
 
     bits = [
         bit for region in [mem_left, mem_right]

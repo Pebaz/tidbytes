@@ -4,7 +4,9 @@ from tidbytes.mem_types import (
 )
 from tidbytes.idiomatic import Mem, Unsigned, Signed
 from tidbytes.codec import (
-    range_unsigned, range_signed, is_in_range_signed, is_in_range_unsigned
+    range_unsigned, range_signed, is_in_range_signed, is_in_range_unsigned,
+    from_natural_big_integer_signed, from_natural_big_integer_unsigned,
+    from_numeric_big_integer_signed, from_numeric_big_integer_unsigned
 )
 
 from . import raises_exception, UN, Slice
@@ -138,3 +140,18 @@ def test_smoke():
     assert str(Mem(0)) == '0'
     assert str(Unsigned(0)) == '0'
     assert str(Signed(0)) == '0'
+
+    # Make sure zeroed memory counts as non-null (from the perspective of
+    # Tidbyte's idioms):
+    assert int(Mem(from_natural_big_integer_signed(0, None))) == 0
+    assert int(Mem(from_natural_big_integer_signed(0, 0))) == 0
+    assert int(Mem(from_natural_big_integer_signed(0, 8))) == 0
+    assert int(Mem(from_natural_big_integer_unsigned(0, None))) == 0
+    assert int(Mem(from_natural_big_integer_unsigned(0, 0))) == 0
+    assert int(Mem(from_natural_big_integer_unsigned(0, 8))) == 0
+    assert int(Mem(from_numeric_big_integer_signed(0, None))) == 0
+    assert int(Mem(from_numeric_big_integer_signed(0, 0))) == 0
+    assert int(Mem(from_numeric_big_integer_signed(0, 8))) == 0
+    assert int(Mem(from_numeric_big_integer_unsigned(0, None))) == 0
+    assert int(Mem(from_numeric_big_integer_unsigned(0, 0))) == 0
+    assert int(Mem(from_numeric_big_integer_unsigned(0, 8))) == 0
