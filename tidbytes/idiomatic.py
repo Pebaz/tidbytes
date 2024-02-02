@@ -12,9 +12,12 @@ from .mem_types import (
     UnderOverflowException
 )
 from .natural import (
-    MemRgn, op_transform, op_set_bits, meta_op_bit_length, op_concatenate,
-    op_truncate, contract_validate_memory, group_bits_into_bytes,
-    iterate_logical_bits, op_get_bits, op_get_bytes, op_get_bit, op_get_byte,
+    MemRgn, meta_op_bit_length, contract_validate_memory, group_bits_into_bytes,
+    iterate_logical_bits, op_transform, op_identity, op_reverse,
+    op_reverse_bytes, op_reverse_bits, op_get_bit, op_get_byte, op_get_bits,
+    op_get_bytes, op_set_bit, op_set_bits, op_set_byte, op_set_bytes,
+    op_truncate, op_extend, op_ensure_bit_length, op_ensure_byte_length,
+    op_concatenate
 )
 from .codec import (
     from_natural_u8, from_natural_u16, from_natural_u32, from_natural_u64,
@@ -367,60 +370,105 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
     # TODO(pbz): Although this works, payload args only support MemRgn so redo
     # TODO them all to call constructor on any type of payload.
 
-    # def transform(self, *args, **kwargs):
-    #     self.rgn = op_transform(self.rgn, *args, **kwargs)
+    def transform(self, *, bit_order: Order, byte_order: Order) -> 'Mem':
+        "See docs for `tidbytes.natural.op_transform`"
+        self.rgn = op_transform(
+            self.rgn,
+            bit_order=bit_order,
+            byte_order=byte_order
+        )
+        return self
 
-    # def identity(self, *args, **kwargs):
-    #     self.rgn = op_identity(self.rgn, *args, **kwargs)
+    def identity(self) -> 'Mem':
+        "See docs for `tidbytes.natural.op_identity`"
+        self.rgn = op_identity(self.rgn)
+        return self
 
-    # def reverse(self, *args, **kwargs):
-    #     self.rgn = op_reverse(self.rgn, *args, **kwargs)
+    def reverse(self) -> 'Mem':
+        "See docs for `tidbytes.natural.op_reverse`"
+        self.rgn = op_reverse(self.rgn)
+        return self
 
-    # def reverse_bytes(self, *args, **kwargs):
-    #     self.rgn = op_reverse_bytes(self.rgn, *args, **kwargs)
+    def reverse_bytes(self) -> 'Mem':
+        "See docs for `tidbytes.natural.op_reverse_bytes`"
+        self.rgn = op_reverse_bytes(self.rgn)
+        return self
 
-    # def reverse_bits(self, *args, **kwargs):
-    #     self.rgn = op_reverse_bits(self.rgn, *args, **kwargs)
+    def reverse_bits(self) -> 'Mem':
+        "See docs for `tidbytes.natural.op_reverse_bits`"
+        self.rgn = op_reverse_bits(self.rgn)
+        return self
 
-    # def get_bit(self, *args, **kwargs):
-    #     self.rgn = op_get_bit(self.rgn, *args, **kwargs)
+    def get_bit(self, index: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_get_bit`"
+        return type(self)[None](op_get_bit(self.rgn, index))
 
-    # def get_byte(self, *args, **kwargs):
-    #     self.rgn = op_get_byte(self.rgn, *args, **kwargs)
+    def get_byte(self, index: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_get_byte`"
+        return type(self)[None](op_get_byte(self.rgn, index))
 
-    # def get_bits(self, *args, **kwargs):
-    #     self.rgn = op_get_bits(self.rgn, *args, **kwargs)
+    def get_bits(self, start: int, stop: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_get_bits`"
+        return type(self)[None](op_get_bits(self.rgn, int(start), int(stop)))
 
-    # def get_bytes(self, *args, **kwargs):
-    #     self.rgn = op_get_bytes(self.rgn, *args, **kwargs)
+    def get_bytes(self, start: int, stop: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_get_bytes`"
+        return type(self)[None](op_get_bytes(self.rgn, int(start), int(stop)))
 
-    # def set_bit(self, *args, **kwargs):
-    #     self.rgn = op_set_bit(self.rgn, *args, **kwargs)
+    def set_bit(self, offset: int, payload: T) -> 'Mem':
+        "See docs for `tidbytes.natural.op_set_bit`"
+        d = type(self)[None](payload).rgn
+        import ipdb; ipdb.set_trace()
+        self.rgn = op_set_bit(
+            *(self.rgn, int(offset), d)
+        )
+        return self
 
-    # def set_bits(self, *args, **kwargs):
-    #     self.rgn = op_set_bits(self.rgn, *args, **kwargs)
+    def set_bits(self, offset: int, payload: T) -> 'Mem':
+        "See docs for `tidbytes.natural.op_set_bits`"
+        self.rgn = op_set_bits(
+            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+        )
+        return self
 
-    # def set_byte(self, *args, **kwargs):
-    #     self.rgn = op_set_byte(self.rgn, *args, **kwargs)
+    def set_byte(self, offset: int, payload: T) -> 'Mem':
+        "See docs for `tidbytes.natural.op_set_byte`"
+        self.rgn = op_set_byte(
+            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+        )
+        return self
 
-    # def set_bytes(self, *args, **kwargs):
-    #     self.rgn = op_set_bytes(self.rgn, *args, **kwargs)
+    def set_bytes(self, offset: int, payload: T) -> 'Mem':
+        "See docs for `tidbytes.natural.op_set_bytes`"
+        self.rgn = op_set_bytes(
+            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+        )
+        return self
 
-    # def truncate(self, *args, **kwargs):
-    #     self.rgn = op_truncate(self.rgn, *args, **kwargs)
+    def truncate(self, length: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_truncate`"
+        self.rgn = op_truncate(self.rgn, int(length))
+        return self
 
-    # def extend(self, *args, **kwargs):
-    #     self.rgn = op_extend(self.rgn, *args, **kwargs)
+    def extend(self, amount: int, fill: T) -> 'Mem':
+        "See docs for `tidbytes.natural.op_extend`"
+        self.rgn = op_extend(self.rgn, int(amount), type(self)[None](fill))
+        return self
 
-    # def ensure_bit_length(self, *args, **kwargs):
-    #     self.rgn = op_ensure_bit_length(self.rgn, *args, **kwargs)
+    def ensure_bit_length(self, length: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_ensure_bit_length`"
+        self.rgn = op_ensure_bit_length(self.rgn, int(length))
+        return self
 
-    # def ensure_byte_length(self, *args, **kwargs):
-    #     self.rgn = op_ensure_byte_length(self.rgn, *args, **kwargs)
+    def op_ensure_byte_length(self, length: int) -> 'Mem':
+        "See docs for `tidbytes.natural.op_op_ensure_byte_length`"
+        self.rgn = op_ensure_byte_length(self.rgn, int(length))
+        return self
 
-    # def concatenate(self, *args, **kwargs):
-    #     self.rgn = op_concatenate(self.rgn, *args, **kwargs)
-
+    def concatenate(self, mem_right: Union['Mem', MemRgn]) -> 'Mem':
+        "See docs for `tidbytes.natural.op_concatenate`"
+        self.rgn = op_concatenate(self.rgn, type(self)[None](mem_right).rgn)
+        return self
 
 
 NullMem = Mem()
@@ -437,11 +485,6 @@ class Unsigned(Mem):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Unsigned':
-        # ensure(
-        #     bit_length in (None, 0) or bit_length >= 2,
-        #     f"Not enough bits to encode both positive and negative numbers: "
-        #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
-        # )
         if isinstance(init, cls):  # Copy constructors
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
@@ -456,7 +499,6 @@ class Unsigned(Mem):
                 return rgn
 
         elif isinstance(init, int):
-            # return from_numeric_big_integer(abs(init), bit_length)
             return from_numeric_big_integer_unsigned(init, bit_length)
 
         elif isinstance(init, float):
@@ -650,11 +692,6 @@ class Signed(Unsigned):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Signed':
-        # ensure(
-        #     bit_length in (None, 0) or bit_length >= 2,
-        #     f"Not enough bits to encode both positive and negative numbers: "
-        #     f"{bit_length}. Two's complement encoding requires at least 2 bits"
-        # )
         if isinstance(init, cls):  # Copy constructors
             out = MemRgn()
             init.validate()

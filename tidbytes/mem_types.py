@@ -24,14 +24,6 @@ def ensure(condition: bool, message=''):
         raise MemException(message)
 
 
-# Passthrough generic type for syntactically identifying memory regions
-# Usage: identity[MemRgn()], signed[MemRgn()], unsigned[identity[MemRgn()]]
-_passthru = type('_passthru', tuple(), {'__getitem__': lambda self, key: key})
-identity = type('identity', (_passthru,), {})()
-signed = type('signed', (_passthru,), {})()
-unsigned = type('unsigned', (_passthru,), {})()
-
-
 class Order(Enum):
     LeftToRight = auto()  # First element is on far left
     RightToLeft = auto()  # First element is on far right

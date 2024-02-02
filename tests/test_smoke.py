@@ -134,3 +134,7 @@ def test_smoke():
     assert is_in_range_unsigned(1, 8)
     assert is_in_range_signed(1, 8)
     assert int(Signed[0]()) == 0
+
+    assert str(Mem(0)) == '0'
+    assert str(Unsigned(0)) == '0'
+    assert str(Signed(0)) == '0'

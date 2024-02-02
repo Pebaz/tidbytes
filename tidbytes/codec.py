@@ -42,9 +42,7 @@ import ctypes
 import sys
 import struct
 from typing import TypeVar
-from .mem_types import (
-    u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure, signed
-)
+from .mem_types import u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure
 from .natural import (
     MemRgn, op_identity, op_reverse, contract_validate_memory,
     op_ensure_bit_length, group_bits_into_bytes, meta_op_bit_length,
@@ -586,7 +584,7 @@ def from_natural_big_integer_unsigned(value: int, bit_length: int) -> MemRgn:
     ]
 
     out = MemRgn()
-    out.bytes = group_bits_into_bytes(bits)
+    out.bytes = group_bits_into_bytes(bits or [0])  # Value may have been zero
 
     return contract_validate_memory(out)
 
@@ -713,7 +711,7 @@ def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
     return op_ensure_bit_length(out, bit_length)
 
 
-def into_numeric_big_integer(mem: signed[MemRgn]) -> int:
+def into_numeric_big_integer(mem: MemRgn) -> int:
     "Treats the memory region as a signed big integer."
     if not mem.bytes:
         return 0

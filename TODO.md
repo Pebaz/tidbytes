@@ -19,17 +19,11 @@
 - [ ] Create exception heirarchy for exact errors. Analyze codebase. Is this
     something that is useful? I think so since IEEE754 defines exceptions.
 
-- [ ] Instrument code with `Identity[MemRgn]`
-
 > What would it take to consider this project done?
 
 - 🔰 Serialization to idiomatic primitive types
 - 🔰 Expose fundamental natural operations as methods on `Mem`
-- 🔰 Assign by index
 - 🔰 Negative indexes
-- 🔰 Test all methods from `Mem`
-- 🔰 Test all methods from `Num`
-- 🔰 Rename "Von Neumann" to "Natural"
 - 🔰 Blog post
 - 🔰 Remove iterations after blog post
 - 🔰 Write readme
