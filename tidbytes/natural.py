@@ -395,8 +395,7 @@ def group_bits_into_bytes(bits: list[int]) -> LogicalMemory:
     "Collect flat list of bits into lists of lists of 8 bits (bytes)."
     if not bits:
         return bits
-    bytes_ = []
-    byte = []
+    bytes_, byte = [], []
     for i, bit in enumerate(bits):
         if byte and i % 8 == 0:
             bytes_.append(byte[:])

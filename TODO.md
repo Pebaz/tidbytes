@@ -12,11 +12,11 @@
     such it may be more appropriate for the lower level API to provide some
     helper operations but not codecs (the bridges between high and low level).
 
-- [ ] Fully test idiomatic operations
+- [X] Fully test idiomatic operations
 
 - [ ] Go back through and fix typos, documentation, and formatting
 
-- [ ] Create exception heirarchy for exact errors. Analyze codebase. Is this
+- [X] Create exception heirarchy for exact errors. Analyze codebase. Is this
     something that is useful? I think so since IEEE754 defines exceptions.
 
 > What would it take to consider this project done?
@@ -26,4 +26,3 @@
 - 🔰 Remove iterations after blog post
 - 🔰 Write readme
 - 🔰 Go through each codec and note it in readme (from tuple is interesting)
-- 🔰 Fix the docs of each old Num op since Signed & Unsigned replaced Num

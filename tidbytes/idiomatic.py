@@ -692,11 +692,6 @@ class Signed(Unsigned):
                 return from_numeric_i8(i8(init.value), bit_length)
             except MemException as e:
                 lo, hi = range_signed(bit_length)
-                # err = MemException(
-                #     f'{type(init).__name__} type casted to i8 would under/'
-                #     f'overflow: {init.value} not in {lo} .. {hi} ({e})'
-                # )
-                # raise err.with_traceback(e.__traceback__)
                 err = UnderOverflowException(type(init), i8, init.value, lo, hi)
                 raise err from e
 
@@ -705,11 +700,6 @@ class Signed(Unsigned):
                 return from_numeric_i16(i16(init.value), bit_length)
             except MemException as e:
                 lo, hi = range_signed(bit_length)
-                # err = MemException(
-                #     f'{type(init).__name__} type casted to i16 would under/'
-                #     f'overflow: {init.value} not in {lo} .. {hi} ({e})'
-                # )
-                # raise err.with_traceback(e.__traceback__)
                 err = UnderOverflowException(
                     *(type(init), i16, init.value, lo, hi)
                 )
@@ -720,11 +710,6 @@ class Signed(Unsigned):
                 return from_numeric_i32(i32(init.value), bit_length)
             except MemException as e:
                 lo, hi = range_signed(bit_length)
-                # err = MemException(
-                #     f'{type(init).__name__} type casted to i32 would under/'
-                #     f'overflow: {init.value} not in {lo} .. {hi} ({e})'
-                # )
-                # raise err.with_traceback(e.__traceback__)
                 err = UnderOverflowException(
                     *(type(init), i32, init.value, lo, hi)
                 )
@@ -735,11 +720,6 @@ class Signed(Unsigned):
                 return from_numeric_i64(i64(init.value), bit_length)
             except MemException as e:
                 lo, hi = range_signed(bit_length)
-                # err = MemException(
-                #     f'{type(init).__name__} type casted to i64 would under/'
-                #     f'overflow: {init.value} not in {lo} .. {hi} ({e})'
-                # )
-                # raise err.with_traceback(e.__traceback__)
                 err = UnderOverflowException(
                     *(type(init), i64, init.value, lo, hi)
                 )

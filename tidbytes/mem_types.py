@@ -6,7 +6,6 @@ class MemException(Exception):
     "Used instead of assertion failures to give better error messages"
 
 
-# TODO(pbz): Create exception hierarchy after analyzing codebase
 class UnderOverflowException(MemException):
     def __init__(self, in_type: type, out_type: type, value, lo, hi):
         super().__init__(
