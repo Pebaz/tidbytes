@@ -451,6 +451,9 @@ class Unsigned(Mem):
                 rgn.bytes = group_bits_into_bytes([0] * bit_length)
                 return rgn
 
+        elif isinstance(init, MemRgn):
+            return init
+
         elif isinstance(init, int):
             return from_numeric_big_integer_unsigned(init, bit_length)
 
@@ -643,7 +646,10 @@ class Signed(Unsigned):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Signed':
-        if isinstance(init, cls):  # Copy constructors
+        if (
+            hasattr(init, indexed_meta.PARAM_NAME) and
+            issubclass(type(init)[None], cls[None])
+        ):
             out = MemRgn()
             init.validate()
             out.bytes = copy.copy(init.rgn.bytes)
@@ -656,6 +662,9 @@ class Signed(Unsigned):
                 rgn = MemRgn()
                 rgn.bytes = group_bits_into_bytes([0] * bit_length)
                 return rgn
+
+        elif isinstance(init, MemRgn):
+            return init
 
         elif isinstance(init, int):
             return from_numeric_big_integer_signed(init, bit_length)

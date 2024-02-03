@@ -3,7 +3,7 @@ import pytest
 import tidbytes.codec
 
 from tidbytes.mem_types import (
-    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64
+    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, L2R
 )
 from tidbytes.idiomatic import Mem, Unsigned, Signed, Str
 
@@ -374,3 +374,33 @@ def test_signed_math():
         Signed[2](1) - 100
     with pytest.raises(MemException, match='Overflow/Underflow'):
         Signed[2](1) * 100
+
+
+# TODO(pbz): Incorporate root_type() et al
+def test_passthrough_methods():
+    "This might be the most valuable test in the entire suite."
+    mem = Signed[16](1)
+    assert str(mem) == '00000000 00000001'
+    assert (
+        str(mem.transform(bit_order=L2R, byte_order=L2R)) == '00000000 00000001'
+    )
+    assert str(mem.identity()) == '00000000 00000001'
+    assert str(mem.reverse()) == '10000000 00000000'
+    assert str(mem.reverse_bits()) == '00000001 00000000'
+    assert str(mem.reverse_bytes()) == '00000000 00000001'
+    assert str(mem.reverse()) == '10000000 00000000'
+    assert str(mem.get_bit(0)) == '1'
+    assert str(mem.get_byte(0)) == '10000000'
+    assert str(mem.get_bits(0, 8)) == '10000000'
+    assert str(mem.get_bytes(0, 1)) == '10000000'
+    assert str(mem.set_bit(8, Signed[1](-1))) == '10000000 10000000'
+    assert str(mem.set_bits(1, 1)) == '11000000 10000000'
+    assert str(mem.set_byte(0, 0)) == '00000000 10000000'
+    assert str(mem.set_bytes(0, [1] * 15)) == '11111111 11111110'
+    assert str(mem.truncate(8)) == '11111111'
+    assert str(mem.extend(8, 0)) == '11111111 00000000'
+    assert str(mem.ensure_bit_length(8)) == '11111111'
+    assert str(mem.ensure_bit_length(16)) == '11111111 00000000'
+    assert str(mem.ensure_byte_length(1)) == '11111111'
+    assert str(mem.ensure_byte_length(2)) == '11111111 00000000'
+    assert str(mem.concatenate(1)) == '11111111 00000000 1'
