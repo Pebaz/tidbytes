@@ -21,25 +21,9 @@
 
 > What would it take to consider this project done?
 
-- 🔰 Serialization to idiomatic primitive types
-- 🔰 Expose fundamental natural operations as methods on `Mem`
 - 🔰 Negative indexes
 - 🔰 Blog post
 - 🔰 Remove iterations after blog post
 - 🔰 Write readme
 - 🔰 Go through each codec and note it in readme (from tuple is interesting)
 - 🔰 Fix the docs of each old Num op since Signed & Unsigned replaced Num
-- 🔰 Fix the broken big integer and negative number truncation errors throughout
-    the project
-
-- 🐸 Negatives are handled wrong
-- 🐸 Truncation only works if semantically valid (integer in range of bit len)
-    - Go through each codec path and make sure it checks the int range
-
-# Aspirational Goals
-
-- ⭐ Parametrize test suite
-- ⭐ C++ implementation
-- ⭐ Rust implementation
-- ⭐ Refactor Python implementation to use bindings to C++ implementation for
-    speed

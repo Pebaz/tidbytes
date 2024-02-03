@@ -6,7 +6,7 @@ class MemException(Exception):
     "Used instead of assertion failures to give better error messages"
 
 
-# TODO(pbz): Create exception heirarchy after analyzing codebase
+# TODO(pbz): Create exception hierarchy after analyzing codebase
 class UnderOverflowException(MemException):
     def __init__(self, in_type: type, out_type: type, value, lo, hi):
         super().__init__(
@@ -16,12 +16,33 @@ class UnderOverflowException(MemException):
 
 
 class MathOpUnderOverflowException(MemException):
-    "msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'"
+    def __init__(self, a, op, b, res, e):
+        super().__init__(f'Overflow/Underflow with {a} {op} {b} = {res}: {e}')
+
+
+class InvalidSemanticsException(MemException):
+    "Cast-specific exception to alert of semantic errors in type casts."
+
+
+class InvalidInitializerException(MemException):
+    def __init__(self):
+        super().__init__("Invalid initializer: Can't deduce codec")
+
+
+class InvalidComparisonException(MemException):
+    def __init__(self, this_type: type, that_type: type):
+        super().__init__(
+            f'Cannot compare unlike types: {this_type} and {that_type}'
+        )
+
+
+class ContractViolationException(MemException):
+    "Used when operations are fed invalid inputs or produce invalid outputs."
 
 
 def ensure(condition: bool, message=''):
     if not condition:
-        raise MemException(message)
+        raise ContractViolationException(message)
 
 
 class Order(Enum):

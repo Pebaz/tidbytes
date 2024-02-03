@@ -83,7 +83,10 @@ def op_get_bit(mem: MemRgn, index: int) -> MemRgn:
     Invariant: input memory must be valid and mapped to program's universe.
     """
     contract_validate_memory(mem)
-    ensure(0 <= index < meta_op_bit_length(mem), f'Index out of bounds: {index}')
+    ensure(
+        0 <= index < meta_op_bit_length(mem),
+        f'Index out of bounds: {index}'
+    )
 
     out = op_get_bits(mem, index, index + 1)
     return contract_validate_memory(out)
@@ -165,8 +168,8 @@ def op_set_bits(mem: MemRgn, offset: int, payload: MemRgn) -> MemRgn:
     ensure(
         ending_index <= mem_len,
         f"Payload can't fit: bit offset ({offset}) with length "
-        f"({meta_op_bit_length(payload)}) is too big for space left after offset "
-        f"({mem_len - offset})"
+        f"({meta_op_bit_length(payload)}) is too big for space left after "
+        f"offset ({mem_len - offset})"
     )
 
     out = MemRgn()

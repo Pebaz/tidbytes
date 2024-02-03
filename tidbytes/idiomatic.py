@@ -9,7 +9,9 @@ import indexed_meta
 from typing import Any, Generic, TypeVar, Union
 from .mem_types import (
     ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
-    UnderOverflowException
+    UnderOverflowException, MathOpUnderOverflowException, InvalidSemanticsException,
+    ContractViolationException, InvalidInitializerException,
+    InvalidComparisonException,
 )
 from .natural import (
     MemRgn, meta_op_bit_length, contract_validate_memory, group_bits_into_bytes,
@@ -125,10 +127,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 return str(self)
 
     def __eq__(self, that):
-        ensure(
-            isinstance(that, type(self)),
-            f'Cannot compare unlike types: {type(self)} and {type(that)}'
-        )
+        if not isinstance(that, type(self)):
+            raise InvalidComparisonException(type(self), type(that))
         return self.rgn.bytes == that.rgn.bytes
 
     def __len__(self):
@@ -227,10 +227,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             contract_validate_memory(self.rgn)
         return self
 
-    def truncate(self, bit_length: int):
-        "Useful for setting values in structs that are shorter than a byte."
-        self.rgn = op_truncate(self.rgn, bit_length)
-
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Mem':
         if isinstance(init, cls):  # Copy constructor
@@ -257,7 +253,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         elif isinstance(init, int):
             if init < 0:
-                raise MemException(
+                raise InvalidSemanticsException(
                     'Cannot interpret negative big integer as slice of raw '
                     'memory since raw bytes are unsigned. Use `Signed` instead'
                 )
@@ -304,7 +300,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             elif init and isinstance(init[0], int):
                 return from_bit_list(init, bit_length)
             else:
-                raise MemException("Invalid initializer: Can't deduce codec")
+                raise InvalidInitializerException()
 
         elif isinstance(init, str):
             if init and init.startswith(('0x', '0X')):
@@ -326,15 +322,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_bytes(bytes(init), bit_length)
 
         else:
-            raise MemException('Invalid initializer')
-
-    def into(self, target_type: type) -> Generic[T]:
-        if target_type == u8:
-            return into_natural_big_integer(self.rgn)
-        if target_type == str:
-            "return into_utf8(self.rgn)"
-        else:
-            raise MemException('Invalid type')
+            raise InvalidInitializerException()
 
     def transform(self, *, bit_order: Order, byte_order: Order) -> 'Mem':
         "See docs for `tidbytes.natural.op_transform`"
@@ -480,7 +468,7 @@ class Unsigned(Mem):
             elif init and isinstance(init[0], int):
                 return from_bit_list(init, bit_length)
             else:
-                raise MemException("Invalid initializer: Can't deduce codec")
+                raise InvalidInitializerException()
 
         elif isinstance(init, str):
             if init and init.startswith(('0x', '0X')):
@@ -545,7 +533,10 @@ class Unsigned(Mem):
             return from_numeric_f64(init, bit_length)
 
         else:
-            raise MemException('Invalid initializer')
+            raise InvalidInitializerException()
+
+    def __float__(self):
+        return float(int(self))
 
     def __eq__(self, that):
         "Can compare against integers and anything else that converts to int()."
@@ -554,9 +545,7 @@ class Unsigned(Mem):
         elif hasattr(that, '__int__'):
             return int(self) == int(that)
         else:
-            raise MemException(
-                f'Cannot compare unlike types: {type(self)} and {type(that)}'
-            )
+            raise InvalidComparisonException(type(self), type(that))
 
     def __add__(self, other: Union[int, 'Signed']) -> 'Signed':
         """
@@ -572,9 +561,8 @@ class Unsigned(Mem):
         res = int(a + b)
         try:
             return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} + {b} = {res}: {e}'
-            raise MemException(msg) from e
+        except ContractViolationException as e:
+            raise MathOpUnderOverflowException(a, '+', b, res, e) from e
 
     def __sub__(self, other: Union[int, 'Signed']) -> 'Signed':
         """
@@ -589,9 +577,8 @@ class Unsigned(Mem):
         res = int(a - b)
         try:
             return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} - {b} = {res}: {e}'
-            raise MemException(msg) from e
+        except ContractViolationException as e:
+            raise MathOpUnderOverflowException(a, '-', b, res, e) from e
 
     def __mul__(self, other: Union[int, 'Signed']) -> 'Signed':
         """
@@ -606,9 +593,8 @@ class Unsigned(Mem):
         res = int(a * b)
         try:
             return type(self)(res)
-        except MemException as e:
-            msg = f'Overflow/Underflow with {a} * {b} = {res}: {e}'
-            raise MemException(msg) from e
+        except ContractViolationException as e:
+            raise MathOpUnderOverflowException(a, '*', b, res, e) from e
 
     def __truediv__(self, other: Union[int, 'Signed']) -> 'Signed':
         """
@@ -688,7 +674,7 @@ class Signed(Unsigned):
             elif init and isinstance(init[0], int):
                 return from_bit_list(init, bit_length)
             else:
-                raise MemException("Invalid initializer: Can't deduce codec")
+                raise InvalidInitializerException()
 
         elif isinstance(init, str):
             codec = from_numeric_big_integer_signed
@@ -778,7 +764,7 @@ class Signed(Unsigned):
             return from_numeric_f64(init, bit_length)
 
         else:
-            raise MemException('Invalid initializer')
+            raise InvalidInitializerException()
 
     def __eq__(self, that):
         "Can compare against integers and anything else that converts to int()."
@@ -787,9 +773,7 @@ class Signed(Unsigned):
         elif hasattr(that, '__int__'):
             return int(self) == int(that)
         else:
-            raise MemException(
-                f'Cannot compare unlike types: {type(self)} and {type(that)}'
-            )
+            raise InvalidComparisonException(type(self), type(that))
 
     def __int__(self):
         return into_numeric_big_integer(self.rgn)
@@ -815,13 +799,9 @@ class Str(Mem):
             elif init and isinstance(init[0], int) and 0 <= init[0] <= 255:
                 return from_bytes_utf8(bytearray(init))
             else:
-                raise MemException("Invalid initializer: Can't deduce codec")
+                raise InvalidInitializerException()
         else:
-            raise MemException('Invalid initializer')
-
-    def into(self, target_type: type) -> Generic[T]:
-        if target_type == u8:
-            return into_natural_big_integer(self.rgn)
+            raise InvalidInitializerException()
 
     def __str__(self):
         chars = (int(byte, base=2) for byte in Mem.__str__(self).split())
