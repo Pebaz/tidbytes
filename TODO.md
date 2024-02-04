@@ -22,6 +22,7 @@
 > What would it take to consider this project done?
 
 - 🔰 Negative indexes
+- 🔰 Amalgamate all info necessary to write the blog post like the above comment
 - 🔰 Blog post
 - 🔰 Remove iterations after blog post
 - 🔰 Write readme

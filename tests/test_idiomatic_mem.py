@@ -372,8 +372,10 @@ def test_mem___int__(bits, init, out, expect):
     assert int(mem) == out, f'Incorrect number: {init}'
 
 
+# TODO(pbz): Working on negative indices
 @pytest.mark.parametrize('index,expect,msg', [
-    (Slice[::1], '01111111 11111111', 'Copy self'),
+    (Slice[::1], '01111111 11001101', 'Copy self'),
+    (Slice[::8], '01111111 11001101', 'Copy self'),
     (Slice[:1], '0', 'First bit'),
     (Slice[:1:1], '0', 'First bit'),
     (Slice[:1:8], '01111111', 'First byte'),
@@ -382,9 +384,12 @@ def test_mem___int__(bits, init, out, expect):
     (Slice[0:1:8], '01111111', 'First byte'),
     (Slice[1::1], '11111111 1111111', 'Missing a bit'),
     (Slice[1::8], '11111111', 'Second byte'),
+    # Reverse
+    (Slice[::-1], '10110011 11111110', 'Reverse'),
+    (Slice[::-8], '11001101 01111111', 'Reverse bytes'),
 ])
 def test_mem__getitem__(index, expect, msg):
-    mem = Mem(u16(65534))
+    mem = Mem[16]('01111111 11001101')
     other = mem[:]
     start, stop, step = index.start, index.stop, index.step
 
@@ -397,7 +402,7 @@ def test_mem__getitem__(index, expect, msg):
         f'[{msg}]: {mem}[{start}:{stop}:{step}] != {expect}'
     )
 
-    with pytest.raises(MemException, match='Can only index by bit or byte'):
+    with pytest.raises(MemException, match='Can only step index by*'):
         mem['foo':1:'asdf']
     with pytest.raises(MemException, match='Invalid index'):
         mem['foo':1:8]

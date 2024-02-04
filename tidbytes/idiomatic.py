@@ -150,10 +150,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
     def __getitem__(self, index: slice) -> Any:
         "Exclusive end index."
 
-        # TODO(pbz): It might be amazing to support negative indexes only here
-
         if isinstance(index, int):  # Simple bit index
-            out = type(self)()
+            out = indexed_meta.root_type(type(self))()
             out.rgn = op_get_bit(self.rgn, index)
             return out
 
@@ -164,20 +162,33 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         if start is stop is step is None:
             return type(self)(self)
 
-        ensure(step in (None, 1, 8), 'Can only index by bit or byte')
+        ensure(
+            step in (None, 1, 8, -1, -8),
+            'Can only step index by signed bit (1, -1) or signed byte (8, -8)'
+        )
 
-        out = type(self)()
+        out = indexed_meta.root_type(type(self))()
+
+        # TODO(pbz): Support negative: start, stop, and step
 
         match (start, stop, step):  # Bit or byte slices from here on out
-            # mem[::1]
-            case [None, None, int()]:
-                return type(self)(self)
+            # mem[::i]
+            case [None, None, 1 | 8]:
+                return self.identity()
 
-            # mem[1::1]
+            # mem[::-1]
+            case [None, None, -1]:
+                return self.reverse()
+
+            # mem[::-8]
+            case [None, None, -8]:
+                return self.reverse_bytes()
+
+            # mem[i::1]
             case [int(), None, 1]:
                 out.rgn = op_get_bits(self.rgn, start, len(self))
 
-            # mem[1::8]
+            # mem[i::8]
             case [int(), None, 8]:
                 from .natural import meta_op_byte_length
                 out.rgn = op_get_bytes(
@@ -186,22 +197,22 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                     meta_op_byte_length(self.rgn)
                 )
 
-            # mem[:1]
-            # mem[:1:1]
+            # mem[:i]
+            # mem[:i:1]
             case [None, int(), None] | [None, int(), 1]:
                 out.rgn = op_get_bits(self.rgn, 0, stop)
 
-            # mem[:1:8]
+            # mem[:i:8]
             case [None, int(), 8]:
                 out.rgn = op_get_byte(self.rgn, stop // 8)
 
-            # mem[0:1]
-            # mem[0:1:]
-            # mem[0:1:1]
+            # mem[i:i]
+            # mem[i:i:]
+            # mem[i:i:1]
             case [int(), int(), None] | [int(), int(), 1]:
                 out.rgn = op_get_bits(self.rgn, start, stop)
 
-            # mem[0:1:8]
+            # mem[i:i:8]
             case [int(), int(), 8]:
                 out.rgn = op_get_bytes(self.rgn, start, stop)
 
@@ -586,6 +597,7 @@ class Unsigned(Mem):
         a, b = int(self), int(other)
         res = int(a + b)
         try:
+            # Preserve bit length (no root_type) to ensure result fits
             return type(self)(res)
         except ContractViolationException as e:
             raise MathOpUnderOverflowException(a, '+', b, res, e) from e
@@ -602,6 +614,7 @@ class Unsigned(Mem):
         a, b = int(self), int(other)
         res = int(a - b)
         try:
+            # Preserve bit length (no root_type) to ensure result fits
             return type(self)(res)
         except ContractViolationException as e:
             raise MathOpUnderOverflowException(a, '-', b, res, e) from e
@@ -618,6 +631,7 @@ class Unsigned(Mem):
         a, b = int(self), int(other)
         res = int(a * b)
         try:
+            # Preserve bit length (no root_type) to ensure result fits
             return type(self)(res)
         except ContractViolationException as e:
             raise MathOpUnderOverflowException(a, '*', b, res, e) from e
@@ -633,6 +647,7 @@ class Unsigned(Mem):
         """
         a, b = int(self), int(other)
         res = int(a / b)
+        # Preserve bit length (no root_type) to ensure result fits
         return type(self)(res)
 
 

@@ -6,8 +6,6 @@
 
 # Fully Under Construction (Made Public To Reduce Risk Of Name Squatting)
 
-# TODO(pbz):
-
 **Need to create a graph that is the tree of re-implementation so that all the
 operations can be created in order in another language.**
 
