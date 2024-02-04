@@ -376,7 +376,6 @@ def test_signed_math():
         Signed[2](1) * 100
 
 
-# TODO(pbz): Incorporate root_type() et al
 def test_passthrough_methods():
     "This might be the most valuable test in the entire suite."
     mem = Signed[16](1)
@@ -394,7 +393,7 @@ def test_passthrough_methods():
     assert str(mem.get_bits(0, 8)) == '10000000'
     assert str(mem.get_bytes(0, 1)) == '10000000'
     assert str(mem.set_bit(8, Signed[1](-1))) == '10000000 10000000'
-    assert str(mem.set_bits(1, 1)) == '11000000 10000000'
+    assert str(mem.set_bits(1, Signed[1](-1))) == '11000000 10000000'
     assert str(mem.set_byte(0, 0)) == '00000000 10000000'
     assert str(mem.set_bytes(0, [1] * 15)) == '11111111 11111110'
     assert str(mem.truncate(8)) == '11111111'
@@ -403,4 +402,4 @@ def test_passthrough_methods():
     assert str(mem.ensure_bit_length(16)) == '11111111 00000000'
     assert str(mem.ensure_byte_length(1)) == '11111111'
     assert str(mem.ensure_byte_length(2)) == '11111111 00000000'
-    assert str(mem.concatenate(1)) == '11111111 00000000 1'
+    assert str(mem.concatenate(Signed[1](-1))) == '11111111 00000000 1'

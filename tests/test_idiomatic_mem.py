@@ -485,7 +485,6 @@ def test_mem_bytes():
     assert bytes(mem) == b'\x01\x00\x00\x00'
 
 
-# TODO(pbz): Test this with Unsigned and Signed
 def test_passthrough_methods():
     "This might be the most valuable test in the entire suite."
     mem = Mem[16](1)
