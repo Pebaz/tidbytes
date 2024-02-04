@@ -1,14 +1,11 @@
 import sys
 import pytest
 import tidbytes.codec
-
 from tidbytes.mem_types import (
     MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, L2R
 )
-from tidbytes.idiomatic import Mem, Unsigned, Signed, Str
-
+from tidbytes.idiomatic import Signed
 from . import raises_exception, UN, Slice
-
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (UN, 0b100, '00000100', 'Four'),

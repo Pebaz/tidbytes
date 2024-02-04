@@ -6,7 +6,7 @@ Design decisions:
 
 import copy
 import indexed_meta
-from typing import Any, Generic, TypeVar, Union
+from typing import Any, TypeVar, Union
 from .mem_types import (
     ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
     UnderOverflowException, MathOpUnderOverflowException, InvalidSemanticsException,
@@ -29,7 +29,7 @@ from .codec import (
     from_natural_f32, from_natural_f64, from_numeric_f32, from_numeric_f64,
     from_natural_float, from_numeric_float, from_bool, from_bit_list,
     from_grouped_bits, from_bytes, into_numeric_big_integer,
-    into_natural_big_integer, from_bytes_utf8, from_numeric_big_integer_signed,
+    into_natural_big_integer, from_numeric_big_integer_signed,
     from_numeric_big_integer_unsigned, from_natural_big_integer_unsigned,
     range_signed
 )
@@ -787,38 +787,3 @@ class Signed(Unsigned):
 
     def __int__(self):
         return into_numeric_big_integer(self.rgn)
-
-
-class Str(Mem):
-    """
-    Semantically meaningful data representing a array of UTF8 code points. Not
-    distinct from an array of unsigned 8 bit integers. Input types are
-    constrained since the output concept is the logical notion of string rather
-    than raw memory.
-    """
-
-    @classmethod
-    def from_(cls, init: T, bit_length: int) -> 'Str':
-        # If the input value is any type descended from Mem, copy construct it
-        if indexed_meta.is_instance(init, tuple(cls.mro()[:-1])):  # Skip object
-            init.validate()
-            out = MemRgn()
-            out.bytes = copy.copy(init.rgn.bytes)
-            return out
-        if isinstance(init, type(None)):
-            return MemRgn()
-        elif isinstance(init, str):
-            return from_bytes_utf8(init.encode(), bit_length)
-        elif isinstance(init, list):
-            if not init:
-                return MemRgn()
-            elif init and isinstance(init[0], int) and 0 <= init[0] <= 255:
-                return from_bytes_utf8(bytearray(init))
-            else:
-                raise InvalidInitializerException()
-        else:
-            raise InvalidInitializerException()
-
-    def __str__(self):
-        chars = (int(byte, base=2) for byte in Mem.__str__(self).split())
-        return bytearray(chars).decode()
