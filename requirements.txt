@@ -1,4 +1,4 @@
-indexed_meta
+indexed_meta>=0.0.5
 pytest>=7.2.0
 ruff
 pytest-cov

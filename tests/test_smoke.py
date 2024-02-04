@@ -155,3 +155,11 @@ def test_smoke():
     assert int(Mem(from_numeric_big_integer_unsigned(0, None))) == 0
     assert int(Mem(from_numeric_big_integer_unsigned(0, 0))) == 0
     assert int(Mem(from_numeric_big_integer_unsigned(0, 8))) == 0
+
+    # These particular copy constructors are intense. Check em
+    assert str(Signed(Unsigned(Mem(1)))) == '1', 'Copy constructor failed'
+    assert str(Signed(Mem(Unsigned(1)))) == '1', 'Copy constructor failed'
+    assert str(Unsigned(Signed(Mem(1)))) == '1', 'Copy constructor failed'
+    assert str(Unsigned(Mem(Signed[1](-1)))) == '1', 'Copy constructor failed'
+    assert str(Mem(Unsigned(Signed[1](-1)))) == '1', 'Copy constructor failed'
+    assert str(Mem(Signed(Unsigned(1)))) == '1', 'Copy constructor failed'

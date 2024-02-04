@@ -229,7 +229,9 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Mem':
-        if isinstance(init, cls):  # Copy constructor
+        # If the input value is any type descended from Mem, copy construct it
+        if indexed_meta.is_instance(init, tuple(cls.mro()[:-1])):  # Skip object
+            init.validate()
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
             return out
@@ -355,45 +357,57 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def get_bit(self, index: int) -> 'Mem':
         "See docs for `tidbytes.natural.op_get_bit`"
-        return type(self)[None](op_get_bit(self.rgn, index))
+        return indexed_meta.root_type(type(self))(op_get_bit(self.rgn, index))
 
     def get_byte(self, index: int) -> 'Mem':
         "See docs for `tidbytes.natural.op_get_byte`"
-        return type(self)[None](op_get_byte(self.rgn, index))
+        return indexed_meta.root_type(type(self))(op_get_byte(self.rgn, index))
 
     def get_bits(self, start: int, stop: int) -> 'Mem':
         "See docs for `tidbytes.natural.op_get_bits`"
-        return type(self)[None](op_get_bits(self.rgn, int(start), int(stop)))
+        return indexed_meta.root_type(type(self))(
+            op_get_bits(self.rgn, int(start), int(stop))
+        )
 
     def get_bytes(self, start: int, stop: int) -> 'Mem':
         "See docs for `tidbytes.natural.op_get_bytes`"
-        return type(self)[None](op_get_bytes(self.rgn, int(start), int(stop)))
+        return indexed_meta.root_type(type(self))(
+            op_get_bytes(self.rgn, int(start), int(stop))
+        )
 
     def set_bit(self, offset: int, payload: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_set_bit`"
         self.rgn = op_set_bit(
-            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+            self.rgn,
+            int(offset),
+            indexed_meta.root_type(type(self))(payload).rgn
         )
         return self
 
     def set_bits(self, offset: int, payload: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_set_bits`"
         self.rgn = op_set_bits(
-            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+            self.rgn,
+            int(offset),
+            indexed_meta.root_type(type(self))(payload).rgn
         )
         return self
 
     def set_byte(self, offset: int, payload: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_set_byte`"
         self.rgn = op_set_byte(
-            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+            self.rgn,
+            int(offset),
+            indexed_meta.root_type(type(self))(payload).rgn
         )
         return self
 
     def set_bytes(self, offset: int, payload: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_set_bytes`"
         self.rgn = op_set_bytes(
-            *(self.rgn, int(offset), type(self)[None](payload).rgn)
+            self.rgn,
+            int(offset),
+            indexed_meta.root_type(type(self))(payload).rgn
         )
         return self
 
@@ -404,7 +418,11 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def extend(self, amount: int, fill: T) -> 'Mem':
         "See docs for `tidbytes.natural.op_extend`"
-        self.rgn = op_extend(self.rgn, int(amount), type(self)[None](fill).rgn)
+        self.rgn = op_extend(
+            self.rgn,
+            int(amount),
+            indexed_meta.root_type(type(self))(fill).rgn
+        )
         return self
 
     def ensure_bit_length(self, length: int) -> 'Mem':
@@ -419,7 +437,10 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
     def concatenate(self, mem_right: Union['Mem', MemRgn]) -> 'Mem':
         "See docs for `tidbytes.natural.op_concatenate`"
-        self.rgn = op_concatenate(self.rgn, type(self)[None](mem_right).rgn)
+        self.rgn = op_concatenate(
+            self.rgn,
+            indexed_meta.root_type(type(self))(mem_right).rgn
+        )
         return self
 
     clone = identity
@@ -438,7 +459,9 @@ class Unsigned(Mem):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Unsigned':
-        if isinstance(init, cls):  # Copy constructors
+        # If the input value is any type descended from Mem, copy construct it
+        if indexed_meta.is_instance(init, tuple(cls.mro()[:-1])):  # Skip object
+            init.validate()
             out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
             return out
@@ -646,12 +669,10 @@ class Signed(Unsigned):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Signed':
-        if (
-            hasattr(init, indexed_meta.PARAM_NAME) and
-            issubclass(type(init)[None], cls[None])
-        ):
-            out = MemRgn()
+        # If the input value is any type descended from Mem, copy construct it
+        if indexed_meta.is_instance(init, tuple(cls.mro()[:-1])):  # Skip object
             init.validate()
+            out = MemRgn()
             out.bytes = copy.copy(init.rgn.bytes)
             return out
 
@@ -778,6 +799,12 @@ class Str(Mem):
 
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Str':
+        # If the input value is any type descended from Mem, copy construct it
+        if indexed_meta.is_instance(init, tuple(cls.mro()[:-1])):  # Skip object
+            init.validate()
+            out = MemRgn()
+            out.bytes = copy.copy(init.rgn.bytes)
+            return out
         if isinstance(init, type(None)):
             return MemRgn()
         elif isinstance(init, str):
