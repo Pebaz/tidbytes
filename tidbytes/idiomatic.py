@@ -74,12 +74,21 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         explicit control, the other codec methods are a solid choice. The output
         bit and byte order is always left to right.
         """
+        param = indexed_meta.get_param(self)
 
-        # TODO(pbz): Validate __param__
-        ensure(isinstance(indexed_meta.get_param(self), int), '')
-        ensure(indexed_meta.get_param(self) >= 0, '')
+        if param is not None:
+            ensure(
+                isinstance(param, int),
+                f'Can only parametrize memory types over unsigned integer bit '
+                f'length, got: {param!r} of type {type(param).__name__}'
+            )
+            ensure(
+                param >= 0,
+                f'Memory types with negative bit lengths are semantically '
+                f'invalid, got: {param}'
+            )
 
-        self.rgn = self.from_(init, bit_length=indexed_meta.get_param(self))
+        self.rgn = self.from_(init, bit_length=param)
         self.validate()
 
         # All codec methods treat input values as left to right bit and byte
