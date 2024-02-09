@@ -148,7 +148,9 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     contract_validate_memory(mem)
 
     if start < 0:
-        start = meta_op_byte_length(mem) - abs(start)
+        start = max(meta_op_byte_length(mem) - abs(start), 0)
+    if stop < 0:
+        stop = max(meta_op_byte_length(mem) - abs(stop), 0)
 
     ensure(
         0 <= start <= stop <= meta_op_byte_length(mem),
