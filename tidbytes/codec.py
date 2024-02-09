@@ -646,10 +646,13 @@ def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     value = collect_iterator(value)
     ensure(all(bit == 0 or bit == 1 for bit in value))
 
-    bit_length = bit_length if bit_length is not None else 1
+    bit_length = bit_length if bit_length is not None else len(value)
     out = MemRgn()
 
-    ensure(bit_length > 0, 'Cannot store bits in zero-sized memory region')
+    ensure(
+        0 <= len(value) <= bit_length,
+        f'Region of size {bit_length} not big enough to store {len(value)} bits'
+    )
 
     null = [None] * 8
 
@@ -657,6 +660,8 @@ def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
         (value[i:i + 8] + null)[:8]
         for i in range(0, len(value), 8)
     ]
+
+    out = op_ensure_bit_length(out, bit_length)
 
     return contract_validate_memory(out)
 
@@ -666,16 +671,20 @@ def from_grouped_bits(value: list[list[int]], bit_length: int) -> MemRgn:
     # Preserve iterator by collecting into list for ensure()
     value = list(list(byte) for byte in value)
 
-    ensure(all(len(byte) <= 8 for byte in value), 'Byte not long enough')
+    ensure(all(len(byte) <= 8 for byte in value), 'Malformed byte')
     ensure(
         all(all(bit == 0 or bit == 1 for bit in byte) for byte in value),
         'Malformed byte'
     )
 
-    bit_length = bit_length if bit_length is not None else 1
+    value_len = sum(len(b) for b in value)
+    bit_length = bit_length if bit_length is not None else value_len
     out = MemRgn()
 
-    ensure(bit_length > 0, 'Cannot store bits in zero-sized memory region')
+    ensure(
+        0 <= value_len <= bit_length,
+        f'Region of size {bit_length} not big enough to store {value_len} bits'
+    )
 
     null = [None] * 8
     out.bytes = [(byte[:] + null)[:8] for byte in value]

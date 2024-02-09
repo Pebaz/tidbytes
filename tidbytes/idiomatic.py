@@ -188,6 +188,9 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         match (start, stop, step):  # Bit or byte slices from here on out
             # mem[::i]
             case [None, None, 1 | 8]:
+                out = type(self)()
+                out.rgn.bytes = self.rgn.bytes[:]
+                return out
                 return self.identity()
 
             # mem[::-1]
@@ -340,7 +343,17 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                     int(init, base=2),
                     bit_length
                 )
-            return from_bytes(init.encode(), bit_length)
+            elif all(b in '0 1' for b in init):
+                return from_bit_list(
+                    [int(b) for b in init if b in '01'],
+                    bit_length
+                )
+            else:
+                raise InvalidInitializerException(
+                    'Initializer must begin with `0x`, `0b` or consist solely '
+                    'of `0 1`. To convert strings to raw memory correctly, '
+                    'call `.encode(<some codec>)` first.'
+                )
 
         elif isinstance(init, bytes):
             return from_bytes(init, bit_length)

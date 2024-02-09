@@ -24,8 +24,9 @@ class InvalidSemanticsException(MemException):
 
 
 class InvalidInitializerException(MemException):
-    def __init__(self):
-        super().__init__("Invalid initializer: Can't deduce codec")
+    def __init__(self, msg: str = None):
+        msg = (': ' + msg) if msg else ''
+        super().__init__(f"Invalid initializer: Can't deduce codec{msg}")
 
 
 class InvalidComparisonException(MemException):

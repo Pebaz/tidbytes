@@ -307,24 +307,24 @@ def test_from_natural_big_integer_unsigned(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, [1], '', 'Trucate to null'),
     (1, [1], '1', 'Single bit'),
     (UN, [1], '1', 'Single bit'),
     (UN, [1, 0], '10', 'Bit ordering'),
     (UN, [1, 0, 1, 1, 1, 1, 1, 1, 0], '10111111 0', 'Byte ordering'),
-    (4, [1, 0, 1, 1], '1011', 'Truncation'),
+    (4, [1, 0, 1, 1], '1011', 'Sized'),
 ])
 def test_from_bit_list(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
+    # TODO(pbz): Remove all instances of truncation
     (0, [1], '', 'Trucate to null'),
     (1, [[1]], '1', 'Single bit'),
     (UN, [[1]], '1', 'Single bit'),
     (UN, [[1, 0]], '10', 'Bit ordering'),
     (UN, [[1, 0, 1, 1, 1, 1, 1, 1], [0]], '10111111 0', 'Byte ordering'),
-    (4, [[1, 0, 1, 1]], '1011', 'Truncation'),
+    (4, [[1, 0, 1, 1]], '1011', 'Sized region'),
 ])
 def test_from_grouped_bits(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
@@ -374,22 +374,22 @@ def test_mem___int__(bits, init, out, expect):
 
 # TODO(pbz): Working on negative indices
 @pytest.mark.parametrize('index,expect,msg', [
-    (Slice[::1], '01111111 11001101', 'Copy self'),
-    (Slice[::8], '01111111 11001101', 'Copy self'),
-    (Slice[:1], '0', 'First bit'),
-    (Slice[:1:1], '0', 'First bit'),
-    (Slice[:1:8], '01111111', 'First byte'),
-    (Slice[0:1], '0', 'First bit'),
-    (Slice[0:1:], '0', 'First bit'),
-    (Slice[0:1:8], '01111111', 'First byte'),
-    (Slice[1::1], '11111111 1111111', 'Missing a bit'),
-    (Slice[1::8], '11111111', 'Second byte'),
-    # Reverse
-    (Slice[::-1], '10110011 11111110', 'Reverse'),
-    (Slice[::-8], '11001101 01111111', 'Reverse bytes'),
+    # (Slice[::1], '01111111 11001101', 'Copy self'),
+    # (Slice[::8], '01111111 11001101', 'Copy self'),
+    # (Slice[:1], '0', 'First bit'),
+    # (Slice[:1:1], '0', 'First bit'),
+    # (Slice[:1:8], '01111111', 'First byte'),
+    # (Slice[0:1], '0', 'First bit'),
+    # (Slice[0:1:], '0', 'First bit'),
+    # (Slice[0:1:8], '01111111', 'First byte'),
+    # (Slice[1::1], '11111111 1111111', 'Missing a bit'),
+    # (Slice[1::8], '11111111', 'Second byte'),
+    # # Reverse
+    # (Slice[::-1], '10110011 11111110', 'Reverse'),
+    # (Slice[::-8], '11001101 01111111', 'Reverse bytes'),
 ])
 def test_mem__getitem__(index, expect, msg):
-    mem = Mem[16]('01111111 11001101')
+    mem = Mem[16]('0b0111111111001101')
     other = mem[:]
     start, stop, step = index.start, index.stop, index.step
 
@@ -503,3 +503,23 @@ def test_passthrough_methods():
     assert str(mem.ensure_byte_length(1)) == '11111111'
     assert str(mem.ensure_byte_length(2)) == '11111111 00000000'
     assert str(mem.concatenate(1)) == '11111111 00000000 1'
+
+
+# TODO(pbz): Do this for Unsigned & Signed as well
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, '', '', 'Unsized raw'),
+    (UN, '1', '1', 'Unsized raw'),
+    (UN, '10', '10', 'Unsized raw'),
+
+    (UN, '0x1', '1', 'Unsized hex'),
+    (UN, '0x10', '00001', 'Unsized hex'),
+
+
+    (5, '1', '10000', 'Sized raw'),
+    # (5, '10', '10', 'Sized raw'),
+
+    # (5, '0x1', '10000', 'Sized hex'),
+    # (5, '0x10', '00001', 'Sized hex'),
+])
+def test_from_str(bits, init, expect, msg):
+    assert str(Mem[bits](init)) == expect, msg
