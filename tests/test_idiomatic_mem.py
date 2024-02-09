@@ -401,8 +401,11 @@ def test_mem___int__(bits, init, out, expect):
     (Slice[-8:-4:1], '1100', 'Start, stop, step bit negative'),
     (Slice[-2:-1:8], '01111111', 'Start, stop, step byte negative'),
 
+    (Slice[10:2:1], '01111111 11001101', 'Limits'),
+
     # TODO(pbz): Test limits like -10000
     # TODO(pbz): Check indexes backwards like: [10:4]
+    # TODO(pbz): Allow this to work: [10:2:-1] (iterate backwards)
 ])
 def test_mem__getitem__(index, expect, msg):
     mem = Mem[16]('0111111111001101')
