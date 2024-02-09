@@ -19,7 +19,7 @@ from .natural import (
     op_reverse_bytes, op_reverse_bits, op_get_bit, op_get_byte, op_get_bits,
     op_get_bytes, op_set_bit, op_set_bits, op_set_byte, op_set_bytes,
     op_truncate, op_extend, op_ensure_bit_length, op_ensure_byte_length,
-    op_concatenate
+    op_concatenate, meta_op_byte_length
 )
 from .codec import (
     from_natural_u8, from_natural_u16, from_natural_u32, from_natural_u64,
@@ -186,50 +186,46 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         # TODO(pbz): Support negative: start, stop, and step
 
         match (start, stop, step):  # Bit or byte slices from here on out
-            # mem[::i]
+            # mem[::i] Identity
             case [None, None, 1 | 8]:
-                out = type(self)()
-                out.rgn.bytes = self.rgn.bytes[:]
-                return out
                 return self.identity()
 
-            # mem[::-1]
+            # mem[::-1] Reverse
             case [None, None, -1]:
                 return self.reverse()
 
-            # mem[::-8]
+            # mem[::-8] Reverse bytes
             case [None, None, -8]:
                 return self.reverse_bytes()
 
-            # mem[i::1]
+            # mem[i::1] Start, step bit
             case [int(), None, 1]:
                 out.rgn = op_get_bits(self.rgn, start, len(self))
 
-            # mem[i::8]
+            # mem[i::8] Start, step byte
             case [int(), None, 8]:
-                from .natural import meta_op_byte_length
                 out.rgn = op_get_bytes(
                     self.rgn,
                     start,
                     meta_op_byte_length(self.rgn)
                 )
 
-            # mem[:i]
-            # mem[:i:1]
+            # mem[:i] Stop
+            # mem[:i:1] Stop, step bit
             case [None, int(), None] | [None, int(), 1]:
                 out.rgn = op_get_bits(self.rgn, 0, stop)
 
-            # mem[:i:8]
+            # mem[:i:8] Stop, step byte
             case [None, int(), 8]:
-                out.rgn = op_get_byte(self.rgn, stop // 8)
+                out.rgn = op_get_bytes(self.rgn, 0, stop)
 
-            # mem[i:i]
-            # mem[i:i:]
-            # mem[i:i:1]
+            # mem[i:i] Start, stop
+            # mem[i:i:] Start, stop
+            # mem[i:i:1] Start, stop, step bit
             case [int(), int(), None] | [int(), int(), 1]:
                 out.rgn = op_get_bits(self.rgn, start, stop)
 
-            # mem[i:i:8]
+            # mem[i:i:8] Start, stop, step byte
             case [int(), int(), 8]:
                 out.rgn = op_get_bytes(self.rgn, start, stop)
 
