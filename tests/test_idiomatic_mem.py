@@ -376,8 +376,6 @@ def test_mem___int__(bits, init, out, expect):
 @pytest.mark.parametrize('index,expect,msg', [
     (Slice[::1], '01111111 11001101', 'Identity'),
     (Slice[::8], '01111111 11001101', 'Identity'),
-    (Slice[::-1], '10110011 11111110', 'Reverse'),
-    (Slice[::-8], '11001101 01111111', 'Reverse bytes'),
     (Slice[2::1], '11111111 001101', 'Start, step bit'),
     (Slice[1::8], '11001101', 'Start, step byte'),
     (Slice[:4], '0111', 'Stop'),
@@ -387,6 +385,20 @@ def test_mem___int__(bits, init, out, expect):
     (Slice[8:12:], '1100', 'Start, stop'),
     (Slice[8:12:1], '1100', 'Start, stop, step bit'),
     (Slice[0:2:8], '01111111 11001101', 'Start, stop, step byte'),
+
+    (Slice[::-1], '10110011 11111110', 'Reverse'),
+    (Slice[::-8], '11001101 01111111', 'Reverse bytes'),
+    (Slice[-4::1], '1101', 'Start, step bit negative'),
+    (Slice[-1::8], '11001101', 'Start, step byte negative'),
+    (Slice[:-4], '01111111 1100', 'Stop negative'),
+    # (Slice[:4:1], '0111', 'Stop, step bit negative'),
+    # (Slice[:2:8], '01111111 11001101', 'Stop, step byte'),
+    # (Slice[8:12], '1100', 'Start, stop'),
+    # (Slice[8:12:], '1100', 'Start, stop'),
+    # (Slice[8:12:1], '1100', 'Start, stop, step bit'),
+    # (Slice[0:2:8], '01111111 11001101', 'Start, stop, step byte'),
+
+    # TODO(pbz): Test limits like -10000
 ])
 def test_mem__getitem__(index, expect, msg):
     mem = Mem[16]('0111111111001101')

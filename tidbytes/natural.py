@@ -123,6 +123,12 @@ def op_get_bits(mem: MemRgn, start: int, stop: int) -> MemRgn:
     Invariant: input memory must be valid and mapped to program's universe.
     """
     contract_validate_memory(mem)
+
+    if start < 0:
+        start = max(meta_op_bit_length(mem) - abs(start), 0)
+    if stop < 0:
+        stop = max(meta_op_bit_length(mem) - abs(stop), 0)
+
     ensure(0 <= start <= stop <= meta_op_bit_length(mem), 'Index out of bounds')
 
     out = MemRgn()
@@ -140,6 +146,10 @@ def op_get_bytes(mem: MemRgn, start: int, stop: int) -> MemRgn:
     Invariant: input memory must be valid and mapped to program's universe.
     """
     contract_validate_memory(mem)
+
+    if start < 0:
+        start = meta_op_byte_length(mem) - abs(start)
+
     ensure(
         0 <= start <= stop <= meta_op_byte_length(mem),
         'Index out of bounds'
