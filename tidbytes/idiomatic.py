@@ -183,6 +183,8 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         out = indexed_meta.root_type(type(self))()
 
+        raise Exception('do a wrap_and_trunc_indices()')
+
         # TODO(pbz): Support negative: start, stop, and step
 
         match (start, stop, step):  # Bit or byte slices from here on out
