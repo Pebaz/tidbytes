@@ -13,5 +13,7 @@ def raises_exception(expected_exception) -> object:
 UN = None  # Unsized
 
 # Helper type to test literal slice syntax without explicitly using `slice()`
-_slicer = lambda self, index: slice(index, index + 1) if isinstance(index, int) else index
+_slicer = lambda self, index: (
+    slice(index, index + 1) if isinstance(index, int) else index
+)
 Slice = type('Slice', tuple(), dict(__getitem__=_slicer))()

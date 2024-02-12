@@ -35,7 +35,7 @@ def test_from_numeric_u16(bits, init, expect, msg):
         16,
         0b00000000000000000000000100000101,
         '00000001 00000101',
-        'Truncate'
+        'Syntactic similarity'
     ),
 ])
 def test_from_numeric_u32(bits, init, expect, msg):
@@ -62,7 +62,7 @@ def test_from_numeric_u32(bits, init, expect, msg):
         32,
         0b0000000000000000000000000000000000000001000001010000000100000101,
         '00000001 00000101 00000001 00000101',
-        'Truncate'
+        'Sintactic similarity'
     ),
 ])
 def test_from_numeric_u64(bits, init, expect, msg):

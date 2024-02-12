@@ -23,7 +23,6 @@ def test_smoke():
             lambda_fn()
 
     # Pretends input is unsigned unless it's negative:
-    assert str(Mem[0](0)) == ''
     assert str(Mem[1](0)) == '0'
     assert str(Mem[1](1)) == '1'
     ensure_fails(lambda: Mem[1](2))
@@ -135,7 +134,6 @@ def test_smoke():
     assert range_signed(8) == (-128, 127)
     assert is_in_range_unsigned(1, 8)
     assert is_in_range_signed(1, 8)
-    assert int(Signed[0]()) == 0
 
     assert str(Mem(0)) == '0'
     assert str(Unsigned(0)) == '0'

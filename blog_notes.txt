@@ -1,4 +1,0 @@
-# TODO(pbz): Both C language codec functions and also Python
-
-# ! Codecs can never start with `op_` since that would mean they are part of an
-# ! algebra. This is fine, but they are not compatible with the Von Neumann API.

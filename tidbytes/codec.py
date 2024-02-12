@@ -642,6 +642,12 @@ def from_bool(value: bool, bit_length: int) -> MemRgn:
 
 def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
     "Memory region from flat array of ints being either 0 or 1"
+    ensure(
+        bit_length != 0 if bool(value) else True,
+        f'Loss of data via truncation: {bit_length=}'
+    )
+    print(f'{bit_length != 0 if bool(value) else True}, {bit_length=}')
+
     # Preserve iterator by collecting into list for ensure()
     value = collect_iterator(value)
     ensure(all(bit == 0 or bit == 1 for bit in value))

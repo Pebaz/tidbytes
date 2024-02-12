@@ -8,7 +8,6 @@ from tidbytes.idiomatic import Mem, Unsigned, Signed
 from . import raises_exception, UN, Slice
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b100, '', 'Truncate to null'),
     (UN, 0b100, '00100000', 'Four'),
     (UN, 0b1011, '11010000', 'Single byte'),
 ])
@@ -17,7 +16,6 @@ def test_from_natural_u8(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1011, '', 'Truncate to null'),
     (UN, 0b1011, '11010000 00000000', 'Single byte'),
     (UN, 0b100000101, '10100000 10000000', '2 bytes'),
 ])
@@ -26,17 +24,15 @@ def test_from_natural_u16(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1011, '', 'Truncate to null'),
     (UN, 0b1011, '11010000 00000000 00000000 00000000', 'Single byte'),
     (UN, 0b101100001011, '11010000 11010000 00000000 00000000', '4 bytes'),
-    (16, 0b101100001011, '11010000 11010000', 'Truncate'),
+    (16, 0b101100001011, '11010000 11010000', 'Pad'),
 ])
 def test_from_natural_u32(bits, init, expect, msg):
     assert str(Mem[bits](u32(init))) == expect, msg
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1011, '', 'Truncate to null'),
     (
         UN,
         0b1011,
@@ -55,7 +51,7 @@ def test_from_natural_u32(bits, init, expect, msg):
         32,
         0b1011000010110000101100001011,
         '11010000 11010000 11010000 11010000',
-        'Truncate'
+        'Pad'
     ),
 ])
 def test_from_natural_u64(bits, init, expect, msg):
@@ -63,7 +59,6 @@ def test_from_natural_u64(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
     (UN, 0b1, '10000000', 'Positive'),
     (UN, -0b1, '11111111', 'Negative'),
     (UN, 0b10, '01000000', 'Positive'),
@@ -76,7 +71,6 @@ def test_from_natural_i8(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
     (UN, 0b1, '10000000 00000000', 'Positive'),
     (UN, -0b1, '11111111 11111111', 'Negative'),
     (UN, 0b10, '01000000 00000000', 'Positive'),
@@ -89,7 +83,6 @@ def test_from_natural_i16(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
     (UN, 0b1, '10000000 00000000 00000000 00000000', 'Positive'),
     (UN, -0b1, '11111111 11111111 11111111 11111111', 'Negative'),
     (UN, 0b10, '01000000 00000000 00000000 00000000', 'Positive'),
@@ -102,7 +95,6 @@ def test_from_natural_i32(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 0b1, '', 'Truncate to null'),
     (
         UN,
         0b1,
@@ -139,7 +131,6 @@ def test_from_natural_i64(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (UN, 1.0, '00000000 00000000 00000001 11111100', None, 'Positive'),
     (UN, -1.0, '00000000 00000000 00000001 11111101', None, 'Negative'),
     (33, 1.0, '00000000 00000000 00000001 11111100 0', None, 'Pad positive'),
@@ -153,7 +144,6 @@ def test_from_natural_f32(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (
         UN,
         1.0,
@@ -195,7 +185,6 @@ def test_from_natural_f64(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (UN, 1.0, '00000000 00000000 00000001 11111100', None, 'Positive'),
     (UN, -1.0, '00000000 00000000 00000001 11111101', None, 'Negative'),
     (33, 1.0, '00000000 00000000 00000001 11111100 0', None, 'Pad positive'),
@@ -214,7 +203,6 @@ def test_from_natural_float_python32(bits, init, expect, exc, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
-    (0, 1.0, '', None, 'Truncate to null'),
     (
         UN,
         1.0,
@@ -273,7 +261,6 @@ def test_from_bytes(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, True, '', 'Truncate to null'),
     (UN, True, '1', 'Single bit true'),
     (UN, False, '0', 'Single bit false'),
     (3, True, '100', 'Multiple bits true'),
@@ -284,7 +271,6 @@ def test_from_bool(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    (0, 1, '', 'Trucate to null'),
     (None, 1, '1', 'Single bit, intrinsic pad bit for twos complement'),
     (None, 4, '001', 'Bit ordering'),
     (
@@ -318,8 +304,6 @@ def test_from_bit_list(bits, init, expect, msg):
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [
-    # TODO(pbz): Remove all instances of truncation
-    (0, [1], '', 'Trucate to null'),
     (1, [[1]], '1', 'Single bit'),
     (UN, [[1]], '1', 'Single bit'),
     (UN, [[1, 0]], '10', 'Bit ordering'),
@@ -338,10 +322,11 @@ def test_from_bit_length():
 @pytest.mark.parametrize('bits,init,expect', [
     (UN, 0, False),
     (UN, 1, True),
-    (0, 0, False),
     (2, 0, False),
-    (0, 1, False),
     (2, 1, True),
+    # This is a dangerous precedent but is necessary because it's not truncating
+    # anything it's converting 0 to a zero sized memory region (0 == null in C)
+    (0, 0, False),
 ])
 def test_mem___bool__(bits, init, expect):
     mem = Mem[bits](init)
@@ -362,13 +347,7 @@ def test_mem___int__(bits, init, out, expect):
     assert int(mem) == out, f'Incorrect number: {init}'
 
 
-# TODO(pbz): Make sure wrapping negatives works for op_get_bit, etc.
-
-
-# TODO(pbz): Working on negative indices
 @pytest.mark.parametrize('index,expect,msg', [
-    # (Slice[0], '0', 'Bit index'),
-    # (Slice[1], '1', 'Bit index'),
     (Slice[::1], '01111111 11001101', 'Identity'),
     (Slice[::8], '01111111 11001101', 'Identity'),
     (Slice[2::1], '11111111 001101', 'Start, step bit'),
@@ -392,9 +371,10 @@ def test_mem___int__(bits, init, out, expect):
     (Slice[-8:-4:], '1100', 'Start, stop negative'),
     (Slice[-8:-4:1], '1100', 'Start, stop, step bit negative'),
     (Slice[-2:-1:8], '01111111', 'Start, stop, step byte negative'),
-    # TODO(pbz): Test limits like -10000 should be akin to 0
-    # TODO(pbz): Check indexes backwards like: [10:4] returns []
-    # TODO(pbz): Allow this to work: [10:2:-1] (iterate backwards)
+    # TODO(pbz): Make sure wrapping negatives works for op_get_bit, etc.
+    # TODO Test limits like -10000 should be akin to 0
+    # TODO Check indexes backwards like: [10:4] returns []
+    # TODO Allow this to work: [10:2:-1] (iterate backwards)
 ])
 def test_mem__getitem__(index, expect, msg):
     mem = Mem[16]('0111111111001101')
