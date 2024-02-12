@@ -40,6 +40,28 @@ T = TypeVar('T')
 # ! Idiomatic API
 # ! ----------------------------------------------------------------------------
 
+# TODO(pbz): Probably better formalize the indexing logic.
+# def wrap_and_trunc_indices(start, stop, length):
+#     "Acconts for exclusive end index, negatives, limits, and step increment."
+#     # 1. start > stop, -step
+#     # 2. start < stop, -step
+#     # 3. start < stop step
+#     # 4. start > stop, step
+#     # 5. start > length
+#     # 6. stop > length
+#     # 7. start < 0
+#     # 8. stop < 0
+#     # ensure(step in (None, 1, -1, 8, -8), f'Step only by bit or byte: {step=}')
+
+#     start = max(length - start, 0) if start < 0 else start
+#     ensure(start < length, f'Start index out of bounds: {start=}, {length=}')
+
+#     stop = max(length - stop, 0) if stop < 0 else stop
+#     ensure(stop < length, f'Stop index out of bounds: {stop=}, {length=}')
+
+#     return start, stop
+
+
 class Mem(metaclass=indexed_meta.IndexedMetaclass):
     """
     "Pure" memory. Can work with any kind of input data and can perform the most
@@ -182,8 +204,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
         )
 
         out = indexed_meta.root_type(type(self))()
-
-        raise Exception('do a wrap_and_trunc_indices()')
 
         # TODO(pbz): Support negative: start, stop, and step
 

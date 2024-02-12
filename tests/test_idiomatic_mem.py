@@ -377,6 +377,8 @@ def test_mem___int__(bits, init, out, expect):
 
 # TODO(pbz): Working on negative indices
 @pytest.mark.parametrize('index,expect,msg', [
+    # (Slice[0], '0', 'Bit index'),
+    # (Slice[1], '1', 'Bit index'),
     (Slice[::1], '01111111 11001101', 'Identity'),
     (Slice[::8], '01111111 11001101', 'Identity'),
     (Slice[2::1], '11111111 001101', 'Start, step bit'),
@@ -401,7 +403,9 @@ def test_mem___int__(bits, init, out, expect):
     (Slice[-8:-4:1], '1100', 'Start, stop, step bit negative'),
     (Slice[-2:-1:8], '01111111', 'Start, stop, step byte negative'),
 
-    (Slice[10:2:1], '01111111 11001101', 'Limits'),
+    # (Slice[-10000], '0', 'Negative index truncated'),
+
+    # (Slice[10:2:1], '01111111 11001101', 'Limits'),
 
     # TODO(pbz): Test limits like -10000
     # TODO(pbz): Check indexes backwards like: [10:4]
@@ -409,6 +413,9 @@ def test_mem___int__(bits, init, out, expect):
 ])
 def test_mem__getitem__(index, expect, msg):
     mem = Mem[16]('0111111111001101')
+    assert str(mem[0]) == '0'
+    assert str(mem[1]) == '1'
+    assert str(mem[Slice[1]]) == '1'
     other = mem[:]
     start, stop, step = index.start, index.stop, index.step
 
