@@ -335,16 +335,6 @@ def test_from_bit_length():
     assert str(mem) == '0', 'Invalid!'
 
 
-def test_from_hex_str():
-    mem = Mem('0xFE')
-    assert str(mem) == '01111111'  # No padding bit for twos-complement
-
-
-def test_from_bin_str():
-    mem = Mem('0b1011')
-    assert str(mem) == '1101'  # No padding bit for twos-complement
-
-
 @pytest.mark.parametrize('bits,init,expect', [
     (UN, 0, False),
     (UN, 1, True),
@@ -402,13 +392,8 @@ def test_mem___int__(bits, init, out, expect):
     (Slice[-8:-4:], '1100', 'Start, stop negative'),
     (Slice[-8:-4:1], '1100', 'Start, stop, step bit negative'),
     (Slice[-2:-1:8], '01111111', 'Start, stop, step byte negative'),
-
-    # (Slice[-10000], '0', 'Negative index truncated'),
-
-    # (Slice[10:2:1], '01111111 11001101', 'Limits'),
-
-    # TODO(pbz): Test limits like -10000
-    # TODO(pbz): Check indexes backwards like: [10:4]
+    # TODO(pbz): Test limits like -10000 should be akin to 0
+    # TODO(pbz): Check indexes backwards like: [10:4] returns []
     # TODO(pbz): Allow this to work: [10:2:-1] (iterate backwards)
 ])
 def test_mem__getitem__(index, expect, msg):
@@ -531,27 +516,14 @@ def test_passthrough_methods():
     assert str(mem.concatenate(1)) == '11111111 00000000 1'
 
 
-# TODO(pbz): Do this for Unsigned & Signed as well
 @pytest.mark.parametrize('bits,init,expect,msg', [
     (UN, '', '', 'Unsized raw'),
 
     (UN, '1', '1', 'Unsized raw'),
     (UN, '10', '10', 'Unsized raw'),
 
-    (UN, '0x1', '1', 'Unsized hex'),
-    (UN, '0x10', '00001', 'Unsized hex'),
-
-    (UN, '0b1', '1', 'Unsized bin'),
-    (UN, '0b10', '01', 'Unsized bin'),
-
     (5, '1', '10000', 'Sized raw'),
     (5, '10', '10000', 'Sized raw'),
-
-    (5, '0x1', '10000', 'Sized hex'),
-    (5, '0x10', '00001', 'Sized hex'),
-
-    (5, '0b1', '10000', 'Sized bin'),
-    (5, '0b10', '01000', 'Sized bin'),
 ])
 def test_from_str(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg

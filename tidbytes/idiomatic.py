@@ -205,8 +205,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         out = indexed_meta.root_type(type(self))()
 
-        # TODO(pbz): Support negative: start, stop, and step
-
         match (start, stop, step):  # Bit or byte slices from here on out
             # mem[::i] Identity
             case [None, None, 1 | 8]:
@@ -256,6 +254,7 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         return out.validate()
 
+    # TODO(pbz): Support asignment to slice for supporting structs
     def __setitem__(self, index, payload):
         """
         Sets a range of bits with the given payload.
@@ -351,26 +350,16 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
                 raise InvalidInitializerException()
 
         elif isinstance(init, str):
-            if init and init.startswith(('0x', '0X')):
-                return from_natural_big_integer_unsigned(
-                    int(init, base=16),
-                    bit_length
-                )
-            elif init and init.startswith(('0b', '0B')):
-                return from_natural_big_integer_unsigned(
-                    int(init, base=2),
-                    bit_length
-                )
-            elif all(b in '0 1' for b in init):
+            if all(b in '0 1' for b in init):
                 return from_bit_list(
                     [int(b) for b in init if b in '01'],
                     bit_length
                 )
             else:
                 raise InvalidInitializerException(
-                    'Initializer must begin with `0x`, `0b` or consist solely '
-                    'of `0 1`. To convert strings to raw memory correctly, '
-                    'call `.encode(<some codec>)` first.'
+                    'Initializer must consist solely of `0 1`. To convert '
+                    'strings to raw memory correctly, call this first: '
+                    '`.encode(<some codec>)`'
                 )
 
         elif isinstance(init, bytes):
@@ -553,17 +542,17 @@ class Unsigned(Mem):
                 raise InvalidInitializerException()
 
         elif isinstance(init, str):
-            if init and init.startswith(('0x', '0X')):
-                return from_numeric_big_integer_unsigned(
-                    int(init, base=16),
+            if all(b in '0 1' for b in init):
+                return from_bit_list(
+                    [int(b) for b in init if b in '01'],
                     bit_length
                 )
-            elif init and init.startswith(('0b', '0B')):
-                return from_numeric_big_integer_unsigned(
-                    int(init, base=2),
-                    bit_length
+            else:
+                raise InvalidInitializerException(
+                    'Initializer must consist solely of `0 1`. To convert '
+                    'strings to raw memory correctly, call this first: '
+                    '`.encode(<some codec>)`'
                 )
-            return from_bytes(init.encode(), bit_length)
 
         elif isinstance(init, tuple):
             return from_bytes(init)
@@ -767,12 +756,17 @@ class Signed(Unsigned):
                 raise InvalidInitializerException()
 
         elif isinstance(init, str):
-            codec = from_numeric_big_integer_signed
-            if init and init.startswith(('0x', '0X')):
-                return codec(int(init, base=16), bit_length)
-            elif init and init.startswith(('0b', '0B')):
-                return codec(int(init, base=2), bit_length)
-            return from_bytes(init.encode(), bit_length)
+            if all(b in '0 1' for b in init):
+                return from_bit_list(
+                    [int(b) for b in init if b in '01'],
+                    bit_length
+                )
+            else:
+                raise InvalidInitializerException(
+                    'Initializer must consist solely of `0 1`. To convert '
+                    'strings to raw memory correctly, call this first: '
+                    '`.encode(<some codec>)`'
+                )
 
         elif isinstance(init, tuple):
             return from_bytes(init)

@@ -283,15 +283,6 @@ def test_from_numeric_big_integer(bits, init, expect, msg):
     assert str(Signed[bits](init)) == expect, msg
 
 
-def test_signed_from_hex_str():
-    num = Signed('0xFE')
-    assert str(num) == '01111111 0'  # Padding bit for twos-complement
-
-def test_signed_from_bin_str():
-    num = Signed('0b1011')
-    assert str(num) == '01011'  # Padding bit for twos-complement
-
-
 @pytest.mark.parametrize('bits,init,expect', [
     (2, 0, '00'),
     (2, 1, '01'),
@@ -400,3 +391,16 @@ def test_passthrough_methods():
     assert str(mem.ensure_byte_length(1)) == '11111111'
     assert str(mem.ensure_byte_length(2)) == '11111111 00000000'
     assert str(mem.concatenate(Signed[1](-1))) == '11111111 00000000 1'
+
+
+@pytest.mark.parametrize('bits,init,expect,msg', [
+    (UN, '', '', 'Unsized raw'),
+
+    (UN, '1', '1', 'Unsized raw'),
+    (UN, '10', '10', 'Unsized raw'),
+
+    (5, '1', '10000', 'Sized raw'),
+    (5, '10', '10000', 'Sized raw'),
+])
+def test_from_str(bits, init, expect, msg):
+    assert str(Signed[bits](init)) == expect, msg
