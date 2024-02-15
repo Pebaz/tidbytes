@@ -1,3 +1,195 @@
+# The Ninth Bit
+
+↪ Reasoning about the ninth bit within the context of programming computers is not as straightforward as it might seem. It entails preconceived notions on the part of the programmer about how the runtime CPU architecture loads bits into registers as well as assumptions around the origin of those bits. The ability to refer to singular bits is not a capability natural to the Von Neuman computer architecture due to byte addressing, but there is utility in doing so nonetheless. Some applications of referring to bits is data format encoding, structure bit fields and layout, and machine code instruction encoding. As such, to get around the limitation of bytes as the lone addressable unit of memory, bit locations are calculated at runtime through the use of arithmetic and bit shifting. This is due to the limitations in the available instructions to the assembly programmer. However, as will be seen below, thinking past this limitation in a higher level of software provides logical coherency that could aid application programmers when integrating with lower level libraries and operating systems.
+
+# What Is The Ninth Bit?
+
+Referring to the ninth bit of a region of memory should be trivial. It is, isn’t it? It turns out that this is not as straightforward as it might seem. Depending on the byte order, (referred to with the canonical moniker “endianness”), the ninth bit may appear to the left or the right of the first bit (bit zero).
+
+> ***The Tidbytes memory algebra is based off of the concept of Identity Order which means the first bit is always the leftmost bit of the leftmost byte.***
+
+## Identity Order
+
+When both the bit and byte order of a region of memory is left to right, this is called “Identity Order” in Tidbytes.
+
+```mermaid
+flowchart LR;
+    subgraph b[Byte 1]
+        direction LR
+        b0((0)) --> b1[0] --> b2[0] --> b3[0] --> b4[0] --> b5[0] --> b6[0] --> b7[0]
+    end
+    subgraph a[Byte 0]
+        direction LR
+        a0((0)) --> a1[0] --> a2[0] --> a3[0] --> a4[0] --> a5[0] --> a6[0] --> a7[0]
+    end
+    a ==> b
+```
+
+This is the most useful memory order for bit reading (indexing, offsetting) and writing (set, concat, extend, truncate) operations because it matches most mathematical notation such as equations and cardinal graphs. For memory in identity order, it is unlikely to be semantically meaningful in a primitive (scalar) way. Generally, memory in identity order tends to be for everything *except* for directly storing data. Floats.
+
+For identity order memory, the first and ninth bits are the leftmost bit of the leftmost byte and the leftmost bit of the second byte from the left:
+
+```mermaid
+flowchart LR;
+    subgraph b[Byte 1]
+        direction LR
+        b0[[0]] --> b1[0] --> b2[0] --> b3[0] --> b4[0] --> b5[0] --> b6[0] --> b7[0]
+    end
+    subgraph a[Byte 0]
+        direction LR
+        a0[[0]] --> a1[0] --> a2[0] --> a3[0] --> a4[0] --> a5[0] --> a6[0] --> a7[0]
+    end
+    a ==> b
+    style a0 fill:#f9f,stroke:#333,stroke-width:4px
+    style b0 fill:#f9f,stroke:#333,stroke-width:4px
+
+    subgraph legend[Legend]
+        direction TB
+        _0[First Bit] --> a0
+        _1[Ninth Bit] --> b0
+    end
+```
+
+## Numeric Data
+
+```mermaid
+flowchart RL;
+    subgraph b[Byte 1]
+        direction LR
+        b0((0)) --> b1[0] --> b2[0] --> b3[0] --> b4[0] --> b5[0] --> b6[0] --> b7[0]
+    end
+    subgraph a[Byte 0]
+        direction LR
+        a0((0)) --> a1[0] --> a2[0] --> a3[0] --> a4[0] --> a5[0] --> a6[0] --> a7[0]
+    end
+    a ==> b
+```
+
+# What Makes Tidbytes An Algebra
+
+Tidbytes consists of a single data type: `MemRgn`, and a collection of operations that takes `MemRgn` as a type of input and always produces `MemRgn` as an output. `MemRgn` represents a region of memory of a given bit (not byte) length, even though the Von Neumann computer architecture only allows memory regions of a given byte (not bit) length. In both cases, memory is not the only built in concept: addresses are also a fundamental concept to the Von Neumann computer architecture. They can represent indexes (addresses), offsets (program counter), and lengths (region byte width). This means that the Von Neumann architecture natively supports numeric data as it pertains to addressing, offsetting, and slicing memory. As such, numeric data is the only other type of input type to the fundamental Tidbytes operations.
+
+> *It should be noted that “Von Neumann Architecture” is referring mostly to memory consisting of a sequence of bytes rather than the ALU, Controller, Store, or IO components. As such, this designation might be closer to the theory of computation than a specific computer architecture.*
+
+# Memory Operations
+
+- `op_identity`: maps a memory region to itself (multiplies by 1)
+
+- `op_reverse_bytes`: transforms little endian to big endian and vice versa
+
+- `op_reverse_bits`: reverses the bits of each byte while maintaining byte order
+
+- `op_reverse`: reverses both bits and bytes, effectively flipping the entire region
+
+- `op_get_bits`: slices out a range of bits into another range of bits
+
+- `op_set_bits`: sets a range of bits with another range of bits
+
+- `op_truncate`:
+
+- `op_extend`:
+
+- `op_ensure_bit_length`:
+
+- `op_concatenate`:
+
+# What’s with the “Natural” Nomenclature
+
+“Natural” in this case is referring to basically the Von Neumann computer architecture since it is by far the most used in practice. Technically, it is referring to the theory of computation rather than a specific computer architecture.
+
+# Glossary of Terms
+
+- Natural:
+
+- Foreign:
+
+- Origin:
+
+- Identity:
+
+# Memory Origin And Universes
+
+Every memory region within a given program has an origin. Fundamental properties of memory origin include bit and byte order. For the purposes of the Tidbytes memory algebra, only pure left-to-right and right-to-left bit and byte orders are supported, leaving split order as an future extension, should it prove it’s utility.
+
+The most common orders are left-to-right (little endian) and right-to-left (big endian). Big endian matches how things are written while little endian matches zero-indexing of bytes.
+
+Although it is commonly thought that bits always go from right-to-left, on occasion they also go from left to right. This can be the case when slicing out bit fields from structs that are smaller that a byte or otherwise cross byte boundaries. In such cases, is the first bit on the far right or on the far left? This is an intriguing duality. Memory origin does seem to matter then. When considering the entire struct, the first bit is always the leftmost bit of the leftmost byte. When considering numeric data, the first bit is the rightmost bit of the rightmost byte. Strange.
+
+The use case for transforming between memory universes often comes up when reading from a file or a network socket. When reading bytes from a file, they are read (logically) from left to right one at a time. These bytes come from an entirely separate memory universe: the universe of the file format. Once they have been read into memory, they are now within the memory universe of the program, although they have not yet been transformed to identity order.
+
+> ***Amazingly, simply applying a foreign memory region’s bit and byte order as a transformation on itself produces that same region in identity order, easily usable by the host program. This is a surprising insight which ensures that the “first bit” is always the leftmost bit of the leftmost byte.***
+
+
+
+However, each individual byte is generally treated as a C `char` so it is effectively a numeric value having right-to-left bit order and a pre-declared byte order dictated by the file format.
+
+
+
+read from file
+
+this leaves
+
+show how to index bits in ASM and C operations
+
+zero-indexing bytes
+
+reverse indexing bytes for numeric values
+
+Numeric: R2L bits, R2L bytes
+
+LE Numeric: R2L bits, L2R bytes
+
+Logical/Identity: L2R bits, L2R bytes
+
+“Numeric Universe”.
+
+# Tidbytes
+
+> ***Memory manipulation re-imagined with bit addressing***
+
+Tidbytes is the reference Python implementation of the Tidbytes memory algebra. It features the lower level Natural (Von Neumann) operations with a higher level idiomatic interface that will feel familiar to Python developers.
+
+# TLDR;
+
+Take the origin of a region of memory and perform the corresponding memory transformation operation to map it to identity order in the natural host CPU memory so that bits and bytes are always from left to right.
+
+| Foreign Order | Natural Order | Transformation Operation |
+|---|---|---|
+| Big Endian | Little Endian | `op_reverse_bytes` |
+| Little Endian | Big Endian | `op_reverse_bytes` |
+| Big Endian | Big Endian | `op_identity` (no op) |
+| Little Endian | Little Endian | `op_identity` (no op) |
+
+# So What Truly Is The “Ninth Bit”
+
+By taking a foreign memory region and applying it’s own bit and byte order as a transformation upon itself it yields a region with identity memory order, wherein the “ninth bit” is always the leftmost bit of the second byte from the left.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # tidbytes
 
 > **Memory manipulation reimagined with bit addressing**
