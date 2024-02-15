@@ -4,7 +4,7 @@
 
 # What Is The Ninth Bit?
 
-Referring to the ninth bit of a region of memory should be trivial. It is, isn’t it? It turns out that this is not as straightforward as it might seem. Depending on the byte order, (referred to with the canonical moniker “endianness”), the ninth bit may appear to the left or the right of the first bit (bit zero).
+Referring to the ninth bit of a region of memory should be trivial. It is, isn’t it? It turns out that this is not as straightforward as it might seem. Depending on the byte order, (referred to under the canonical moniker “endianness”), the ninth bit may appear to the left or the right of the first bit (bit zero).
 
 > ***The Tidbytes memory algebra is based off of the concept of Identity Order which means the first bit is always the leftmost bit of the leftmost byte.***
 
@@ -85,13 +85,13 @@ Tidbytes consists of a single data type: `MemRgn`, and a collection of operation
 
 - `op_set_bits`: sets a range of bits with another range of bits
 
-- `op_truncate`:
+- `op_truncate`: remove additional space if greater than provided length
 
-- `op_extend`:
+- `op_extend`: fill additional space with a value if less than provided length
 
-- `op_ensure_bit_length`:
+- `op_ensure_bit_length`: fill or remove space if less or greater than length
 
-- `op_concatenate`:
+- `op_concatenate`: combine two memory regions from left to right
 
 # What’s with the “Natural” Nomenclature
 
@@ -99,13 +99,17 @@ Tidbytes consists of a single data type: `MemRgn`, and a collection of operation
 
 # Glossary of Terms
 
-- Natural:
+- Natural: Refers to the bit (and most commonly) byte order of a given processor
+    architecture: the memory universe. It is from the point of view of the host.
 
-- Foreign:
+- Foreign: Refers to a memory universe of another processor host, regardless if
+    it exactly matches.
 
-- Origin:
+- Origin: Refers to which memory universe a memory region was allocated.
 
-- Identity:
+- Identity: When a memory region has been processed so that it has left to right
+    bit and byte order: the first bit is the leftmost bit of the leftmost byte
+    and the ninth bit is the leftmost bit of the second byte from the left.
 
 # Memory Origin And Universes
 
