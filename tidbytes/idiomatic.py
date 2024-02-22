@@ -498,8 +498,19 @@ class Unsigned(Mem):
     Supports positive integers. Unsigned memory inheriting from Mem is a natural
     progression because unsigned numeric data can be fed to an arithmetic logic
     unit but is otherwise indistinct from raw bytes.
-    """
 
+    It looks like having a single Num type is not possble because it treats the
+    bit length of both signed and unsigned numeric values the same. This is not
+    possible because there are actually 4 code paths: `Num[None](+n)`,
+    `Num[None](-n)`, `Num[N](+n)`, and `Num[N](-n)`. It's subtle, but the
+    `Num[None](-n)` is not possible to factor out because the bit length will
+    change the valid integer range (and therefore meaning) of negative input
+    values.
+
+    To fix this, Num must be replaced with Signed and Unsigned for infinite bits
+    and I32/etc. and U32/etc. for finite bits. This will take care of the need
+    to truncate to support both signed and unsigned.
+    """
     @classmethod
     def from_(cls, init: T, bit_length: int) -> 'Unsigned':
         # If the input value is any type descended from Mem, copy construct it

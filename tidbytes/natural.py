@@ -1,3 +1,22 @@
+"""
+API Design Elements:
+
+The Natural API will return a memory slice of the same type as the normal
+memory type when getting bits or bytes. There are no operations to get memory
+and also convert it to language-specific types. That is what conversion methods
+are for. Languages can implement any number of conversion functions as makes
+sense in their language. Internally, the backing store for the bits could be
+integers or an array of u8s in the range 0-1. Even getting one bit returns the
+root memory type. Setting bits works the same way, the Natural API will only
+accept the Mem type.
+
+The Idiomatic API will be able to convert as many different types as makes sense
+into the backing store type and vice versa.
+
+No implicit truncation to lower bit length but allow padding for greater bit
+length.
+"""
+
 from .mem_types import Order, L2R, R2L, ensure
 
 # Putting this first and foremost to declare the opportunity to refactor all
