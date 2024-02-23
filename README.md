@@ -21,8 +21,8 @@ metadata as a meta input. This represents an orientation that points away from
 the operation and towards an operation respectively. Some concepts that relate
 to operations that I've rediscovered are:
 
-- **Unsized data** (input data can be mapped to unlimited output data)
-- **Sized data** (input data can be mapped to output data limited by region size)
+- **Unsized data** (inputs can be mapped to unlimited output data)
+- **Sized data** (inputs can be mapped to output data limited by region size)
 - **Natural data** (raw/untyped/uninterpreted/unmapped memory)
 - **Numeric data** (mathematical identity or quantity)
 - **Unsigned numbers** (axis with one polarity)
@@ -99,10 +99,11 @@ sized signed numeric data.
 ```python
 from tidbytes.idiomatic import *
 
-mem = Mem[8]()  # 00000000
-mem[0] = 1      # 10000000
-mem[1:3] = 1
-
+mem = Mem[8]()  # <Mem [00000000]>
+mem[0] = 1      # <Mem [10000000]>
+mem[0:3]        # <Mem [100]>
+mem += mem      # <Mem [10000000 10000000]>
+mem[1::8]       # <Mem [10000000]>  Step by bytes
 
 U2 = Unsigned[2]  # Type alias
 def add(a: U2, b: U2) -> U2:
@@ -111,7 +112,7 @@ def add(a: U2, b: U2) -> U2:
 # Underflow and Overflow checks:
 add(U2(2), U2(2))  # Error: 4 doesn't fit into bit length of 2 (min 0, max 3)
 
-num = add(U2(2), U2(1))
+num = add(U2(2), U2(1))  # <Unsigned [11]>
 
 # Fundamental type conversion support
 int(num)  # 3
