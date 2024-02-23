@@ -18,11 +18,38 @@ to operations that I've rediscovered are:
 - **Unsigned numbers** (axis with one polarity)
 - **Signed numbers** (axis with two polarities)
 
+These types are built into modern processor architectures via Bytes & Indices.
+Tidbytes takes these natural computing concepts and provides 2 APIs:
 
+- A lower level API designed to be easily re-implemented in other languages
+- A higher level API designed to be as seamless as possible for Python
+    programmers
 
+## Higher Level API
 
+```python
+from tidbytes import *
 
+U2 = Unsigned[2]  # Type alias
+def add(a: U2, b: U2) -> U2:
+    return U2(a) + U2(b)
 
+# Underflow and Overflow checks:
+add(U2(2), U2(2))  # Error: 4 doesn't fit into bit length of 2 (min 0, max 3)
+
+num = add(U2(2), U2(1))
+
+# Fundamental type conversion support
+int(num)  # 3
+str(num)  # '11'
+bool(num)  # True
+float(num)  # 3.0
+```
+
+## Lower Level API
+
+The lower level API is much more verbose and not designed to follow Python
+idioms but rather to conceptually model C-equivalent semantics when possible.
 
 
 

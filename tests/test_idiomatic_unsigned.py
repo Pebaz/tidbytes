@@ -145,7 +145,6 @@ def test_from_numeric_f32(bits, init, expect, exc, msg):
         assert str(Unsigned[bits](f32(init))) == expect, msg
 
 
-
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
     (
         UN,
@@ -187,11 +186,6 @@ def test_from_numeric_f64(bits, init, expect, exc, msg):
         assert str(Unsigned[bits](f64(init))) == expect, msg
 
 
-
-
-
-
-
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
     (UN, 1.0, '00111111 10000000 00000000 00000000', None, 'Positive'),
     (UN, -1.0, '10111111 10000000 00000000 00000000', None, 'Negative'),
@@ -208,7 +202,6 @@ def test_from_numeric_float_python32(bits, init, expect, exc, msg):
             assert str(Unsigned[bits](init)) == expect, msg
     finally:
         tidbytes.codec.PYTHON_X64_FLOATS = old
-
 
 
 @pytest.mark.parametrize('bits,init,expect,exc,msg', [
@@ -290,7 +283,6 @@ def test_num___int__(bits, init, expect):
     num = Unsigned[bits](init)
     assert str(num) == expect, f'Incorrect bits: {init}'
     assert int(num) == init, f'Incorrect number: {init}'
-
 
 
 @pytest.mark.parametrize('index,expect,msg', [
