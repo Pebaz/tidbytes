@@ -266,6 +266,11 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
 
         if isinstance(index, int):
             self.rgn = op_set_bits(self.rgn, index, payload.rgn)
+        else:
+            # TODO(pbz): Implement slice support
+            raise NotImplementedError(
+                'Slices are not yet implemented for assignment'
+            )
 
     def validate(self) -> 'Mem':
         if self.rgn.bytes:

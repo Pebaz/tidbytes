@@ -35,10 +35,55 @@ Tidbytes takes these natural computing concepts and provides 2 APIs:
 - A higher level API designed to be as seamless as possible for Python
     programmers
 
+```mermaid
+graph TD;
+    subgraph Operation API Design
+        direction LR
+        mem1{{Bytes}}
+        mem2{{Bytes}}
+        index{{Index}}
+        mem1 -- input --> op -- output --> mem2
+        index -- input --> op
+    end
+```
+
 Each operation in the lower level API takes Bytes & Indices as input and
 produces Bytes as output or Indices if it is a meta operation. Using just Bytes
 and Indices, all memory manipulation operations can be implemented because
 Indices can represent offsets, lengths, ranges, slices, and (un)signed numbers.
+
+
+```mermaid
+graph RL;
+    subgraph API Design Layers
+        direction LR
+
+        idiomatic("`
+            **Language Specific Idiomatic Interface**
+            *(High Level API)*
+        `")
+
+        natural("`
+            **Language Agnostic Natural Interface**
+            *(Low Level API)*
+        `")
+    end
+
+    natural_type{{"`
+        **Natural Memory Type**
+        *(Language Agnostic)*
+    `"}}
+
+    idio_type{{"`
+        **Idiomatic Memory Type**
+        *(Language Specific)*
+    `"}}
+
+    idiomatic ==> natural
+    natural_type --> natural
+    idio_type --> idiomatic
+    natural_type --> idiomatic
+```
 
 ## Idiomatic Higher Level API
 
@@ -53,6 +98,11 @@ sized signed numeric data.
 
 ```python
 from tidbytes.idiomatic import *
+
+mem = Mem[8]()  # 00000000
+mem[0] = 1      # 10000000
+mem[1:3] = 1
+
 
 U2 = Unsigned[2]  # Type alias
 def add(a: U2, b: U2) -> U2:
@@ -76,6 +126,44 @@ The idiomatic API provides these types:
 
 graph RL;
 signed[[Signed]] -- Inherits --> unsigned[[Unsigned]] -- Inherits --> mem[[Mem]]
+```
+
+Each of the higher level types can be constructed from most of the types shown
+here, although some types like `Unsigned` cannot be given a negative big integer
+or a `Signed` memory region.
+
+<!-- https://mermaid.js.org/syntax/flowchart.html#styling-line-curves -->
+```mermaid
+%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
+graph LR;
+    subgraph "Many Input Types, Only One Output Type"
+        subgraph Higher Level Types
+            _6{{"list[bit]"}}
+            _7{{"list[byte]"}}
+            _8{{"list[u8]"}}
+            _9{{"bool"}}
+            _10{{int}}
+            _4{{ascii}}
+            _5{{utf8}}
+        end
+
+        %% Order matters here, they are interlieved
+        _1{{u8}} --- Mem
+        _10{{int}} ---- Mem
+        _3{{f32}} --- Mem
+        _5{{utf8}} ---- Mem
+        _2{{i64}} --- Mem
+        _6{{"list[bit]"}} ---- Mem
+        _11{{u16}} --- Mem
+        _7{{"list[byte]"}} ---- Mem
+        _12{{u32}} --- Mem
+        _8{{"list[u8]"}} ---- Mem
+        _13{{u64}} --- Mem
+        _9{{"bool"}} ---- Mem
+        _14{{i8}} --- Mem
+        _4{{ascii}} ---- Mem
+        _15{{i16}} --- Mem
+    end
 ```
 
 ## Natural Lower Level API
@@ -321,6 +409,27 @@ entirely separate memory universe: the universe of the file format. Once they
 have been read into memory, they are now within the memory universe of the
 program, although they have not yet been transformed to identity order.
 
+```mermaid
+graph TD;
+    subgraph Memory Universe Boundaries Require Transformation Operations
+        direction LR
+
+        _1(((Memory Universe 1)))
+        _2(((Memory Universe 2)))
+        op_transform
+        _1 <===> op_transform <===> _2
+
+        subgraph op_transform
+            op_identity
+            op_reverse
+            op_reverse_bytes
+            op_reverse_bits
+        end
+    end
+
+    style op_transform fill:#9893bf,stroke:#5c5975
+```
+
 > ***Amazingly, simply applying a foreign memory region’s bit and byte order as
 a transformation on itself produces that same region in identity order, easily
 usable by the host program. This is a surprising insight which ensures that the
@@ -359,11 +468,11 @@ left.
 
 # Extra Topics
 
+If someone could refactor to use integers as backing store that would be great.
+
 However, each individual byte is generally treated as a C `char` so it is
 effectively a numeric value having right-to-left bit order and a pre-declared
 byte order dictated by the file format.
-
-read from file
 
 show how to index bits in ASM and C operations
 
@@ -378,198 +487,3 @@ LE Numeric: R2L bits, L2R bytes
 Logical/Identity: L2R bits, L2R bytes
 
 “Numeric Universe”.
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-<!-- TODO(pbz): Idk where to put this stuff but it represents the full story
-that won't be reflected if moved -->
-
-# Operation Hierarchy
-
-> Represents a tree of re-implementation so that porting can be performed
-    methodically.
-
-```mermaid
-graph TD;
-    subgraph Operation API Design
-        direction LR
-        mem1{{Mem}}
-        mem2{{Mem}}
-        mem1 -- input --> op -- output --> mem2
-    end
-```
-
-
-```mermaid
-graph TD;
-    subgraph Memory Transformation Operations
-        _1[[op_transform]]
-        op_identity --> _1
-        op_reverse --> _1
-        op_reverse_bits --> _1
-        op_reverse_bytes --> _1
-    end
-```
-
-```mermaid
-graph TD;
-    subgraph Host Language Specific Meta Operations
-        meta_op_bit_length
-        meta_op_byte_length
-        validate_memory
-        iterate_logical_bits
-    end
-```
-
-```mermaid
-graph TD;
-    subgraph Memory Universe Boundaries Require Transformation Operations
-        direction LR
-
-        _1(((Memory Universe 1)))
-        _2(((Memory Universe 2)))
-        op_transform
-        _1 <===> op_transform <===> _2
-
-        subgraph op_transform
-            op_identity
-            op_reverse
-            op_reverse_bytes
-            op_reverse_bits
-        end
-    end
-
-    style op_transform fill:#9893bf,stroke:#5c5975
-```
-
-```mermaid
-graph RL;
-    subgraph Fundamental Memory Read And Write Operations
-        %% direction RL
-        op_get_bit --> op_get_bits
-        op_get_byte --> op_get_bits
-        op_get_bytes --> op_get_bits
-        op_get_bits
-
-        op_set_bit --> op_set_bits
-        op_set_byte --> op_set_bits
-        op_set_bytes --> op_set_bits
-        op_set_bits
-    end
-```
-
-```mermaid
-graph TD;
-    subgraph Transformation Operations In Program's Memory Universe
-        direction LR
-        op_ensure_bit_length --> op_extend
-        op_ensure_byte_length --> op_ensure_bit_length
-        op_concatenate
-    end
-```
-
-```mermaid
-graph RL;
-    subgraph API Design Layers
-        direction LR
-
-        idiomatic("`
-            **Language Specific
-            Idiomatic Interface**
-            *(High Level API)*
-        `")
-
-        natural("`
-            **Language Agnostic Interface
-            Based On Von Neumann Architecture**
-            *(Low Level API)*
-        `")
-    end
-
-    vonn_type{{"`
-        **Von Neumann Type**
-        *(Language Specific)*
-    `"}}
-
-    idio_type{{"`
-        **Idiomatic Type**
-        *(Language Specific)*
-    `"}}
-
-    idiomatic ==> natural
-    vonn_type --> natural
-    idio_type --> idiomatic
-    vonn_type --> idiomatic
-```
-
-```mermaid
-graph LR;
-    subgraph Host Language Specific Von Neumann API
-        rgn{{MemRgn Type}}
-    end
-```
-
-```mermaid
-graph LR;
-    subgraph Host Language Specific Idiomatic API
-        mem{{Mem Type}}
-    end
-```
-
-<!-- https://mermaid.js.org/syntax/flowchart.html#styling-line-curves -->
-```mermaid
-%%{ init: { 'flowchart': { 'curve': 'basis' } } }%%
-graph LR;
-    subgraph "Many Input Types, Only One Output Type"
-        subgraph Higher Level Types
-            _6{{"list[bit]"}}
-            _7{{"list[byte]"}}
-            _8{{"list[u8]"}}
-            _9{{"list[i64]"}}
-            _10{{int}}
-            _4{{ascii}}
-            _5{{utf8}}
-        end
-
-        %% Order matters here, they are interlieved
-        _1{{u8}} --- Mem
-        _10{{int}} ---- Mem
-        _3{{f32}} --- Mem
-        _5{{utf8}} ---- Mem
-        _2{{i64}} --- Mem
-        _6{{"list[bit]"}} ---- Mem
-        _11{{u16}} --- Mem
-        _7{{"list[byte]"}} ---- Mem
-        _12{{u32}} --- Mem
-        _8{{"list[u8]"}} ---- Mem
-        _13{{u64}} --- Mem
-        _9{{"list[i64]"}} ---- Mem
-        _14{{i8}} --- Mem
-        _4{{ascii}} ---- Mem
-        _15{{i16}} --- Mem
-    end
-```
-
