@@ -121,14 +121,6 @@ bool(num)  # True
 float(num)  # 3.0
 ```
 
-The idiomatic API provides these types:
-
-```mermaid
-
-graph RL;
-signed[[Signed]] -- Inherits --> unsigned[[Unsigned]] -- Inherits --> mem[[Mem]]
-```
-
 Each of the higher level types can be constructed from most of the types shown
 here, although some types like `Unsigned` cannot be given a negative big integer
 or a `Signed` memory region.
