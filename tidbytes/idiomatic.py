@@ -337,7 +337,6 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_natural_f64(init, bit_length)
 
         elif isinstance(init, list):
-            print("...")
             if not init:
                 return MemRgn()
             elif init and isinstance(init[0], (list, tuple)):

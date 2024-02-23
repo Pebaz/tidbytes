@@ -25,7 +25,20 @@ Tidbytes takes these natural computing concepts and provides 2 APIs:
 - A higher level API designed to be as seamless as possible for Python
     programmers
 
+Each operation in the lower level API takes Bytes & Indices as input and
+produces Bytes as output or Indices if it is a meta operation. Using just Bytes
+and Indices, all memory manipulation operations can be implemented because
+Indices can represent offsets, lengths, ranges, and unsigned or signed numbers.
+
 ## Higher Level API
+
+The higher level API provides these main types: `Mem`, `Unsigned`, and `Signed`.
+`Mem` is the base type for all the other types and provides the majority of the
+higher level functionality that will be comfortable to Python programmers. It
+upholds contracts on invariants that are unique to unsized or sized natural data
+in the form of raw bytes. The `Unsigned` type upholds contracts on invariants
+unique to unsized or sized unsigned numeric data. The `Signed` type upholds
+contracts on invariants unique to unsized or sized signed numeric data.
 
 ```python
 from tidbytes import *
@@ -50,8 +63,32 @@ float(num)  # 3.0
 
 The lower level API is much more verbose and not designed to follow Python
 idioms but rather to conceptually model C-equivalent semantics when possible.
+Although demonstrated here, the lower level API is not designed with any user
+experience features by design, as that is the express role of the higher level
+API. The goal of the lower level API is to make it easier to port to new
+languages.
 
+```python
+from tidbytes import *
+from tidbytes import codec
 
+# The underlying backing store for bits is a list of list of bits.
+# Obviously this is not the highest performance choice but the logical clarity
+# it provided for this reference implementation could not be ignored
+mem = codec.from_bit_list([1, 0, 1], 3)
+assert mem.bytes == [[1, 0, 1, None, None, None, None, None]]
+
+mem = op_concatenate(mem, mem)
+assert mem.bytes == [[1, 0, 1, 1, 0, 1, None, None]]
+
+mem = op_truncate(mem, 3)
+assert mem.bytes == [[1, 0, 1, None, None, None, None, None]]
+
+assert meta_op_bit_length(mem) == 3
+
+# This codec assumes signed memory as input since Python ints are always signed
+assert codec.into_numeric_big_integer(mem) == -3
+```
 
 
 

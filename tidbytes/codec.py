@@ -648,7 +648,6 @@ def from_bit_list(value: list[int], bit_length: int) -> MemRgn:
         bit_length != 0 if bool(value) else True,
         f'Loss of data via truncation: {bit_length=}'
     )
-    print(f'{bit_length != 0 if bool(value) else True}, {bit_length=}')
 
     # Preserve iterator by collecting into list for ensure()
     value = collect_iterator(value)
