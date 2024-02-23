@@ -58,26 +58,26 @@ graph RL;
     subgraph API Design Layers
         direction LR
 
-        idiomatic("`
-            **Language Specific Idiomatic Interface**
-            *(High Level API)*
-        `")
+        idiomatic("
+            Language Specific Idiomatic Interface
+            (High Level API)
+        ")
 
-        natural("`
-            **Language Agnostic Natural Interface**
-            *(Low Level API)*
-        `")
+        natural("
+            Language Agnostic Natural Interface
+            (Low Level API)
+        ")
     end
 
-    natural_type{{"`
-        **Natural Memory Type**
-        *(Language Agnostic)*
-    `"}}
+    natural_type{{"
+        Natural Memory Type
+        (Language Agnostic)
+    "}}
 
-    idio_type{{"`
-        **Idiomatic Memory Type**
-        *(Language Specific)*
-    `"}}
+    idio_type{{"
+        Idiomatic Memory Type
+        (Language Specific)
+    "}}
 
     idiomatic ==> natural
     natural_type --> natural
