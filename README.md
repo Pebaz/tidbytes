@@ -28,20 +28,21 @@ Tidbytes takes these natural computing concepts and provides 2 APIs:
 Each operation in the lower level API takes Bytes & Indices as input and
 produces Bytes as output or Indices if it is a meta operation. Using just Bytes
 and Indices, all memory manipulation operations can be implemented because
-Indices can represent offsets, lengths, ranges, and unsigned or signed numbers.
+Indices can represent offsets, lengths, ranges, slices, and (un)signed numbers.
 
-## Higher Level API
+## Idiomatic Higher Level API
 
-The higher level API provides these main types: `Mem`, `Unsigned`, and `Signed`.
-`Mem` is the base type for all the other types and provides the majority of the
-higher level functionality that will be comfortable to Python programmers. It
-upholds contracts on invariants that are unique to unsized or sized natural data
-in the form of raw bytes. The `Unsigned` type upholds contracts on invariants
-unique to unsized or sized unsigned numeric data. The `Signed` type upholds
-contracts on invariants unique to unsized or sized signed numeric data.
+The higher level "idiomatic" API provides these main types: `Mem`, `Unsigned`,
+and `Signed`. The `Mem` type is the base type for all the other types and
+provides the majority of the higher level functionality that will be comfortable
+to Python programmers. It upholds contracts on invariants that are unique to
+unsized or sized natural data in the form of raw bytes. The `Unsigned` type
+upholds contracts on invariants unique to unsized or sized unsigned numeric
+data. The `Signed` type upholds contracts on invariants unique to unsized or
+sized signed numeric data.
 
 ```python
-from tidbytes import *
+from tidbytes.idiomatic import *
 
 U2 = Unsigned[2]  # Type alias
 def add(a: U2, b: U2) -> U2:
@@ -59,17 +60,27 @@ bool(num)  # True
 float(num)  # 3.0
 ```
 
-## Lower Level API
+The idiomatic API provides these types:
 
-The lower level API is much more verbose and not designed to follow Python
-idioms but rather to conceptually model C-equivalent semantics when possible.
-Although demonstrated here, the lower level API is not designed with any user
-experience features by design, as that is the express role of the higher level
-API. The goal of the lower level API is to make it easier to port to new
-languages.
+```mermaid
+
+graph RL;
+signed[[Signed]] -- Inherits --> unsigned[[Unsigned]] -- Inherits --> mem[[Mem]]
+```
+
+## Natural Lower Level API
+
+The lower level "natural" API is much more verbose and not designed to follow
+Python idioms but rather to conceptually model C-equivalent semantics when
+possible. Although demonstrated here, the lower level API is not designed with
+any user experience features by design, as that is the express role of the
+higher level API. The goal of the lower level API is to make it easier to port
+to new languages.
+
+Another feature that the natural API provides to the higher level API is the
 
 ```python
-from tidbytes import *
+from tidbytes.natural import *
 from tidbytes import codec
 
 # The underlying backing store for bits is a list of list of bits.
@@ -90,8 +101,60 @@ assert meta_op_bit_length(mem) == 3
 assert codec.into_numeric_big_integer(mem) == -3
 ```
 
+Lower level API operations:
+
+- `op_identity`: maps a memory region to itself (multiplies by 1)
+
+- `op_reverse_bytes`: transforms little endian to big endian and vice versa
+
+- `op_reverse_bits`: reverses the bits of each byte while maintaining byte order
+
+- `op_reverse`: reverses both bits and bytes, effectively flipping the entire
+    region
+
+- `op_get_bits`: slices out a range of bits into another range of bits
+
+- `op_set_bits`: sets a range of bits with another range of bits
+
+- `op_truncate`: remove additional space if greater than provided length
+
+- `op_extend`: fill additional space with a value if less than provided length
+
+- `op_ensure_bit_length`: fill or remove space if less or greater than length
+
+- `op_concatenate`: combine two memory regions from left to right
+
+Here is a diagram that shows dependencies between operations so that they can
+be re-implemented in order in another language:
+
+<!-- TODO(pbz): Add the rest of the operations -->
+<!-- ? Codecs as well? Mention them anywhere? -->
+
+```mermaid
+mindmap
+    root("
+        Tree Of Re-
+        Implementation
+    ")
+        op_transform
+            op_identity
+            op_reverse
+            op_reverse_bytes
+            op_reverse_bits
+        op_get_bits
+            op_get_bit
+            op_get_byte
+            op_get_bytes
+        op_set_bits
+            op_set_bit
+            op_set_byte
+            op_set_bytes
+        meta_op_bit_length
+            meta_op_byte_length
+```
 
 
+<!-- TODO(pbz): Add the rest of them here including meta ops -->
 
 
 
@@ -104,6 +167,13 @@ assert codec.into_numeric_big_integer(mem) == -3
 <!-- TODO(pbz): Remove "algebra" -->
 <!-- TODO(pbz): Remove "Von Neumann" -->
 
+<!-- * GOOD STARTING HERE -->
+<!-- * GOOD STARTING HERE -->
+<!-- * GOOD STARTING HERE -->
+<!-- * GOOD STARTING HERE -->
+<!-- * GOOD STARTING HERE -->
+<!-- * GOOD STARTING HERE -->
+<!-- * GOOD STARTING HERE -->
 <!-- * GOOD STARTING HERE -->
 
 ↪ Reasoning about the ninth bit within the context of programming computers is
@@ -122,7 +192,6 @@ limitation in a higher level of software provides logical coherency that could
 aid application programmers when integrating with lower level libraries,
 operating systems, and hardware.
 
-
 # What Is The Ninth Bit?
 
 Referring to the ninth bit of a region of memory should be trivial. It is, isn’t
@@ -131,15 +200,26 @@ on the byte order, (referred to under the canonical moniker “endianness”), t
 ninth bit may appear to the left or the right (not accounting for mixed
 endianness) of the first bit (bit zero).
 
-<!-- * GOOD ENDING HERE -->
 > ***Tidbytes is based off of the concept of Identity Order which means the
 first bit is always the leftmost bit of the leftmost byte.***
+
+## Glossary of Terms
+
+- **Natural**: Refers to the bit (and most commonly) byte order of a given
+    processor architecture: the memory universe. It is from the point of view of
+    the host.
+
+- **Foreign**: Refers to a memory universe of another processor host, regardless
+    if it exactly matches.
+
+- **Origin**: Refers to which memory universe a memory region was allocated.
 
 ## Identity Order
 
 When both the bit and byte order of a region of memory is left to right, this is
 called “Identity Order” in Tidbytes.
 
+<!-- TODO(pbz): Replace this diagram -->
 ```mermaid
 flowchart LR;
     subgraph b[Byte 1]
@@ -165,6 +245,7 @@ identity order, it is unlikely to be semantically meaningful in a primitive
 For identity order memory, the first and ninth bits are the leftmost bit of the
 leftmost byte and the leftmost bit of the second byte from the left:
 
+<!-- TODO(pbz): Replace this diagram -->
 ```mermaid
 flowchart LR;
     subgraph b[Byte 1]
@@ -190,6 +271,7 @@ flowchart LR;
 
 ## Numeric Data
 
+<!-- TODO(pbz): Replace this diagram -->
 ```mermaid
 flowchart RL;
     subgraph b[Byte 1]
@@ -205,73 +287,12 @@ flowchart RL;
     a ==> b
 ```
 
-# What Makes Tidbytes An Algebra
 
 <!-- TODO(pbz): I wish this wasn't bogus but it probably will be torn apart. -->
 <!-- TODO: Just remove all mention of Neumann and make it about numeric data -->
 
-Tidbytes consists of a single data type: `MemRgn`, and a collection of
-operations that takes `MemRgn` as a type of input and always produces `MemRgn`
-as an output. `MemRgn` represents a region of memory of a given bit (not byte)
-length, even though the Von Neumann computer architecture only allows memory
-regions of a given byte (not bit) length. In both cases, memory is not the only
-built in concept: addresses are also a fundamental concept to the Von Neumann
-computer architecture. They can represent indexes (addresses), offsets (program
-∂counter), and lengths (region byte width). This means that the Von Neumann
-architecture natively supports numeric data as it pertains to addressing,
-offsetting, and slicing memory. As such, numeric data is the only other type of
-input type to the fundamental Tidbytes operations.
 
-> *It should be noted that “Von Neumann Architecture” is referring mostly to
-memory consisting of a sequence of bytes rather than the ALU, Controller, Store,
-or IO components. As such, this designation might be closer to the theory of
-computation than a specific computer architecture.*
-
-# Memory Operations
-
-- `op_identity`: maps a memory region to itself (multiplies by 1)
-
-- `op_reverse_bytes`: transforms little endian to big endian and vice versa
-
-- `op_reverse_bits`: reverses the bits of each byte while maintaining byte order
-
-- `op_reverse`: reverses both bits and bytes, effectively flipping the entire
-    region
-
-- `op_get_bits`: slices out a range of bits into another range of bits
-
-- `op_set_bits`: sets a range of bits with another range of bits
-
-- `op_truncate`: remove additional space if greater than provided length
-
-- `op_extend`: fill additional space with a value if less than provided length
-
-- `op_ensure_bit_length`: fill or remove space if less or greater than length
-
-- `op_concatenate`: combine two memory regions from left to right
-
-# What’s with the “Natural” Nomenclature
-
-“Natural” in this case is referring to basically the Von Neumann computer
-architecture since it is by far the most used in practice. Technically, it is
-referring to the theory of computation rather than a specific computer
-architecture.
-
-# Glossary of Terms
-
-- Natural: Refers to the bit (and most commonly) byte order of a given processor
-    architecture: the memory universe. It is from the point of view of the host.
-
-- Foreign: Refers to a memory universe of another processor host, regardless if
-    it exactly matches.
-
-- Origin: Refers to which memory universe a memory region was allocated.
-
-- Identity: When a memory region has been processed so that it has left to right
-    bit and byte order: the first bit is the leftmost bit of the leftmost byte
-    and the ninth bit is the leftmost bit of the second byte from the left.
-
-# Memory Origin And Universes
+## Memory Origin And Universes
 
 Every memory region within a given program has an origin. Fundamental properties
 of memory origin include bit and byte order. For the purposes of Tidbytes, only
@@ -279,7 +300,7 @@ pure left-to-right and right-to-left bit and byte orders are supported, leaving
 split order as an future extension, should it prove it’s utility.
 
 The most common orders are left-to-right (little endian) and right-to-left (big
-endian). Big endian matches how things are written while little endian matches
+endian). Big endian matches how numbers are written while little endian matches
 zero-indexing of bytes.
 
 Although it is commonly thought that bits always go from right-to-left, on
@@ -303,6 +324,15 @@ a transformation on itself produces that same region in identity order, easily
 usable by the host program. This is a surprising insight which ensures that the
 “first bit” is always the leftmost bit of the leftmost byte.***
 
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+
+
 
 
 However, each individual byte is generally treated as a C `char` so it is
@@ -313,7 +343,6 @@ byte order dictated by the file format.
 
 read from file
 
-this leaves
 
 show how to index bits in ASM and C operations
 
@@ -370,56 +399,7 @@ left.
 
 
 
-# Origins & Iteration Info
 
-<!-- TODO(pbz): Idk where to put this stuff but it represents the full story
-that won't be reflected if moved -->
-
-Progress was made with iteration number 2 where the concepts Mem and Num were
-established which determined bit and byte order deterministically. Namely, Mem
-has left to right bit and byte order and Num has right to left bit order and
-a byte order that matches the desired endianness. Without this insight, progress
-could not be made so the effort involved with iteration 2 ultimately furthered
-the goal of a universal, deterministic, and simple bit manipulation library.
-
-The problems with iteration number 2 were that there are just too many different
-ways to set bits and they need to be identified in order to move forward.
-Specifically, getting (indexing), and setting (indexing and bit decoding) are
-orthogonal, although setting builds on the indexing capability of getting.
-
-Indexing memory is complicated because slicing out a range of bits/bytes needs
-to work well with setting bits, but reassigning that slice to the original range
-is nontrivial. Stepping should not be supported. Also, when setting an integer
-data type to the sliced out range, the integer type needs to fit in that new
-type but also fit back into the original range.
-
-It would be better to just only allow getting and setting bits using the Mem
-type only. Users could call from/into functions for get/set operations so there
-would be minimal inconvenience. Catering to the C API doesn't seem to be the
-right move here. If the Mem type is kept opaque from the point of view of the
-API operations, it should be possible to only use that Mem type to get and set
-bits and bytes: `mem.set_bytes(Mem.from_i32(123))`. This means that setting bits
-needs to support:
-
-:: Natural API ::
-Mem <- get slice as Mem, set slice to number, set range within Mem to that slice
-
-:: Idiomatic API ::
-u8[] <- control explicit bit order no matter what
-number <- convenience so that ints can be used to set bits
-
-This may be the limit to the necessary complexity of this problem domain.
-
-Furthermore, there seems to be 2 use cases:
-
-- Language agnostic Natural API for getting/setting bits/bytes.
-- Idiomatic Python API for structs, slicing, and indexing.
-
-The Natural API closely follows C conventions in order to enable
-reimplementation in many languages.
-
-The Idiomatic API needs to be the smoothest experience possible since languages
-can support very convenient syntax.
 
 <!-- TODO(pbz): Idk where to put this stuff but it represents the full story
 that won't be reflected if moved -->
@@ -590,32 +570,3 @@ graph LR;
     end
 ```
 
-```mermaid
-mindmap
-    root("
-        Tree Of Re-
-        Implementation
-    ")
-        op_transform
-            op_identity
-            op_reverse
-            op_reverse_bytes
-            op_reverse_bits
-        op_get_bits
-            op_get_bit
-            op_get_byte
-            op_get_bytes
-        op_set_bits
-            op_set_bit
-            op_set_byte
-            op_set_bytes
-        meta_op_bit_length
-            meta_op_byte_length
-```
-
-# Operation Notes
-
-- When given a destination bit width of 0, this is like multiplying by 0 in
-    arithmetic and results in truncation to null (no bit width).
-- Codecs can never start with `op_` since that would mean they are part of an
-- algebra. This is fine, but they are not compatible with the Von Neumann API.
