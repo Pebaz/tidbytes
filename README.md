@@ -2,6 +2,16 @@
 
 > **Memory manipulation reimagined with bit addressing**
 
+Referring to the ninth bit of a region of memory should be trivial. It is, isn’t
+it? It turns out that this is not as straightforward as it might seem. Depending
+on the byte order, (referred to under the canonical moniker “endianness”), the
+ninth bit may appear to the left or the right (not accounting for mixed
+endianness) of the first bit (bit zero). The first byte should be the rightmost
+byte for numeric data, but not when reading from a file for example. In this
+case the first byte would be the leftmost byte. Because of all of this, I
+designed Tidbytes to work specifically with bits as the primary addressable unit
+of memory to provide clarity when working with memory from diverse sources.
+
 The purpose of Tidbytes is to allow bits to be placed precisely where they are
 wanted. In the pursuit of mapping this ideal to idiomatic types, some in-built
 concepts were rediscovered. There really seems to be some fundamental types in
@@ -192,17 +202,6 @@ limitation in a higher level of software provides logical coherency that could
 aid application programmers when integrating with lower level libraries,
 operating systems, and hardware.
 
-# What Is The Ninth Bit?
-
-Referring to the ninth bit of a region of memory should be trivial. It is, isn’t
-it? It turns out that this is not as straightforward as it might seem. Depending
-on the byte order, (referred to under the canonical moniker “endianness”), the
-ninth bit may appear to the left or the right (not accounting for mixed
-endianness) of the first bit (bit zero).
-
-> ***Tidbytes is based off of the concept of Identity Order which means the
-first bit is always the leftmost bit of the leftmost byte.***
-
 ## Glossary of Terms
 
 - **Natural**: Refers to the bit (and most commonly) byte order of a given
@@ -215,6 +214,9 @@ first bit is always the leftmost bit of the leftmost byte.***
 - **Origin**: Refers to which memory universe a memory region was allocated.
 
 ## Identity Order
+
+> ***Tidbytes is based off of the concept of Identity Order which means the
+first bit is always the leftmost bit of the leftmost byte.***
 
 When both the bit and byte order of a region of memory is left to right, this is
 called “Identity Order” in Tidbytes.
@@ -324,41 +326,6 @@ a transformation on itself produces that same region in identity order, easily
 usable by the host program. This is a surprising insight which ensures that the
 “first bit” is always the leftmost bit of the leftmost byte.***
 
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-
-
-
-
-However, each individual byte is generally treated as a C `char` so it is
-effectively a numeric value having right-to-left bit order and a pre-declared
-byte order dictated by the file format.
-
-
-
-read from file
-
-
-show how to index bits in ASM and C operations
-
-zero-indexing bytes
-
-reverse indexing bytes for numeric values
-
-Numeric: R2L bits, R2L bytes
-
-LE Numeric: R2L bits, L2R bytes
-
-Logical/Identity: L2R bits, L2R bytes
-
-“Numeric Universe”.
-
-
 # TLDR;
 
 Take the origin of a region of memory and perform the corresponding memory
@@ -378,6 +345,42 @@ By taking a foreign memory region and applying it’s own bit and byte order as 
 transformation upon itself it yields a region with identity memory order,
 wherein the “ninth bit” is always the leftmost bit of the second byte from the
 left.
+
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+<!-- * GOOD ENDING HERE -->
+
+
+
+
+# Extra Topics
+
+However, each individual byte is generally treated as a C `char` so it is
+effectively a numeric value having right-to-left bit order and a pre-declared
+byte order dictated by the file format.
+
+read from file
+
+show how to index bits in ASM and C operations
+
+zero-indexing bytes
+
+reverse indexing bytes for numeric values
+
+Numeric: R2L bits, R2L bytes
+
+LE Numeric: R2L bits, L2R bytes
+
+Logical/Identity: L2R bits, L2R bytes
+
+“Numeric Universe”.
+
+
+
 
 
 
