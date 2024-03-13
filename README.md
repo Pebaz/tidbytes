@@ -517,6 +517,22 @@ transformation upon itself it yields a region with identity memory order,
 wherein the “ninth bit” is always the leftmost bit of the second byte from the
 left.
 
-# Extra Topics
+### Desirable Future Additions
 
-- If someone could refactor to use integers as backing store that would be great
+- Describe exact bit layout for a data type (struct)
+    ```python
+    class Ieee754Single(Struct):
+        sign: Mem[1] = '0'
+        exponent: Num[12] = 0
+        mantissa: Num[19]
+    ```
+- Type layout with default values (`foo: Signed = 3`)
+- Types with templates that can be filled in later (like inst constant in ASM)
+- Effective sizeof & effective alignof (not the same as bit len)
+- Bit-level Cursor API for parsing data structures
+- Cursor API bit-level read ahead and skip for reading small integers like u3
+- File-like bit-level write API for assembling (write(bits=4, value=3))
+- Store and query endianness of region
+- Implement ALU operationss like XOR, etc.
+- Match bit patterns like masks and interleaved bits (better than OR)
+- Convert internal representation to use a byte array, not a list
