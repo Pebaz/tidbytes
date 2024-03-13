@@ -3,7 +3,8 @@ import copy
 import pytest
 from typing import TypeVar
 from tidbytes import (
-    Mem, MemRgn, InvalidInitializerException, from_bytes_utf8
+    Mem, MemRgn, InvalidInitializerException, ensure, op_ensure_bit_length,
+    identity_bits_from_numeric_byte
 )
 from . import UN
 
@@ -43,6 +44,20 @@ class Str(Mem):
     def __str__(self):
         chars = (int(byte, base=2) for byte in Mem.__str__(self).split())
         return bytearray(chars).decode()
+
+
+def from_bytes_utf8(value: list[int], bit_length: int) -> MemRgn:
+    "Memory region from list of unsigned integers in range 0x00 to 0xFF."
+    ensure(all(0 <= byte <= 0xFF for byte in value))
+    bit_length = bit_length if bit_length is not None else len(value) * 8
+    bytes_ = [
+        list(reversed(identity_bits_from_numeric_byte(byte)))
+        for byte in value
+    ]
+    out = MemRgn()
+    out.bytes = bytes_
+
+    return op_ensure_bit_length(out, bit_length)
 
 
 @pytest.mark.parametrize('bits,init,expect,msg', [

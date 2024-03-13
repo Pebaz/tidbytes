@@ -169,6 +169,9 @@ higher level API. The goal of the lower level API is to make it easier to port
 to new languages.
 
 Another feature that the natural API provides to the higher level API is the
+data transformation functions for converting to and from bytes. These are called
+codecs as they either encode or decode types or memory. These codecs are used by
+the higher level API for all supported idiomatic types such as `bool` or `int`.
 
 ```python
 from tidbytes.natural import *
@@ -215,11 +218,49 @@ Lower level API operations:
 
 - `op_concatenate`: combine two memory regions from left to right
 
+Lower level API codecs:
+
+The difference between numeric and natural is that the output for numeric codecs
+preserve semantic bit order. The byte `00000001` may be the numeric quantity `1`
+or the raw memory region `10000000`. Natural stores the byte by semantic order
+and numeric stores from right to left bit order which is more appropriate for
+integers.
+
+- `from_natural_u8`: convert a non-numeric raw byte into memory
+- `from_natural_u16`: convert a non-numeric 2-byte region into memory
+- `from_natural_u32`: convert a non-numeric 4-byte region into memory
+- `from_natural_u64`: convert a non-numeric 8-byte region into memory
+- `from_numeric_u8`: convert a 1-byte unsigned number into memory
+- `from_numeric_u16`: convert a 2-byte unsigned  number into memory
+- `from_numeric_u32`: convert a 4-byte unsigned  number into memory
+- `from_numeric_u64`: convert an 8-byte unsigned number into memory
+- `from_natural_i8`: convert a raw 1-byte signed number into memory
+- `from_natural_i16`: convert a raw 2-byte signed number into memory
+- `from_natural_i32`: convert a raw 4-byte signed number into memory
+- `from_natural_i64`: convert an raw 8-byte signed number into memory
+- `from_numeric_i8`: convert a 1-byte signed number into memory
+- `from_numeric_i16`: convert a 2-byte signed number into memory
+- `from_numeric_i32`: convert a 4-byte signed number into memory
+- `from_numeric_i64`: convert an 8-byte signed number into memory
+- `from_natural_f32`: convert a raw IEEE754 single precision float into memory
+- `from_natural_f64`: convert a raw IEEE754 double precision float into memory
+- `from_numeric_f32`: convert an IEEE754 single precision float into memory
+- `from_numeric_f64`: convert an IEEE754 double precision float into memory
+- `from_natural_big_integer_signed`: convert into memory
+- `from_natural_big_integer_unsigned`: convert into memory
+- `from_numeric_big_integer_signed`: convert into memory
+- `from_numeric_big_integer_unsigned`: convert into memory
+- `from_natural_float`: convert a raw IEEE754 float into memory
+- `from_numeric_float`: convert an IEEE754 float into memory
+- `from_bool`: convert a boolean into memory
+- `from_bit_list`: convert an int list of `0` or `1` into memory
+- `from_grouped_bits`: convert a list of lists of `0` or `1` bits into memory
+- `from_bytes`: convert a list of ints in range `0`-`255` into memory
+- `into_numeric_big_integer`: convert numeric memory into idiomatic integers
+- `into_natural_big_integer`: convert natural memory into idiomatic integers
+
 Here is a diagram that shows dependencies between operations so that they can
 be re-implemented in order in another language:
-
-<!-- TODO(pbz): Add the rest of the operations -->
-<!-- ? Codecs as well? Mention them anywhere? -->
 
 ```mermaid
 mindmap
@@ -242,6 +283,10 @@ mindmap
             op_set_bytes
         meta_op_bit_length
             meta_op_byte_length
+        op_ensure_bit_length
+            op_truncate
+            op_extend
+        op_concatenate
 ```
 
 
@@ -251,21 +296,6 @@ mindmap
 
 
 # The Ninth Bit
-
-<!-- TODO(pbz): Big problem: 8 bit bytes are not from theory/comp or Neumann -->
-<!-- TODO: refactor all of this to account for that. -->
-
-<!-- TODO(pbz): Remove "algebra" -->
-<!-- TODO(pbz): Remove "Von Neumann" -->
-
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
-<!-- * GOOD STARTING HERE -->
 
 ↪ Reasoning about the ninth bit within the context of programming computers is
 not as straightforward as it might seem. It entails preconceived notions on the
@@ -281,7 +311,10 @@ shifting. This is due to the limitations in the available instructions to the
 assembly programmer. However, as will be seen below, thinking past this
 limitation in a higher level of software provides logical coherency that could
 aid application programmers when integrating with lower level libraries,
-operating systems, and hardware.
+operating systems, and hardware. Although this reference library implementation
+was primarily designed for correctness and ergonomics rather than performance,
+it may be useful for prototyping, testing, or other limited bit manipulation
+tasks.
 
 ## Glossary of Terms
 
@@ -300,100 +333,104 @@ operating systems, and hardware.
 first bit is always the leftmost bit of the leftmost byte.***
 
 When both the bit and byte order of a region of memory is left to right, this is
-called “Identity Order” in Tidbytes.
+called “Identity Order” in Tidbytes. The following bits are in identity order.
+Performing the corresponding memory transformation on them (left to right bit
+and byte transform: `op_identity`) will do nothing because they are already in
+left to right bit and byte order.
 
-<!-- TODO(pbz): Replace this diagram -->
-```mermaid
-flowchart LR;
-    subgraph b[Byte 1]
-        direction LR
-        b0((0)) --> b1[0] --> b2[0] --> b3[0] --> b4[0] --> b5[0] --> b6[0]
-        b6[0] --> b7[0]
-    end
-    subgraph a[Byte 0]
-        direction LR
-        a0((0)) --> a1[0] --> a2[0] --> a3[0] --> a4[0] --> a5[0] --> a6[0]
-        a6[0] --> a7[0]
-    end
-    a ==> b
+```
+------->
+00000000 00000000
+->
 ```
 
-This is the most useful memory order for bit reading (indexing, offsetting) and
-writing (set, concat, extend, truncate) operations because it matches most
-mathematical notation such as equations and cardinal graphs. For memory in
-identity order, it is unlikely to be semantically meaningful in a primitive
-(scalar) way. Generally, memory in identity order tends to be for everything
-*except* for directly storing data. Floats.
+When using the memory transformation operations `op_identity`, `op_reverse`,
+`op_reverse_bits`, `op_reverse_bytes`, the result is always identity bit and
+byte order. However, to vizualize this, different notation is used:
+
+```
+                ------->
+Identity        10000000 01000000
+                ->
+
+                <-------
+Reversed        00000010 00000001
+                <-
+
+                ------->
+Reversed Bits   00000001 00000010
+                <-
+
+                <-------
+Reversed Bytes  01000000 10000000
+                ->
+```
+
+Amazingly, performing any of those 4 operations transforms the shown memory
+regions into identity bit and byte order. This is the most useful memory order
+for bit reading (indexing, offsetting) and writing (set, concat, extend,
+truncate) operations because it matches most mathematical notation such as
+equations and cardinal graphs. For memory in identity order, it is unlikely to
+be semantically meaningful in a primitive (scalar) way. Generally, memory in
+identity order tends to be for everything *except* for directly storing data.
 
 For identity order memory, the first and ninth bits are the leftmost bit of the
 leftmost byte and the leftmost bit of the second byte from the left:
 
-<!-- TODO(pbz): Replace this diagram -->
-```mermaid
-flowchart LR;
-    subgraph b[Byte 1]
-        direction LR
-        b0[[0]] --> b1[0] --> b2[0] --> b3[0] --> b4[0] --> b5[0] --> b6[0]
-        b6[0] --> b7[0]
-    end
-    subgraph a[Byte 0]
-        direction LR
-        a0[[0]] --> a1[0] --> a2[0] --> a3[0] --> a4[0] --> a5[0] --> a6[0]
-        a6[0] --> a7[0]
-    end
-    a ==> b
-    style a0 fill:#f9f,stroke:#333,stroke-width:4px
-    style b0 fill:#f9f,stroke:#333,stroke-width:4px
+```
+Identity Order:
 
-    subgraph legend[Legend]
-        direction TB
-        _0[First Bit] --> a0
-        _1[Ninth Bit] --> b0
-    end
+Byte: 1st      2nd
+       |        |
+       -------> |
+       V        v
+       00000000 00000000
+       ^        ^
+       ->       |
+       |        |
+Bit:  1st      9th
 ```
 
 ## Numeric Data
 
-<!-- TODO(pbz): Replace this diagram -->
-```mermaid
-flowchart RL;
-    subgraph b[Byte 1]
-        direction LR
-        b0((0)) --> b1[0] --> b2[0] --> b3[0] --> b4[0] --> b5[0] --> b6[0]
-        b6[0] --> b7[0]
-    end
-    subgraph a[Byte 0]
-        direction LR
-        a0((0)) --> a1[0] --> a2[0] --> a3[0] --> a4[0] --> a5[0] --> a6[0]
-        a6[0] --> a7[0]
-    end
-    a ==> b
+Numeric data does not index the same way as raw memory such as bit-fields. Bits
+go from right to left and bytes go either left to right or right to left based
+on memory universe byte order.
+
+```
+Reversed Bits Numeric Data:
+
+Byte: 1st      2nd
+       |        |
+       -------> |
+       V        v
+       00000000 00000000
+       <-     ^        ^
+              |        |
+              |        |
+Bit:         9th      1st
 ```
 
+The difficulty in sorting all this out by hand per origin and destination bit
+and byte order is the primary motivation for the creation of Tidbytes.
 
 <!-- TODO(pbz): I wish this wasn't bogus but it probably will be torn apart. -->
-<!-- TODO: Just remove all mention of Neumann and make it about numeric data -->
 
 
 ## Memory Origin And Universes
 
-Every memory region within a given program has an origin. Fundamental properties
-of memory origin include bit and byte order. For the purposes of Tidbytes, only
-pure left-to-right and right-to-left bit and byte orders are supported, leaving
-split order as an future extension, should it prove it’s utility.
-
-The most common orders are left-to-right (little endian) and right-to-left (big
-endian). Big endian matches how numbers are written while little endian matches
-zero-indexing of bytes.
+The most common byte orders are left-to-right (little endian) and right-to-left
+(big endian). Big endian matches how numbers are written while little endian
+allows zero-indexing of bytes.
 
 Although it is commonly thought that bits always go from right-to-left, on
 occasion they also go from left to right. This can be the case when slicing out
-bit fields from structs that are smaller that a byte or otherwise cross byte
-boundaries. In such cases, is the first bit on the far right or on the far left?
-This is an intriguing duality. Memory origin does seem to matter then. When
-considering the entire struct, the first bit is always the leftmost bit of the
-leftmost byte. When considering numeric data, the first bit is the rightmost bit
-of the rightmost byte. Strange.
+bit fields that are smaller that a byte from structs or that otherwise cross
+byte boundaries. In such cases, is the first bit on the far right or on the far
+left? This is an intriguing duality. Memory origin does seem to matter then.
+When considering the entire struct, the first bit is always the leftmost bit of
+the leftmost byte. When considering numeric data, the first bit is the rightmost
+bit of the rightmost byte. Strange.
 
 The use case for transforming between memory universes often comes up when
 reading from a file or a network socket. When reading bytes from a file, they
@@ -401,6 +438,11 @@ are read (logically) from left to right one at a time. These bytes come from an
 entirely separate memory universe: the universe of the file format. Once they
 have been read into memory, they are now within the memory universe of the
 program, although they have not yet been transformed to identity order.
+
+> ***Amazingly, simply applying a foreign memory region’s bit and byte order as
+a transformation on itself produces that same region in identity order, easily
+usable by the host program. This is a surprising insight which ensures that the
+“first bit” is always the leftmost bit of the leftmost byte.***
 
 ```mermaid
 graph TD;
@@ -423,10 +465,19 @@ graph TD;
     style op_transform fill:#9893bf,stroke:#5c5975
 ```
 
-> ***Amazingly, simply applying a foreign memory region’s bit and byte order as
-a transformation on itself produces that same region in identity order, easily
-usable by the host program. This is a surprising insight which ensures that the
-“first bit” is always the leftmost bit of the leftmost byte.***
+Here's an example of typical bit and byte orders for various bit manipulation
+tasks:
+
+| Read | From | Order |
+| --- | --- | --- |
+| Bytes | File | Left To Right |
+| Bytes | Struct | Left To Right |
+| Bytes | Number | Left To Right (little endian) |
+| Bytes | Number | Right To Left (big endian) |
+| Bytes | Network | Right To Left (multi-byte field) |
+| Bits | File | Left To Right |
+| Bits | Struct | Left To Right |
+| Bits | Number | Right To Left |
 
 # TLDR;
 
@@ -448,35 +499,6 @@ transformation upon itself it yields a region with identity memory order,
 wherein the “ninth bit” is always the leftmost bit of the second byte from the
 left.
 
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-<!-- * GOOD ENDING HERE -->
-
-
-
-
 # Extra Topics
 
-If someone could refactor to use integers as backing store that would be great.
-
-However, each individual byte is generally treated as a C `char` so it is
-effectively a numeric value having right-to-left bit order and a pre-declared
-byte order dictated by the file format.
-
-show how to index bits in ASM and C operations
-
-zero-indexing bytes
-
-reverse indexing bytes for numeric values
-
-Numeric: R2L bits, R2L bytes
-
-LE Numeric: R2L bits, L2R bytes
-
-Logical/Identity: L2R bits, L2R bytes
-
-“Numeric Universe”.
+- If someone could refactor to use integers as backing store that would be great
