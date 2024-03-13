@@ -369,7 +369,12 @@ be semantically meaningful in a primitive (scalar) way. Generally, memory in
 identity order tends to be for everything *except* for directly storing data.
 
 For identity order memory, the first and ninth bits are the leftmost bit of the
-leftmost byte and the leftmost bit of the second byte from the left:
+leftmost byte and the leftmost bit of the second byte from the left. Numeric
+data does not index the same way as raw memory such as bit-fields. Bits go from
+right to left and bytes go either left to right or right to left based on memory
+universe byte order. Being able to index from the correct direction allows
+smaller numbers to be sliced out of large fields such as a 3-bit integer sliced
+from an 8-bit byte.
 
 ```
 Identity Order:
@@ -385,18 +390,40 @@ Byte: 1st      2nd
 Bit:  1st      9th
 ```
 
-## Numeric Data
-
-Numeric data does not index the same way as raw memory such as bit-fields. Bits
-go from right to left and bytes go either left to right or right to left based
-on memory universe byte order.
-
 ```
-Reversed Bits Numeric Data:
+Reversed Bits (Little Endian):
 
 Byte: 1st      2nd
        |        |
        -------> |
+       V        v
+       00000000 00000000
+       <-     ^        ^
+              |        |
+              |        |
+Bit:         1st      9th
+```
+
+```
+Reversed Bytes:
+
+Byte: 2nd      1st
+       |        |
+       <------- |
+       V        v
+       00000000 00000000
+       ^        ^
+       ->       |
+       |        |
+Bit:  9th      1st
+```
+
+```
+Reversed (Big Endian):
+
+Byte: 2nd      1st
+       |        |
+       <------- |
        V        v
        00000000 00000000
        <-     ^        ^
