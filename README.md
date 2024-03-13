@@ -289,12 +289,6 @@ mindmap
         op_concatenate
 ```
 
-
-<!-- TODO(pbz): Add the rest of them here including meta ops -->
-
-
-
-
 # The Ninth Bit
 
 ↪ Reasoning about the ninth bit within the context of programming computers is
@@ -413,9 +407,6 @@ Bit:         9th      1st
 
 The difficulty in sorting all this out by hand per origin and destination bit
 and byte order is the primary motivation for the creation of Tidbytes.
-
-<!-- TODO(pbz): I wish this wasn't bogus but it probably will be torn apart. -->
-
 
 ## Memory Origin And Universes
 
