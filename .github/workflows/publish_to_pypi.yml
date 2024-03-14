@@ -23,6 +23,7 @@ jobs:
         env:
           POETRY_PYPI_TOKEN_FOO: ${{ secrets.PYPI_TOKEN }}
         run: |
+          pip install poetry
           poetry install
           poetry build
           poetry publish
