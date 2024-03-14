@@ -8,13 +8,13 @@ readme = "README.md"
 packages = [{include = "tidbytes"}]
 
 [tool.poetry.dependencies]
-python = "^3.6"
-indexed_meta = "^0.0.5"
+python = ">=3.7,<4.0"
+indexed_meta = ">=0.0.5"
 
 [tool.poetry.dev-dependencies]
-pytest = "^7.2.0"
-ruff = "^0.0.292"
-pytest-cov = "^4.1.0"
+pytest = ">=7.2.0"
+ruff = ">=0.0.292"
+pytest-cov = ">=4.1.0"
 
 [build-system]
 requires = ["poetry-core"]
