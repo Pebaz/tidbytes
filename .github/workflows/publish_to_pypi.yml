@@ -20,9 +20,6 @@ jobs:
           python-version: "3.12"
 
       - name: Build and publish
-        # env:
-        #   POETRY_HTTP_BASIC_TIDBYTES_USERNAME: ${{ secrets.PYPI_USERNAME }}
-        #   POETRY_PYPI_TOKEN_TIDBYTES: ${{ secrets.PYPI_TOKEN }}
         run: |
           pip install poetry
           poetry install
