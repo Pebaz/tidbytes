@@ -8,7 +8,7 @@ readme = "README.md"
 packages = [{include = "tidbytes"}]
 
 [tool.poetry.dependencies]
-python = ">=3.7,<4.0"
+python = ">=3.10,<4.0"
 indexed_meta = ">=0.0.5"
 
 [tool.poetry.dev-dependencies]
