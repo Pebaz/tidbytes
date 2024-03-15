@@ -517,15 +517,28 @@ transformation upon itself it yields a region with identity memory order,
 wherein the “ninth bit” is always the leftmost bit of the second byte from the
 left.
 
-### Desirable Future Additions
+# Desirable Future Additions
 
+- Rewrite the natural memory type to use bytes instead lists of lists of bits
+- Make the indexed_meta type work with Mypy type checking
 - Describe exact bit layout for a data type (struct)
     ```python
+    class Struct(Mem):
+        def __init__(self, *args, **kwargs):
+            self.buffer = Mem(sum(args))
+
+    class Union(Mem):
+        "Works similarly"
+
     class Ieee754Single(Struct):
-        sign: Mem[1] = '0'
-        exponent: Num[12] = 0
-        mantissa: Num[19]
+        Sign: Unsigned[1] = 0
+        Exponent: Unsigned[23] = '0101010'
+        Mantissa: Unsigned[12]
+
+        def __float__(self):
+            return float(self.buffer)
     ```
+- Implement Union type
 - Type layout with default values (`foo: Signed = 3`)
 - Types with templates that can be filled in later (like inst constant in ASM)
 - Effective sizeof & effective alignof (not the same as bit len)
