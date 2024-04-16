@@ -308,6 +308,12 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             return from_natural_big_integer_unsigned(init, bit_length)
 
         elif isinstance(init, float):
+            from tidbytes.codec import PYTHON_X64_FLOATS  # Unit tests modify
+            if bit_length and 32 <= bit_length < 64 and PYTHON_X64_FLOATS:
+                raise InvalidInitializerException(
+                    'Cannot interpret Python float as fewer than 64 bits: use '
+                    '`codec.f32` if value can be downcasted'
+                )
             return from_natural_float(init, bit_length)
 
         elif isinstance(init, u8):
