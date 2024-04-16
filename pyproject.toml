@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "tidbytes"
-version = "0.1.0"
+version = "0.1.1"
 description = "Memory manipulation reimagined with bit addressing"
 authors = ["pebaz <pebazium@gmail.com>"]
 license = "MIT"
 readme = "README.md"
-packages = [{include = "tidbytes"}]
+packages = [{ include = "tidbytes" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
@@ -19,3 +19,6 @@ pytest-cov = ">=4.1.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff.lint]
+ignore = ["E401"] # Multiple named imports on same line don't hurt anything

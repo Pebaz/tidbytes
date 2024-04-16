@@ -4,14 +4,13 @@ Design decisions:
         since there should be no side-effects.
 """
 
-import copy
-import indexed_meta
-from typing import Any, TypeVar, Union
+import sys, copy, indexed_meta
+from typing import Any, TypeVar, Union, Optional
 from .mem_types import (
-    ensure, MemException, Order, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
-    UnderOverflowException, MathOpUnderOverflowException, InvalidSemanticsException,
-    ContractViolationException, InvalidInitializerException,
-    InvalidComparisonException,
+    ensure, Order, L2R, R2L, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64,
+    UnderOverflowException, MathOpUnderOverflowException, MemException,
+    InvalidSemanticsException, ContractViolationException,
+    InvalidInitializerException, InvalidComparisonException,
 )
 from .natural import (
     MemRgn, meta_op_bit_length, contract_validate_memory, group_bits_into_bytes,
@@ -489,6 +488,30 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             indexed_meta.root_type(type(self))(mem_right).rgn
         )
         return self
+
+    def as_bytes(self, byte_order: Optional[Order] = None) -> bytes:
+        """
+        Convert the memory region to the built-in `bytes` type. Specify a byte
+        order of left to right for little endian and right to left for big
+        endian. If no byte order is provided, system endianness is assumed.
+        """
+        byte_order = byte_order or (L2R, R2L)[sys.byteorder == 'big']
+        it = (reversed(self.rgn.bytes), self.rgn.bytes)[byte_order == L2R]
+        buffer = b''
+        for byte in map(lambda b: [*filter(lambda i: i is not None, b)], it):
+            acc = 0
+            for index, bit in enumerate(reversed(byte)):
+                acc |= (1 << index) * bit
+            buffer += bytes([acc])
+        return buffer
+
+    def as_be_bytes(self) -> bytes:
+        "Convert the memory region into bytes using right to left byte order"
+        return self.as_bytes(R2L)
+
+    def as_le_bytes(self) -> bytes:
+        "Convert the memory region into bytes using left to right byte order"
+        return self.as_bytes(L2R)
 
     clone = identity
 

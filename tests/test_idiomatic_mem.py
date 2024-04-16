@@ -1,8 +1,6 @@
-import sys
-import pytest
-import tidbytes.codec
+import sys, pytest, tidbytes.codec
 from tidbytes.mem_types import (
-    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, L2R
+    MemException, u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, L2R, R2L
 )
 from tidbytes.idiomatic import Mem, Unsigned, Signed
 from . import raises_exception, UN, Slice
@@ -507,3 +505,21 @@ def test_passthrough_methods():
 ])
 def test_from_str(bits, init, expect, msg):
     assert str(Mem[bits](init)) == expect, msg
+
+
+little, big = L2R, R2L
+@pytest.mark.parametrize('bits,init,expect1,expect2,expect3,order', [
+    (UN, '1', 0b1, 0x01, b'\x01', little),
+    (UN, '10000000', 0b10000000, 0x80, b'\x80', little),
+    (8, '1', 0b10000000, 0x80, b'\x80', little),
+    (9, '1', 0b10000000_0, 0x0100, b'\x80\x00', little),
+
+    (UN, '1', 0b1, 0x01, b'\x01', big),
+    (UN, '10000000', 0b10000000, 0x80, b'\x80', big),
+    (8, '1', 0b10000000, 0x80, b'\x80', big),
+    (9, '1', 0b10000000_0, 0x0100, b'\x00\x80', big),
+])
+def test_mem_as_bytes(bits, init, expect1, expect2, expect3, order):
+    mem = Mem[bits](init)
+    assert int(mem) == expect1 == expect2
+    assert mem.as_bytes(order) == expect3

@@ -40,9 +40,7 @@ Design notes for this module:
     numbers and return numbers.
 """
 
-import ctypes
-import sys
-import struct
+import ctypes, sys, struct
 from typing import TypeVar
 from .mem_types import u8, u16, u32, u64, i8, i16, i32, i64, f32, f64, ensure
 from .natural import (
@@ -739,6 +737,5 @@ def into_natural_big_integer(mem: MemRgn) -> int:
     "Always assumes destination is signed since Python's big integer type is."
     out = 0
     for i, bit in enumerate(reversed(list(iterate_logical_bits(mem.bytes)))):
-        if bit:
-            out |= 1 << i
+        out |= (1 << i) * bit
     return out
