@@ -217,8 +217,10 @@ class Mem(metaclass=indexed_meta.IndexedMetaclass):
             case [None, None, -8]:
                 return self.reverse_bytes()
 
+            # mem[i:] Start
+            # mem[i::] Start
             # mem[i::1] Start, step bit
-            case [int(), None, 1]:
+            case [int(), None, None] | [int(), None, 1]:
                 out.rgn = op_get_bits(self.rgn, start, len(self))
 
             # mem[i::8] Start, step byte
