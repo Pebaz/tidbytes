@@ -519,8 +519,11 @@ left.
 
 # Desirable Future Additions
 
-- Rewrite the natural memory type to use bytes instead lists of lists of bits
 - Make the indexed_meta type work with Mypy type checking
+- Implement more operations: shift, shift with rotate, all fundamental Python
+    bitwise operations. Xor, any(), all(), logical.
+- Choose codec by keyword: Mem(string='asdf'), Mem(hex='0xFF', len=100)
+- Rewrite the natural memory type to use bytes instead lists of lists of bits
 - Describe exact bit layout for a data type (struct)
     ```python
     class Struct(Mem):
